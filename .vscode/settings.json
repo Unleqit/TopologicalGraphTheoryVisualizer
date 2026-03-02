@@ -1,4 +1,13 @@
 {
-    "liveServer.settings.port": 5501,
-    "liveServer.settings.root": "/webapp"
+  "liveServer.settings.port": 5501,
+  "liveServer.settings.root": "/webapp",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "always"
+  },
+
+  "eslint.experimental.useFlatConfig": true,
+  "eslint.validate": ["javascript", "typescript", "json"]
 }

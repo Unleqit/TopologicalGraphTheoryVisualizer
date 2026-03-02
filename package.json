@@ -1,0 +1,41 @@
+{
+  "name": "planarity",
+  "version": "1.0.0",
+  "main": "webapp/index.html",
+  "scripts": {
+    "build": "webpack --mode production",
+    "watch": "webpack --mode development --watch",
+    "serve": "browser-sync start --server dist --files \"dist/**/*\" --port 3000 --no-open",
+    "dev": "concurrently \"npm run watch\" \"npm run serve\""
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "type": "module",
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@types/three": "^0.182.0",
+    "@typescript-eslint/eslint-plugin": "^8.54.0",
+    "@typescript-eslint/parser": "^8.54.0",
+    "browser-sync": "^3.0.4",
+    "concurrently": "^9.2.1",
+    "css-loader": "^7.1.4",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.2.0",
+    "html-webpack-plugin": "^5.6.5",
+    "mini-css-extract-plugin": "^2.10.0",
+    "open-cli": "^8.0.0",
+    "prettier": "^3.8.1",
+    "serve": "^14.2.5",
+    "style-loader": "^4.0.0",
+    "three": "^0.182.0",
+    "ts-loader": "^9.5.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.54.0",
+    "webpack": "^5.104.1",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-middleware": "^7.4.5"
+  }
+}

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Planarity • Topological Graph Theory</title>
+    <link rel="stylesheet" href="base.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <div class="topbar">
+        <div class="brand">Topological Graph Theory</div>
+        <div class="crumb">/ Planarity Testing & Embedding</div>
+      </div>
+
+      <div class="main">
+        <section class="panel dialog" aria-label="Dialog panel">
+          <div class="dialog-head">
+            <div>
+              <h2 class="h-title">Planarity Testing &amp; Embedding</h2>
+              <p class="h-sub">Goal: test planarity, then compute an embedding/layout.</p>
+            </div>
+            <span class="badge">Module 2</span>
+          </div>
+
+          <div class="dialog-body">
+            <div data-step="0">
+              <h3>Step 1 — Planarity testing (Boyer–Myrvold)</h3>
+              <p>You’ll input / generate a graph. The algorithm decides whether it can be embedded in the plane without crossings.</p>
+            </div>
+
+            <div data-step="1" style="display: none">
+              <h3>Step 2 — If planar: produce an embedding</h3>
+              <p>Use methods such as Chrobak–Payne-style straight-line drawings for triangulated planar graphs.</p>
+            </div>
+
+            <div data-step="2" style="display: none">
+              <h3>Step 3 — Embed onto surface</h3>
+              <p>TODO</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel canvasWrap" aria-label="Visualization area">
+          <div class="canvasHead">
+            <span class="badge">Three.js Visualization</span>
+            <span class="badge">Placeholder scene (swap later)</span>
+          </div>
+          <div class="canvasArea">
+            <canvas id="viz"></canvas>
+          </div>
+        </section>
+      </div>
+
+      <div class="bottomNav" role="navigation" aria-label="Prev next navigation">
+        <div class="navInner">
+          <div id="progress" class="progress">Step 1 / 3</div>
+          <div class="btnRow">
+            <button id="prevBtn" class="btn" type="button">← Prev</button>
+            <button id="nextBtn" class="btn" type="button">Next →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

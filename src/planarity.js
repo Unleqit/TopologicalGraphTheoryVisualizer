@@ -1,9 +1,12 @@
-import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
-import { setupStepper } from "./common.js";
-import { computeLayout } from "./pyodide-layout.js";
+import './base.css';
+import './styles.css';
+
+import * as THREE from 'three';
+import { setupStepper } from './common.js';
+import { computeLayout } from './pyodide-layout.js';
 
 const stepper = setupStepper();
-const canvas = document.getElementById("viz");
+const canvas = document.getElementById('viz');
 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
 const scene = new THREE.Scene();
@@ -16,14 +19,14 @@ dir.position.set(3, 4, 5);
 scene.add(dir);
 
 const objects = [];
-function add(obj){ scene.add(obj); objects.push(obj); }
+function add(obj) {
+  scene.add(obj);
+  objects.push(obj);
+}
 
 /* ---------------- STEP 0 ---------------- */
 
-const sphere = new THREE.Mesh(
-  new THREE.SphereGeometry(1.4, 48, 24),
-  new THREE.MeshStandardMaterial({ color: 0xffffff, wireframe: true })
-);
+const sphere = new THREE.Mesh(new THREE.SphereGeometry(1.4, 48, 24), new THREE.MeshStandardMaterial({ color: 0xffffff, wireframe: true }));
 add(sphere);
 
 /* ---------------- STEP 1 (RAW JSON EMBEDDING) ---------------- */
@@ -47,23 +50,22 @@ function matrixToEdgeList(matrix) {
 }
 
 async function loadGraph() {
+  const diamond1 = [
+    [0, 1, 1, 1, 1, 1, 1],
+    [1, 0, 1, 0, 0, 0, 1],
+    [1, 1, 0, 1, 0, 0, 0],
+    [1, 0, 1, 0, 1, 0, 0],
+    [1, 0, 0, 1, 0, 1, 0],
+    [1, 0, 0, 0, 1, 0, 1],
+    [1, 1, 0, 0, 0, 1, 0],
+  ];
 
-const diamond1 = [
-  [0,1,1,1,1,1,1],
-  [1,0,1,0,0,0,1],
-  [1,1,0,1,0,0,0],
-  [1,0,1,0,1,0,0],
-  [1,0,0,1,0,1,0],
-  [1,0,0,0,1,0,1],
-  [1,1,0,0,0,1,0]
-];
+  const { nodeCount, edges } = matrixToEdgeList(diamond1);
+  const res = await computeLayout(edges, nodeCount);
 
-const { nodeCount, edges } = matrixToEdgeList(diamond1);
- const res = await computeLayout(edges, nodeCount);
-
-  graphData =res;
+  graphData = res;
   if (!graphData.planar) {
-    console.warn("Graph not planar.");
+    console.warn('Graph not planar.');
     return;
   }
 
@@ -74,7 +76,7 @@ const { nodeCount, edges } = matrixToEdgeList(diamond1);
     sphere.visible = false;
     centerGroup(graphGroup);
   }
-//  renderTutte(graphData.nodes, graphData.edges);
+  //  renderTutte(graphData.nodes, graphData.edges);
 }
 
 loadGraph();
@@ -92,43 +94,35 @@ function renderRawGraph(nodes, edges) {
   }
 
   const edgeVerts = [];
-  for (const [u,v] of edges) {
+  for (const [u, v] of edges) {
     const a = nodeMap.get(Number(u));
     const b = nodeMap.get(Number(v));
     edgeVerts.push(a.x, a.y, 0, b.x, b.y, 0);
   }
 
   const geom = new THREE.BufferGeometry();
-  geom.setAttribute("position",
-    new THREE.BufferAttribute(new Float32Array(edgeVerts),3)
-  );
+  geom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(edgeVerts), 3));
 
-  graphGroup.add(new THREE.LineSegments(
-    geom,
-    new THREE.LineBasicMaterial({ color: 0x00ffcc })
-  ));
+  graphGroup.add(new THREE.LineSegments(geom, new THREE.LineBasicMaterial({ color: 0x00ffcc })));
 
   for (const pos of nodeMap.values()) {
-    const node = new THREE.Mesh(
-      new THREE.CircleGeometry(0.15, 24),
-      new THREE.MeshBasicMaterial({ color: 0x1976d2 })
-    );
+    const node = new THREE.Mesh(new THREE.CircleGeometry(0.15, 24), new THREE.MeshBasicMaterial({ color: 0x1976d2 }));
     node.position.copy(pos);
     graphGroup.add(node);
   }
 
- // centerGroup(graphGroup);
+  // centerGroup(graphGroup);
 }
 
 /* ============================================================
    Utilities
 ============================================================ */
 
-function centerGroup(group){
+function centerGroup(group) {
   const box = new THREE.Box3().setFromObject(group);
   const sphere = box.getBoundingSphere(new THREE.Sphere());
   group.position.sub(sphere.center);
-  camera.position.set(0,0,sphere.radius*3);
+  camera.position.set(0, 0, sphere.radius * 3);
 }
 
 /* ============================================================
@@ -137,7 +131,7 @@ function centerGroup(group){
 
 const sphereCamPos = camera.position.clone();
 
-function applyStep(s){
+function applyStep(s) {
   if (s === 0) {
     // sphere view
     sphere.visible = true;
@@ -163,30 +157,31 @@ let lastStep = stepper.getStep();
    Render Loop
 ============================================================ */
 
-function resize(){
-  const area = document.querySelector(".canvasArea");
-  const w=area.clientWidth, h=area.clientHeight;
-  renderer.setSize(w,h,false);
-  camera.aspect=w/h;
+function resize() {
+  const area = document.querySelector('.canvasArea');
+  const w = area.clientWidth,
+    h = area.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
   camera.updateProjectionMatrix();
 }
-addEventListener("resize",resize);
+addEventListener('resize', resize);
 resize();
 
-function tick(t){
-  const s=t*0.001;
-  const cur=stepper.getStep();
-  if(cur!==lastStep){
-    lastStep=cur;
+function tick(t) {
+  const s = t * 0.001;
+  const cur = stepper.getStep();
+  if (cur !== lastStep) {
+    lastStep = cur;
     applyStep(cur);
   }
 
-  if(sphere.visible){
-    sphere.rotation.y=s*0.45;
-    sphere.rotation.x=s*0.2;
+  if (sphere.visible) {
+    sphere.rotation.y = s * 0.45;
+    sphere.rotation.x = s * 0.2;
   }
 
-  renderer.render(scene,camera);
+  renderer.render(scene, camera);
   requestAnimationFrame(tick);
 }
 requestAnimationFrame(tick);
