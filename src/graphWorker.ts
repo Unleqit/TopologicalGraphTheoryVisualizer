@@ -1,15 +1,29 @@
 // graphWorker.js
-export let computeGraph = null;
 
-let graphWorker = null;
-let readyPromise = null;
+export type Node = {
+  id: number;
+  x: number;
+  y: number;
+};
+
+export type Edge = [number, number];
+
+export type EmbeddingResult = {
+  planar: boolean;
+  nodes: Node[];
+  edges: Edge[];
+};
+
+let graphWorker: Worker | undefined;
 let nextId = 0;
 const pendingRequests = new Map();
 
 // Lazy-init worker & Pyodide only on first call
-computeGraph = function (edges, nodeCount) {
+export const computeGraph = async function (edges: [number, number][], nodeCount: number): Promise<EmbeddingResult> {
   if (!graphWorker) {
     // create worker once
+    const pythonFile = await fetch('./layout_computation.py');
+    const pythonCode = await pythonFile.text();
     graphWorker = new Worker(
       URL.createObjectURL(
         new Blob(
@@ -23,26 +37,7 @@ computeGraph = function (edges, nodeCount) {
         pyodide = await loadPyodide({ indexURL: "https://cdn.jsdelivr.net/pyodide/v0.20.0/full/" });
         await pyodide.loadPackage(["networkx", "numpy"]);
 
-        pyodide.runPython(\`
-        import networkx as nx
-        from networkx.algorithms.planar_drawing import combinatorial_embedding_to_pos
-        import numpy as np
-
-        def compute_layout(edges, n):
-            G = nx.Graph()
-            G.add_nodes_from(range(n))
-            G.add_edges_from(edges)
-
-            is_planar, emb = nx.check_planarity(G)
-            if not is_planar:
-                return {"planar": False, "nodes": [], "edges": []}
-
-            pos = combinatorial_embedding_to_pos(emb, fully_triangulate=False)
-
-            nodes = [{"id": int(v), "x": float(x), "y": float(y)} for v,(x,y) in pos.items()]
-            edges = [[int(u), int(v)] for u,v in G.edges()]
-            return {"planar": True, "nodes": nodes, "edges": edges}
-        \`);
+        pyodide.runPython(${JSON.stringify(pythonCode)});
 
         compute_layout = pyodide.globals.get("compute_layout");
       })();
@@ -61,10 +56,8 @@ computeGraph = function (edges, nodeCount) {
       )
     );
 
-    readyPromise = Promise.resolve(); // placeholder, worker handles actual readyPromise
-
     // Handle messages from the worker
-    graphWorker.onmessage = (e) => {
+    graphWorker.onmessage = (e: any) => {
       const { id, result } = e.data;
       const resolver = pendingRequests.get(id);
       if (resolver) {
@@ -78,6 +71,6 @@ computeGraph = function (edges, nodeCount) {
   return new Promise((resolve) => {
     const id = nextId++;
     pendingRequests.set(id, resolve);
-    graphWorker.postMessage({ edges, nodeCount, id });
+    graphWorker!.postMessage({ edges, nodeCount, id });
   });
 };

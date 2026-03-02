@@ -2,11 +2,12 @@ import './base.css';
 import './styles.css';
 
 import * as THREE from 'three';
-import { setupStepper } from './common.js';
-import { computeLayout } from './pyodide-layout.js';
+import { setupStepper } from './common';
+import { computeLayout } from './pyodide-layout';
+import { Edge, Node } from './graphWorker';
 
 const stepper = setupStepper();
-const canvas = document.getElementById('viz');
+const canvas = document.getElementById('viz')!;
 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
 const scene = new THREE.Scene();
@@ -19,7 +20,7 @@ dir.position.set(3, 4, 5);
 scene.add(dir);
 
 const objects = [];
-function add(obj) {
+function add(obj: THREE.Object3D): void {
   scene.add(obj);
   objects.push(obj);
 }
@@ -37,19 +38,21 @@ add(graphGroup);
 
 let graphData = null;
 
-function matrixToEdgeList(matrix) {
+function matrixToEdgeList(matrix: number[][]): { nodeCount: number; edges: [number, number][] } {
   const n = matrix.length;
-  const edges = new Array();
+  const edges: [number, number][] = [];
   for (let i = 0; i < n; ++i) {
     const row = matrix[i];
     for (let j = i + 1; j < n; ++j) {
-      if (row[j] !== 0) edges.push([i, j]);
+      if (row[j] !== 0) {
+        edges.push([i, j]);
+      }
     }
   }
   return { nodeCount: n, edges };
 }
 
-async function loadGraph() {
+async function loadGraph(): Promise<void> {
   const diamond1 = [
     [0, 1, 1, 1, 1, 1, 1],
     [1, 0, 1, 0, 0, 0, 1],
@@ -85,7 +88,7 @@ loadGraph();
    STEP 1 : Raw embedding from JSON
 ============================================================ */
 
-function renderRawGraph(nodes, edges) {
+function renderRawGraph(nodes: Node[], edges: Edge[]): void {
   graphGroup.clear();
 
   const nodeMap = new Map();
@@ -118,7 +121,7 @@ function renderRawGraph(nodes, edges) {
    Utilities
 ============================================================ */
 
-function centerGroup(group) {
+function centerGroup(group: THREE.Group): void {
   const box = new THREE.Box3().setFromObject(group);
   const sphere = box.getBoundingSphere(new THREE.Sphere());
   group.position.sub(sphere.center);
@@ -131,7 +134,7 @@ function centerGroup(group) {
 
 const sphereCamPos = camera.position.clone();
 
-function applyStep(s) {
+function applyStep(s: number): void {
   if (s === 0) {
     // sphere view
     sphere.visible = true;
@@ -157,8 +160,8 @@ let lastStep = stepper.getStep();
    Render Loop
 ============================================================ */
 
-function resize() {
-  const area = document.querySelector('.canvasArea');
+function resize(): void {
+  const area: HTMLCanvasElement = document.querySelector('.canvasArea')!;
   const w = area.clientWidth,
     h = area.clientHeight;
   renderer.setSize(w, h, false);
@@ -168,7 +171,7 @@ function resize() {
 addEventListener('resize', resize);
 resize();
 
-function tick(t) {
+function tick(t: number): void {
   const s = t * 0.001;
   const cur = stepper.getStep();
   if (cur !== lastStep) {

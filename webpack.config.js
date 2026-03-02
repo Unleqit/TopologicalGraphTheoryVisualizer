@@ -2,6 +2,7 @@ import path from 'path';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import { fileURLToPath } from 'url';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import CopyWebpackPlugin from 'copy-webpack-plugin';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -9,10 +10,10 @@ const __dirname = path.dirname(__filename);
 export default {
   mode: 'development',
   entry: {
-    index: './src/script.js',
-    intro: './src/intro.js',
-    planarity: './src/planarity.js',
-    surfaces: './src/common.js',
+    index: './src/script.ts',
+    intro: './src/intro.ts',
+    planarity: './src/planarity.ts',
+    surfaces: './src/common.ts',
   },
 
   output: {
@@ -63,6 +64,11 @@ export default {
     }),
     new MiniCssExtractPlugin({
       filename: '[name].css',
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: 'src/layout_computation.py', to: '' }, // copies to dist/
+      ],
     }),
   ],
 
