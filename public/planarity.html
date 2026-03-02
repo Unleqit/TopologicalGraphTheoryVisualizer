@@ -24,9 +24,55 @@
           </div>
 
           <div class="dialog-body">
+            <!-- Graph Card (always visible) -->
+            <div class="graphCard">
+              <div class="graphCardHead">
+                <span class="badge">Graph Input</span>
+
+                <div class="graphTabs">
+                  <button class="tabBtn active" data-mode="matrix">Matrix</button>
+                  <button class="tabBtn" data-mode="list">Adjacency List</button>
+                </div>
+              </div>
+
+              <div class="graphCardBody">
+                <!-- MATRIX MODE -->
+                <div class="graphMode active" data-mode="matrix">
+                  <textarea
+                    id="graphMatrix"
+                    class="matrixInput"
+                    spellcheck="false"
+                    placeholder="Example:
+        0 1 0
+        1 0 1
+        0 1 0"
+                  ></textarea>
+                </div>
+
+                <!-- LIST MODE -->
+                <div class="graphMode" data-mode="list">
+                  <textarea
+                    id="graphList"
+                    class="matrixInput"
+                    spellcheck="false"
+                    placeholder="Example:
+        0: 1 2
+        1: 0 2
+        2: 0 1"
+                  ></textarea>
+                </div>
+
+                <div class="graphActions">
+                  <button id="loadGraphBtn" class="btn primary" type="button">▶ Test & Embed</button>
+                  <span id="graphStatus" class="statusText"></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step-controlled content -->
             <div data-step="0">
               <h3>Step 1 — Planarity testing (Boyer–Myrvold)</h3>
-              <p>You’ll input / generate a graph. The algorithm decides whether it can be embedded in the plane without crossings.</p>
+              <p>The algorithm decides whether it can be embedded in the plane without crossings.</p>
             </div>
 
             <div data-step="1" style="display: none">

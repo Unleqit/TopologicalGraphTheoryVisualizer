@@ -188,3 +188,154 @@ function tick(t: number): void {
   requestAnimationFrame(tick);
 }
 requestAnimationFrame(tick);
+
+const graphMatrixInput = document.getElementById('graphMatrix') as HTMLTextAreaElement;
+const loadGraphBtn = document.getElementById('loadGraphBtn') as HTMLButtonElement;
+const graphListInput = document.getElementById('graphList') as HTMLTextAreaElement;
+
+const statusEl = document.getElementById('graphStatus') as HTMLElement;
+
+loadGraphBtn.addEventListener('click', async () => {
+  statusEl.textContent = '';
+  statusEl.className = 'statusText';
+
+  try {
+    let matrix: number[][];
+
+    if (currentMode === 'matrix') {
+      const text = graphMatrixInput.value.trim();
+
+      if (!text) {
+        throw new Error('Please enter a matrix.');
+      }
+
+      matrix = text.split('\n').map((line) =>
+        line
+          .trim()
+          .split(/\s+/)
+          .map((v) => {
+            const num = Number(v);
+            if (Number.isNaN(num)) {
+              throw new Error('Invalid number in matrix.');
+            }
+            return num;
+          })
+      );
+    } else {
+      // ===== ADJACENCY LIST MODE =====
+      const text = graphListInput.value.trim();
+
+      if (!text) {
+        throw new Error('Please enter an adjacency list.');
+      }
+
+      const lines = text.split('\n');
+      const tempMap = new Map<number, number[]>();
+
+      for (const line of lines) {
+        const parts = line.split(':');
+        if (parts.length !== 2) {
+          throw new Error('Invalid list format.');
+        }
+
+        const node = Number(parts[0].trim());
+        if (Number.isNaN(node)) {
+          throw new Error('Invalid node index.');
+        }
+
+        const neighbors = parts[1]
+          .trim()
+          .split(/\s+/)
+          .filter(Boolean)
+          .map((v) => {
+            const num = Number(v);
+            if (Number.isNaN(num)) {
+              throw new Error('Invalid neighbor index.');
+            }
+            return num;
+          });
+
+        tempMap.set(node, neighbors);
+      }
+
+      const n = Math.max(...tempMap.keys()) + 1;
+      matrix = Array.from({ length: n }, () => Array(n).fill(0));
+
+      for (const [u, neighbors] of tempMap) {
+        for (const v of neighbors) {
+          matrix[u][v] = 1;
+          matrix[v][u] = 1; // undirected
+        }
+      }
+    }
+
+    // ===== VALIDATION (common for both modes) =====
+
+    const n = matrix.length;
+
+    if (!matrix.every((row) => row.length === n)) {
+      throw new Error('Matrix must be square.');
+    }
+
+    // Optional but recommended: symmetry check
+    for (let i = 0; i < n; i++) {
+      if (matrix[i][i] !== 0) {
+        throw new Error('Diagonal must be 0.');
+      }
+      for (let j = 0; j < n; j++) {
+        if (matrix[i][j] !== matrix[j][i]) {
+          throw new Error('Graph must be undirected (symmetric).');
+        }
+      }
+    }
+
+    statusEl.textContent = 'Computing layout...';
+
+    const { nodeCount, edges } = matrixToEdgeList(matrix);
+    const res = await computeLayout(edges, nodeCount);
+    graphData = res;
+
+    if (!graphData.planar) {
+      statusEl.textContent = 'Planar: ✗';
+      statusEl.className = 'statusText error';
+      return;
+    }
+
+    // Render graph
+    renderRawGraph(graphData.nodes, graphData.edges);
+
+    sphere.visible = false;
+    graphGroup.visible = true;
+    centerGroup(graphGroup);
+    stepper.setStep(1);
+
+    statusEl.textContent = 'Planar: ✓';
+    statusEl.className = 'statusText ok';
+  } catch (err) {
+    statusEl.textContent = err instanceof Error ? err.message : 'Invalid input.';
+    statusEl.className = 'statusText error';
+  }
+});
+
+const tabButtons = document.querySelectorAll<HTMLButtonElement>('.tabBtn');
+const modes = document.querySelectorAll<HTMLElement>('.graphMode');
+
+let currentMode: 'matrix' | 'list' = 'matrix';
+
+tabButtons.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const mode = btn.dataset.mode as 'matrix' | 'list';
+    if (!mode) {
+      return;
+    }
+
+    currentMode = mode;
+
+    tabButtons.forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    modes.forEach((m) => {
+      m.classList.toggle('active', m.dataset.mode === mode);
+    });
+  });
+});
