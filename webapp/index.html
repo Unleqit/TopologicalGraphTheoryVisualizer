@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Topological Graph Theory</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<main class="page">
+  <header class="hero">
+    <h1 id="title" class="title" aria-label="Topological Graph Theory: Understanding Through Visualisations">
+      <span class="title-line">Topological Graph Theory</span>
+      <span class="title-line title-sub">Understanding Through Visualisations</span>
+    </h1>
+  </header>
+
+  <section class="nav" aria-label="Main modules">
+    <!-- NOTE: bars are now buttons (expand/collapse), CTA is the only link -->
+    <button class="bar bar-1" type="button"
+            data-desc="An introduction to topological surfaces, orientable and nonorientable, the concept of homeomorphism and of the genus of graphs & surfaces"
+            aria-expanded="false">
+      <div class="bar-main">
+        <span class="bar-title">A Visual Introduction to Topology</span>
+        <a class="bar-cta" href="intro.html" aria-label="Start A Visual Introduction to Topology">Start</a>
+      </div>
+      <div class="bar-desc" aria-hidden="true"></div>
+    </button>
+
+    <button class="bar bar-2" type="button"
+            data-desc="Testing the planarity of a graph using Boyer-Myvold algorithm, then embedding it using Tutte if it's three-connected and if not using Chrobak–Payne"
+            aria-expanded="false">
+      <div class="bar-main">
+        <span class="bar-title">Planarity Testing &amp; Embedding</span>
+        <a class="bar-cta" href="planarity.html" aria-label="Explore Planarity Testing and Embedding">Start</a>
+      </div>
+      <div class="bar-desc" aria-hidden="true"></div>
+    </button>
+
+    <button class="bar bar-3" type="button"
+            data-desc="Constructions of different surfaces (sphere, torus, etc.) by gluing together the edges of squares as an elementary extension of planarity"
+            aria-expanded="false">
+      <div class="bar-main">
+        <span class="bar-title">Extending to Other Surfaces</span>
+        <a class="bar-cta" href="surfaces.html" aria-label="Build Extending to other surfaces">Start</a>
+      </div>
+      <div class="bar-desc" aria-hidden="true"></div>
+    </button>
+  </section>
+</main>
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+:root{
+  --bg1:#0b0f1a;
+  --bg2:#0f1730;
+  --text:#eaf0ff;
+  --muted:#b8c4ff;
+  --panel: rgba(255,255,255,.07);
+  --panel2: rgba(255,255,255,.10);
+  --border: rgba(255,255,255,.14);
+  --shadow: 0 20px 60px rgba(0,0,0,.45);
+  --radius: 18px;
+
+  --gap: 16px;
+  --sidebarW: min(430px, 42vw);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  color:var(--text);
+  background:
+      radial-gradient(1200px 700px at 30% 20%, rgba(108,140,255,.22), transparent 55%),
+      radial-gradient(900px 600px at 80% 60%, rgba(140,96,255,.18), transparent 55%),
+      linear-gradient(180deg, var(--bg1), var(--bg2));
+}
+
+/* ---- Layout ---- */
+.shell{
+  height:100%;
+  display:flex;
+  flex-direction:column;
+}
+
+.topbar{
+  padding: 14px 18px;
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.12);
+  backdrop-filter: blur(10px);
+}
+
+.brand{
+  font-weight: 900;
+  letter-spacing: -.02em;
+}
+.crumb{
+  color: rgba(234,240,255,.78);
+  font-size: 13px;
+}
+
+.main{
+  flex: 1;
+  min-height: 0; /* allows children to scroll properly */
+  display:grid;
+  grid-template-columns: var(--sidebarW) 1fr;
+  gap: var(--gap);
+  padding: var(--gap);
+  padding-bottom: 78px; /* space for bottom nav */
+}
+
+.panel{
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, var(--panel), rgba(255,255,255,.04));
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+  overflow:hidden;
+  min-height:0;
+}
+
+.dialog{
+  display:flex;
+  flex-direction:column;
+}
+
+.dialog-head{
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.10);
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 10px;
+}
+
+.h-title{
+  margin:0;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: -.01em;
+}
+.h-sub{
+  margin: 4px 0 0 0;
+  font-size: 13px;
+  color: rgba(234,240,255,.80);
+  line-height: 1.35;
+}
+
+.dialog-body{
+  padding: 14px 16px 16px 16px;
+  overflow:auto; /* scrollable */
+  min-height:0;
+  line-height: 1.5;
+  color: rgba(234,240,255,.92);
+}
+
+.dialog-body h3{
+  margin: 14px 0 8px;
+  font-size: 14px;
+}
+.dialog-body p{ margin: 10px 0; }
+.dialog-body code{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  background: rgba(255,255,255,.08);
+  padding: 2px 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,.12);
+}
+
+.canvasWrap{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+}
+
+.canvasHead{
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255,255,255,.10);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 10px;
+}
+
+.badge{
+  font-size: 12px;
+  color: rgba(234,240,255,.85);
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.12);
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+
+.canvasArea{
+  position:relative;
+  flex:1;
+  min-height:0;
+  overflow:hidden;
+}
+
+canvas#viz{
+  display:block;
+  width:100%;
+  height:100%;
+}
+
+/* ---- Bottom nav ---- */
+.bottomNav{
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 12px 16px;
+  display:flex;
+  justify-content:center;
+  background: rgba(0,0,0,.22);
+  border-top: 1px solid rgba(255,255,255,.10);
+  backdrop-filter: blur(10px);
+}
+
+.navInner{
+  width: min(1100px, calc(100% - 16px));
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+}
+
+.progress{
+  font-size: 13px;
+  color: rgba(234,240,255,.85);
+}
+
+.btnRow{
+  display:flex;
+  gap: 10px;
+}
+
+.btn{
+  appearance:none;
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(255,255,255,.08);
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-weight: 800;
+  cursor:pointer;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+}
+.btn:hover{ background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.22); }
+.btn:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+}
+
+@media (max-width: 920px){
+  .main{
+    grid-template-columns: 1fr;
+    padding-bottom: 86px;
+  }
+  :root{ --sidebarW: 1fr; }
+  .canvasWrap{ min-height: 46vh; }
+}

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Intro • Topological Graph Theory</title>
+  <link rel="stylesheet" href="base.css" />
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div class="brand">Topological Graph Theory</div>
+    <div class="crumb">/ A Visual Introduction to Topology</div>
+  </div>
+
+  <div class="main">
+    <section class="panel dialog" aria-label="Dialog panel">
+      <div class="dialog-head">
+        <div>
+          <h2 class="h-title">A Visual Introduction to Topology</h2>
+          <p class="h-sub">Read the explanation on the left, explore the visualization on the right.</p>
+        </div>
+        <span class="badge">Module 1</span>
+      </div>
+
+      <div class="dialog-body">
+        <div data-step="0">
+          <h3>Step 1 — What is “topology”?</h3>
+          <p>
+            Topology studies properties that stay the same under continuous deformation
+            (stretching/bending, but no cutting or gluing).
+          </p>
+          <p>
+            You’ll later connect this to graphs drawn on surfaces.
+          </p>
+        </div>
+
+        <div data-step="1" style="display:none">
+          <h3>Step 2 — Surfaces (orientable vs. nonorientable)</h3>
+          <p>
+            Orientable examples: sphere, torus. Nonorientable examples: Möbius strip, Klein bottle (as a model).
+          </p>
+        </div>
+
+        <div data-step="2" style="display:none">
+          <h3>Step 3 — Homeomorphism + genus</h3>
+          <p>
+            Two shapes are “the same topologically” if there is a homeomorphism between them.
+            Genus counts “handles” (roughly) for orientable surfaces.
+          </p>
+          <p>
+            Later you’ll use genus ideas to understand embeddings of graphs beyond the plane.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel canvasWrap" aria-label="Visualization area">
+      <div class="canvasHead">
+        <span class="badge">Three.js Visualization</span>
+        <span class="badge">Placeholder scene (swap later)</span>
+      </div>
+      <div class="canvasArea">
+        <canvas id="viz"></canvas>
+      </div>
+    </section>
+  </div>
+
+  <div class="bottomNav" role="navigation" aria-label="Prev next navigation">
+    <div class="navInner">
+      <div id="progress" class="progress">Step 1 / 3</div>
+      <div class="btnRow">
+        <button id="prevBtn" class="btn" type="button">← Prev</button>
+        <button id="nextBtn" class="btn" type="button">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="intro.js"></script>
+</body>
+</html>

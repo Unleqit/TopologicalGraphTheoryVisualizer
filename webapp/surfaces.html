@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Surfaces • Topological Graph Theory</title>
+  <link rel="stylesheet" href="base.css" />
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div class="brand">Topological Graph Theory</div>
+    <div class="crumb">/ Extending to other surfaces</div>
+  </div>
+
+  <div class="main">
+    <section class="panel dialog" aria-label="Dialog panel">
+      <div class="dialog-head">
+        <div>
+          <h2 class="h-title">Extending to other surfaces</h2>
+          <p class="h-sub">Construct surfaces by gluing square edges, then study embeddings there.</p>
+        </div>
+        <span class="badge">Module 3</span>
+      </div>
+
+      <div class="dialog-body">
+        <div data-step="0">
+          <h3>Step 1 — Gluing edges of a square</h3>
+          <p>
+            Edge identifications can create surfaces like a torus or projective plane (depending on orientation).
+          </p>
+        </div>
+
+        <div data-step="1" style="display:none">
+          <h3>Step 2 — Build common surfaces</h3>
+          <p>
+            Sphere (planar case), torus (one handle), double torus (two handles), and more.
+          </p>
+        </div>
+
+        <div data-step="2" style="display:none">
+          <h3>Step 3 — Visualize embeddings on surfaces</h3>
+          <p>
+            The same graph can behave differently depending on the surface (genus matters).
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel canvasWrap" aria-label="Visualization area">
+      <div class="canvasHead">
+        <span class="badge">Three.js Visualization</span>
+        <span class="badge">Placeholder scene (swap later)</span>
+      </div>
+      <div class="canvasArea">
+        <canvas id="viz"></canvas>
+      </div>
+    </section>
+  </div>
+
+  <div class="bottomNav" role="navigation" aria-label="Prev next navigation">
+    <div class="navInner">
+      <div id="progress" class="progress">Step 1 / 3</div>
+      <div class="btnRow">
+        <button id="prevBtn" class="btn" type="button">← Prev</button>
+        <button id="nextBtn" class="btn" type="button">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="common.js"></script>
+</body>
+</html>
