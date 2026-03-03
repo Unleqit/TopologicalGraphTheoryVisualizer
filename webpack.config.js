@@ -2,31 +2,27 @@ import path from 'path';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import { fileURLToPath } from 'url';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
-import CopyWebpackPlugin from 'copy-webpack-plugin';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default {
-  mode: 'development',
+  mode: 'development', // or 'development' if needed
   entry: {
     index: './src/script.ts',
-    intro: './src/intro.ts',
+    intro: './src/pages/intro.ts',
     planarity: './src/planarity.ts',
-    surfaces: './src/common.ts',
+    surfaces: './src/pages/surfaces.ts',
   },
-
   output: {
     filename: '[name].bundle.js',
     path: path.resolve(__dirname, 'dist'),
+    publicPath: '/', // absolute paths for all assets
     clean: true,
-    devtoolModuleFilenameTemplate: (info) => `webpack://webapp/${info.resourcePath}`,
   },
-
   resolve: {
     extensions: ['.ts', '.js'],
   },
-
   module: {
     rules: [
       {
@@ -38,41 +34,41 @@ export default {
         test: /\.css$/i,
         use: [MiniCssExtractPlugin.loader, 'css-loader'],
       },
+      {
+        test: /\.py$/,
+        type: 'asset/source',
+      },
     ],
   },
-
   plugins: [
+    new MiniCssExtractPlugin({
+      filename: '[name].css', // one CSS file per entry
+    }),
     new HtmlWebpackPlugin({
       filename: 'index.html',
       template: './public/index.html',
       chunks: ['index'],
+      inject: 'body',
     }),
     new HtmlWebpackPlugin({
       filename: 'intro.html',
       template: './public/intro.html',
       chunks: ['intro'],
+      inject: 'body',
     }),
     new HtmlWebpackPlugin({
       filename: 'planarity.html',
       template: './public/planarity.html',
       chunks: ['planarity'],
+      inject: 'body',
     }),
     new HtmlWebpackPlugin({
       filename: 'surfaces.html',
       template: './public/surfaces.html',
       chunks: ['surfaces'],
-    }),
-    new MiniCssExtractPlugin({
-      filename: '[name].css',
-    }),
-    new CopyWebpackPlugin({
-      patterns: [
-        { from: 'src/layout_computation.py', to: '' }, // copies to dist/
-      ],
+      inject: 'body',
     }),
   ],
-
-  watch: true,
   devtool: 'source-map',
-  cache: false,
+  watch: false, // set to true for development
 };

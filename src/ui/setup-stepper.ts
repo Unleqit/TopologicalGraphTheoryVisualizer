@@ -1,28 +1,6 @@
-// common.ts
-export const MODULE_ORDER: string[] = ['intro.html', 'planarity.html', 'surfaces.html'];
-
-// Clamp a number between a and b
-export function clamp(n: number, a: number, b: number): number {
-  return Math.max(a, Math.min(b, n));
-}
-
-// Query selector helper
-export function qs<T extends Element = Element>(sel: string, root: Document | Element = document): T | null {
-  return root.querySelector<T>(sel);
-}
-
-// Get index of current module in MODULE_ORDER
-export function getModuleIndex(): number {
-  const file = location.pathname.split('/').pop() || 'intro.html';
-  const idx = MODULE_ORDER.indexOf(file);
-  return idx >= 0 ? idx : 0;
-}
-
-// Navigate to a module by index
-export function gotoModule(index: number): void {
-  const safe = clamp(index, 0, MODULE_ORDER.length - 1);
-  window.location.href = MODULE_ORDER[safe];
-}
+import { qs } from './dom';
+import { getModuleIndex, gotoModule, MODULE_ORDER } from './navigation';
+import { clamp } from './utils';
 
 // Setup stepper UI
 export function setupStepper(): { getStep: () => number; setStep: (s: number) => void; totalSteps: number } {

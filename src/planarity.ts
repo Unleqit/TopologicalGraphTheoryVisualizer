@@ -1,10 +1,11 @@
-import './base.css';
-import './styles.css';
+import './styles/base.css';
+import './styles/styles.css';
 
 import * as THREE from 'three';
-import { setupStepper } from './common';
 import { computeLayout } from './pyodide-layout';
-import { Edge, Node } from './graphWorker';
+import { setupStepper } from './ui/setup-stepper';
+import { GraphEdge } from './graph/graph-edge';
+import { GraphNode } from './graph/graph.node';
 
 const stepper = setupStepper();
 const canvas = document.getElementById('viz')!;
@@ -88,7 +89,7 @@ loadGraph();
    STEP 1 : Raw embedding from JSON
 ============================================================ */
 
-function renderRawGraph(nodes: Node[], edges: Edge[]): void {
+function renderRawGraph(nodes: GraphNode[], edges: GraphEdge[]): void {
   graphGroup.clear();
 
   const nodeMap = new Map();
