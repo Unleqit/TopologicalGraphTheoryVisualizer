@@ -40,7 +40,7 @@ Below is the purpose of the different folders:
 
 ---
 
-## Installation & Debugging
+## Setting up a development environment
 
 The following lines assume you already have `node` installed on your system. If not, install it via your distro's package manager (Linux) or by installing a node version manager (e.g. `nvm`) in Windows.
 
@@ -60,3 +60,19 @@ npm run dev
 
 After that, press F5 to start the project in your preferred browser (there are launch configurations available for Firefox and Chrome).
 Breakpoints should work out of the box.
+
+# Running the application
+
+You don't need to have `node` installed to just run the app and view its contents, but this way you won't be able to make changes.
+For this, navigate into the `dist` folder in the project root and serve its contents via a local webserver.
+
+You may use `serve` (npm module) or `http.server` from python for this, although there are other alternatives.
+
+Example usage:
+
+- `python -m http.server 8080`
+- `serve . -l 8080`
+
+After running this command, open your browser and navigate to `http://localhost:8080`.
+
+Note: Do NOT just open the index.html (or any other .html file) directly with your browser; this will not work, as WebGL and WebAssembly, which our app is reliant upon, are usually prohibited file urls.
