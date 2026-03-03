@@ -9,9 +9,9 @@ const __dirname = path.dirname(__filename);
 export default {
   mode: 'development', // or 'development' if needed
   entry: {
-    index: './src/script.ts',
+    index: './src/pages/index.ts',
     intro: './src/pages/intro.ts',
-    planarity: './src/planarity.ts',
+    planarity: './src/pages/planarity.ts',
     surfaces: './src/pages/surfaces.ts',
   },
   output: {
@@ -27,7 +27,17 @@ export default {
     rules: [
       {
         test: /\.ts$/,
-        use: 'ts-loader',
+        use: [
+          {
+            loader: 'ts-loader',
+            options: {
+              compilerOptions: {
+                sourceMap: true,
+                inlineSources: true,
+              },
+            },
+          },
+        ],
         exclude: /node_modules/,
       },
       {

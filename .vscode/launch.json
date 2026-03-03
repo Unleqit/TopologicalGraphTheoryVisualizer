@@ -6,10 +6,14 @@
       "type": "firefox",
       "request": "launch",
       "url": "http://localhost:3000/index.html",
-      "webRoot": "${workspaceFolder}/dist",
+      "webRoot": "${workspaceFolder}/src",
       "pathMappings": [
         {
-          "url": "webpack://webapp/",
+          "url": "webpack://planarity/src",
+          "path": "${workspaceFolder}/src"
+        },
+        {
+          "url": "webpack:///",
           "path": "${workspaceFolder}"
         }
       ],
@@ -20,10 +24,10 @@
       "type": "chrome",
       "request": "launch",
       "url": "http://localhost:3000/index.html",
-      "webRoot": "${workspaceFolder}/dist",
+      "webRoot": "${workspaceFolder}",
       "sourceMaps": true,
       "sourceMapPathOverrides": {
-        "webpack:///*": "${workspaceFolder}/*"
+        "webpack:///./*": "${workspaceFolder}/*"
       }
     }
   ]

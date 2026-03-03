@@ -6,7 +6,7 @@ export class GraphLayoutService {
   private pending = new Map<number, (r: GraphEmbeddingResult) => void>();
 
   constructor() {
-    this.worker = new Worker(new URL('./worker/layout-worker.ts', import.meta.url), { type: 'module' });
+    this.worker = new Worker(new URL('./layout-worker.ts', import.meta.url), { type: 'module' });
 
     this.worker.onmessage = (e: MessageEvent) => {
       const { id, result } = e.data;
