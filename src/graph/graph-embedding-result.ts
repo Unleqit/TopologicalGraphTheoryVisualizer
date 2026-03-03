@@ -5,4 +5,5 @@ export type GraphEmbeddingResult = {
   planar: boolean;
   nodes: GraphNode[];
   edges: GraphEdge[];
+  canonical_ordering: any;
 };

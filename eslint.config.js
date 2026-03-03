@@ -23,7 +23,7 @@ export default defineConfig([
       '@typescript-eslint': tseslint.plugin,
     },
     rules: {
-      eqeqeq: ['warn', 'always'],
+      eqeqeq: ['warn', 'smart'],
       curly: ['error', 'all'],
       semi: ['error', 'always'],
       'no-multi-spaces': 'warn',

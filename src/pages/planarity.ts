@@ -46,8 +46,13 @@ setupTabs(tabs, modes, ui.setMode);
 
 // ---------------- Default Graph ----------------
 async function initDefaultGraph(): Promise<void> {
-  const { nodes, edges } = await loadDefaultGraph();
-  renderRawGraph(graphGroup, nodes, edges);
+  const result = await loadDefaultGraph();
+
+  if (!result) {
+    return;
+  }
+
+  renderRawGraph(graphGroup, result.nodes, result.edges);
   sphere.visible = false;
   graphGroup.visible = true;
   centerGroup(graphGroup, camera);

@@ -4,6 +4,8 @@ import { matrixToEdgeList } from '../graph/graph-utils';
 import { graphLayoutService } from '../layout/index';
 import { renderRawGraph } from '../scenes/graph-scene';
 import { centerGroup } from '../threejs/camera';
+import { combinatorialEmbeddingToPos } from '../algorithms/chrobak-payne/chrobak-payne';
+import { GraphNode } from '../graph/graph.node';
 
 export interface GraphUIOptions {
   graphMatrixInput: HTMLTextAreaElement;
@@ -18,7 +20,7 @@ export interface GraphUIOptions {
 
 export function setupGraphUI(opts: GraphUIOptions): { setMode: (mode: 'matrix' | 'list') => 'matrix' | 'list'; getGraphData: () => GraphEmbeddingResult | null } {
   let currentMode: 'matrix' | 'list' = 'matrix';
-  let graphData: GraphEmbeddingResult | null = null;
+  const graphData: GraphEmbeddingResult | null = null;
 
   async function loadGraphFromInput(): Promise<void> {
     opts.statusEl.textContent = '';
@@ -99,16 +101,18 @@ export function setupGraphUI(opts: GraphUIOptions): { setMode: (mode: 'matrix' |
 
       opts.statusEl.textContent = 'Computing layout...';
       const { nodeCount, edges } = matrixToEdgeList(matrix);
-      const res = await graphLayoutService.compute(edges, nodeCount);
-      graphData = res;
+      const layout = await graphLayoutService.compute(edges, nodeCount);
 
-      if (!graphData.planar) {
+      if (!layout.planar) {
         opts.statusEl.textContent = 'Planar: ✗';
         opts.statusEl.className = 'statusText error';
         return;
       }
 
-      renderRawGraph(opts.graphGroup, graphData.nodes, graphData.edges);
+      const result = combinatorialEmbeddingToPos(layout.canonical_ordering);
+      const nodes = Object.entries(result).map(([id, [x, y]]): GraphNode => ({ id: parseInt(id), x, y }));
+
+      renderRawGraph(opts.graphGroup, nodes, edges);
       opts.sphere.visible = false;
       opts.graphGroup.visible = true;
       centerGroup(opts.graphGroup, opts.camera);
