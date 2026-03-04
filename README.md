@@ -1,9 +1,13 @@
 # Planarity & Graph Embedding Visualization
 
-A web-based interactive module for **topological graph theory**, allowing users to:
+A web-based interactive module for **topological graph theory**
+
+- Check it out live at https://unleqit.github.io/TopologicalGraphTheoryVisualizer
+
+Core features of the project include:
 
 - Test whether a graph is **planar** (Boyer–Myrvold algorithm).
-- Compute a **planar embedding/layout** if possible.
+- Compute a **planar embedding/layout** if possible (Chrobak–Payne algorithm).
 - Visualize graphs using **Three.js**.
 - Input graphs via **adjacency matrices** or **adjacency lists**.
 
@@ -25,7 +29,7 @@ This project is built with **TypeScript**, **Three.js**, and **Pyodide**.
 
 As we intend for this app to be hostable and runnable in as many environments as possible, we did not create a dedicated backend for the app, but rather baked the whole business and application logic into this web app.
 
-Below is the purpose of the different folders:
+Below is the purpose of the different folders (TODO: change to fix new structure):
 
 - `dist`: This is where the bundled outputs go, which will be served to your browser
 - `node_modules`: node_modules
@@ -60,19 +64,8 @@ npm run dev
 
 After that, press F5 to start the project in your preferred browser (there are launch configurations available for Firefox and Chrome).
 Breakpoints should work out of the box.
+Due to lack of testing devices, configurations for other browsers such as Safari will not be provided.
 
-# Running the application
+# Licensing
 
-You don't need to have `node` installed to just run the app and view its contents, but this way you won't be able to make changes.
-For this, navigate into the `dist` folder in the project root and serve its contents via a local webserver.
-
-You may use `serve` (npm module) or `http.server` from python for this, although there are other alternatives.
-
-Example usage:
-
-- `python -m http.server 8080`
-- `serve . -l 8080`
-
-After running this command, open your browser and navigate to `http://localhost:8080`.
-
-Note: Do NOT just open the index.html (or any other .html file) directly with your browser; this will not work, as WebGL and WebAssembly, which our app is reliant upon, are usually prohibited file urls.
+See `LICENSE/THIRD_PARTY.txt` for third party licenses (currently: small part of `networkx` Python module v2.7.1 source code, which can be found [here](https://networkx.org/documentation/networkx-2.7.1/_modules/networkx/algorithms/planar_drawing.html) ).
