@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "webapp/index.html",
   "scripts": {
-    "build": "webpack --mode production",
+    "build": "webpack --config webpack.prod.js",
     "watch": "webpack --mode development --watch",
     "serve": "browser-sync start --server dist --files \"dist/**/*\" --port 3000 --no-open",
     "dev": "concurrently \"npm run watch\" \"npm run serve\""
