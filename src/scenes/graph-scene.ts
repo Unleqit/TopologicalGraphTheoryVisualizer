@@ -2,6 +2,16 @@ import * as THREE from 'three';
 import { GraphEdge } from '../graph/graph-edge';
 import { GraphNode } from '../graph/graph.node';
 import { createNodeCircle } from '../threejs/shapes/node-circle';
+import { centerGroup } from '../threejs/camera';
+import { GraphEmbeddingStepResult } from '../graph/graph-embedding-result';
+
+export async function renderRawGraphStepWise(group: THREE.Group, camera: THREE.PerspectiveCamera, stepResult: GraphEmbeddingStepResult, stepMs: number = 250): Promise<void> {
+  for (let i = 0; i < stepResult.nodes.length; ++i) {
+    renderRawGraph(group, stepResult.nodes[i], stepResult.edges[i]);
+    centerGroup(group, camera);
+    await new Promise((r) => setTimeout(r, stepMs));
+  }
+}
 
 export function renderRawGraph(group: THREE.Group, nodes: GraphNode[], edges: GraphEdge[]): void {
   group.clear();

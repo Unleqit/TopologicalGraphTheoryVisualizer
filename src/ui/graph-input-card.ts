@@ -2,10 +2,11 @@ import * as THREE from 'three';
 import { GraphEmbeddingResult } from '../graph/graph-embedding-result';
 import { matrixToEdgeList } from '../graph/graph-utils';
 import { graphLayoutService } from '../layout/index';
-import { renderRawGraph } from '../scenes/graph-scene';
+import { renderRawGraph, renderRawGraphStepWise } from '../scenes/graph-scene';
 import { centerGroup } from '../threejs/camera';
 import { combinatorialEmbeddingToPos } from '../algorithms/chrobak-payne/chrobak-payne';
 import { GraphNode } from '../graph/graph.node';
+import { combinatorialEmbeddingToPosStepWise } from '../algorithms/chrobak-payne/chrobak-payne-step-wise';
 
 export interface GraphUIOptions {
   graphMatrixInput: HTMLTextAreaElement;
@@ -109,15 +110,13 @@ export function setupGraphUI(opts: GraphUIOptions): { setMode: (mode: 'matrix' |
         return;
       }
 
-      const result = combinatorialEmbeddingToPos(layout.canonical_ordering);
-      const nodes = Object.entries(result).map(([id, [x, y]]): GraphNode => ({ id: parseInt(id), x, y }));
-
-      renderRawGraph(opts.graphGroup, nodes, edges);
       opts.sphere.visible = false;
       opts.graphGroup.visible = true;
-      centerGroup(opts.graphGroup, opts.camera);
-      opts.stepper.setStep(1);
 
+      const result = combinatorialEmbeddingToPosStepWise(edges, layout.canonical_ordering);
+      renderRawGraphStepWise(opts.graphGroup, opts.camera, result, 250);
+
+      opts.stepper.setStep(1);
       opts.statusEl.textContent = 'Planar: ✓';
       opts.statusEl.className = 'statusText ok';
     } catch (err) {

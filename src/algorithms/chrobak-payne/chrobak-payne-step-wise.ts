@@ -1,4 +1,8 @@
-export function combinatorialEmbeddingToPos2(nodeLists: [number, number[]][]): Record<number, [number, number]>[] {
+import { GraphEdge } from '../../graph/graph-edge';
+import { GraphEmbeddingStepResult } from '../../graph/graph-embedding-result';
+import { GraphNode } from '../../graph/graph.node';
+
+export function combinatorialEmbeddingToPosStepWise(edges: GraphEdge[], nodeLists: [number, number[]][]): GraphEmbeddingStepResult {
   const steps: Record<number, [number, number]>[] = [];
 
   if (nodeLists.length < 4) {
@@ -14,7 +18,8 @@ export function combinatorialEmbeddingToPos2(nodeLists: [number, number[]][]): R
     });
 
     steps.push({ ...pos });
-    return steps;
+    const result = steps2GraphEmbeddingstepResult(edges, steps);
+    return result;
   }
 
   const leftTChild: Record<number, number | null> = {};
@@ -82,7 +87,18 @@ export function combinatorialEmbeddingToPos2(nodeLists: [number, number[]][]): R
     steps.push(computeAbsoluteSnapshot(v1, leftTChild, rightTChild, deltaX, yCoordinate));
   }
 
-  return steps;
+  const result = steps2GraphEmbeddingstepResult(edges, steps);
+  return result;
+}
+
+function steps2GraphEmbeddingstepResult(edges: GraphEdge[], steps: Record<number, [number, number]>[]): GraphEmbeddingStepResult {
+  const nodeSteps = steps.map((step) => Object.entries(step).map(([id, [x, y]]): GraphNode => ({ id: parseInt(id), x, y })));
+  const edgeSteps = nodeSteps.map((nodes) => {
+    const idSet = new Set(nodes.map((n) => n.id));
+    return edges.filter(([u, v]) => idSet.has(u) && idSet.has(v));
+  });
+
+  return { planar: true, nodes: nodeSteps, edges: edgeSteps };
 }
 
 function computeAbsoluteSnapshot(

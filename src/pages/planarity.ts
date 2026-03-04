@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { createCamera, centerGroup } from '../threejs/camera';
 import { createRenderer } from '../threejs/renderer';
 import { loadDefaultGraph } from '../layout/load-default-graph';
-import { renderRawGraph } from '../scenes/graph-scene';
+import { renderRawGraph, renderRawGraphStepWise } from '../scenes/graph-scene';
 import { createSphere } from '../threejs/shapes/sphere';
 import { setupGraphUI, setupTabs } from '../ui/graph-input-card';
 import { setupStepper } from '../ui/setup-stepper';
@@ -48,17 +48,15 @@ setupTabs(tabs, modes, ui.setMode);
 async function initDefaultGraph(): Promise<void> {
   const result = await loadDefaultGraph();
 
+  //skip planarity check, as default graph is static and guaranteed to be planar
   if (!result) {
     return;
   }
 
-  for (let i = 0; i < result.nodes.length; ++i) {
-    renderRawGraph(graphGroup, result.nodes[i], result.edges[i]);
-    sphere.visible = false;
-    graphGroup.visible = true;
-    centerGroup(graphGroup, camera);
-    await new Promise((r) => setTimeout(r, 250));
-  }
+  sphere.visible = false;
+  graphGroup.visible = true;
+
+  renderRawGraphStepWise(graphGroup, camera, result, 250);
 }
 initDefaultGraph();
 
