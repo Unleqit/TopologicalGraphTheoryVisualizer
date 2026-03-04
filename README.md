@@ -68,4 +68,4 @@ Due to lack of testing devices, configurations for other browsers such as Safari
 
 # Licensing
 
-See `LICENSE/THIRD_PARTY.txt` for third party licenses (currently: `networkx` Python module v2.7.1).
+See `LICENSE/THIRD_PARTY.txt` for third party licenses (currently: small part of `networkx` Python module v2.7.1 source code, which can be found [here](https://networkx.org/documentation/networkx-2.7.1/_modules/networkx/algorithms/planar_drawing.html) ).
