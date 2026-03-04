@@ -52,10 +52,13 @@ async function initDefaultGraph(): Promise<void> {
     return;
   }
 
-  renderRawGraph(graphGroup, result.nodes, result.edges);
-  sphere.visible = false;
-  graphGroup.visible = true;
-  centerGroup(graphGroup, camera);
+  for (let i = 0; i < result.nodes.length; ++i) {
+    renderRawGraph(graphGroup, result.nodes[i], result.edges[i]);
+    sphere.visible = false;
+    graphGroup.visible = true;
+    centerGroup(graphGroup, camera);
+    await new Promise((r) => setTimeout(r, 250));
+  }
 }
 initDefaultGraph();
 

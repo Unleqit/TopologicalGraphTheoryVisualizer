@@ -7,3 +7,9 @@ export type GraphEmbeddingResult = {
   edges: GraphEdge[];
   canonical_ordering: any;
 };
+
+export type GraphEmbeddingStepResult = {
+  planar: boolean;
+  nodes: GraphNode[][];
+  edges: GraphEdge[][];
+};
