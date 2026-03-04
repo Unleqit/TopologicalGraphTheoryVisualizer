@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { createCamera, centerGroup } from '../threejs/camera';
 import { createRenderer } from '../threejs/renderer';
 import { loadDefaultGraph } from '../layout/load-default-graph';
-import { renderRawGraph, renderRawGraphStepWise } from '../scenes/graph-scene';
+import { renderRawGraphStepWise } from '../scenes/graph-scene';
 import { createSphere } from '../threejs/shapes/sphere';
 import { setupGraphUI, setupTabs } from '../ui/graph-input-card';
 import { setupStepper } from '../ui/setup-stepper';

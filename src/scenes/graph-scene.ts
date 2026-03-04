@@ -3,7 +3,7 @@ import { GraphEdge } from '../graph/graph-edge';
 import { GraphNode } from '../graph/graph.node';
 import { createNodeCircle } from '../threejs/shapes/node-circle';
 import { centerGroup } from '../threejs/camera';
-import { GraphEmbeddingStepResult } from '../graph/graph-embedding-result';
+import { GraphEmbeddingStepResult } from '../graph/graph-embedding-step-result';
 
 export async function renderRawGraphStepWise(group: THREE.Group, camera: THREE.PerspectiveCamera, stepResult: GraphEmbeddingStepResult, stepMs: number = 250): Promise<void> {
   for (let i = 0; i < stepResult.nodes.length; ++i) {

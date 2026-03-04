@@ -1,9 +1,9 @@
-import { GraphEmbeddingResult } from '../graph/graph-embedding-result';
+import { GraphEmbeddingPythonResult } from '../graph/graph-embedding-python-result';
 
 export class GraphLayoutService {
   private worker: Worker;
   private nextId = 0;
-  private pending = new Map<number, (r: GraphEmbeddingResult) => void>();
+  private pending = new Map<number, (r: GraphEmbeddingPythonResult) => void>();
 
   constructor() {
     this.worker = new Worker(new URL('./layout-worker.ts', import.meta.url), { type: 'module' });
@@ -18,7 +18,7 @@ export class GraphLayoutService {
     };
   }
 
-  compute(edges: [number, number][], nodeCount: number): Promise<GraphEmbeddingResult> {
+  compute(edges: [number, number][], nodeCount: number): Promise<GraphEmbeddingPythonResult> {
     return new Promise((resolve) => {
       const id = this.nextId++;
       this.pending.set(id, resolve);

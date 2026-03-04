@@ -47,6 +47,13 @@ export default defineConfig([
       ],
       '@typescript-eslint/no-explicit-any': ['warn'],
       '@typescript-eslint/no-non-null-assertion': ['warn'],
+      'import/no-unused-modules': [
+        'error',
+        {
+          unusedExports: true,
+          missingExports: false,
+        },
+      ],
     },
   },
 ]);

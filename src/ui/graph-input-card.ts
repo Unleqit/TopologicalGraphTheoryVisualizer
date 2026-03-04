@@ -1,11 +1,7 @@
 import * as THREE from 'three';
-import { GraphEmbeddingResult } from '../graph/graph-embedding-result';
 import { matrixToEdgeList } from '../graph/graph-utils';
 import { graphLayoutService } from '../layout/index';
-import { renderRawGraph, renderRawGraphStepWise } from '../scenes/graph-scene';
-import { centerGroup } from '../threejs/camera';
-import { combinatorialEmbeddingToPos } from '../algorithms/chrobak-payne/chrobak-payne';
-import { GraphNode } from '../graph/graph.node';
+import { renderRawGraphStepWise } from '../scenes/graph-scene';
 import { combinatorialEmbeddingToPosStepWise } from '../algorithms/chrobak-payne/chrobak-payne-step-wise';
 
 export interface GraphUIOptions {
@@ -19,9 +15,8 @@ export interface GraphUIOptions {
   stepper: ReturnType<typeof import('./setup-stepper').setupStepper>;
 }
 
-export function setupGraphUI(opts: GraphUIOptions): { setMode: (mode: 'matrix' | 'list') => 'matrix' | 'list'; getGraphData: () => GraphEmbeddingResult | null } {
+export function setupGraphUI(opts: GraphUIOptions): { setMode: (mode: 'matrix' | 'list') => 'matrix' | 'list' } {
   let currentMode: 'matrix' | 'list' = 'matrix';
-  const graphData: GraphEmbeddingResult | null = null;
 
   async function loadGraphFromInput(): Promise<void> {
     opts.statusEl.textContent = '';
@@ -102,9 +97,9 @@ export function setupGraphUI(opts: GraphUIOptions): { setMode: (mode: 'matrix' |
 
       opts.statusEl.textContent = 'Computing layout...';
       const { nodeCount, edges } = matrixToEdgeList(matrix);
-      const layout = await graphLayoutService.compute(edges, nodeCount);
+      const embeddingResult = await graphLayoutService.compute(edges, nodeCount);
 
-      if (!layout.planar) {
+      if (!embeddingResult.planar) {
         opts.statusEl.textContent = 'Planar: ✗';
         opts.statusEl.className = 'statusText error';
         return;
@@ -113,7 +108,7 @@ export function setupGraphUI(opts: GraphUIOptions): { setMode: (mode: 'matrix' |
       opts.sphere.visible = false;
       opts.graphGroup.visible = true;
 
-      const result = combinatorialEmbeddingToPosStepWise(edges, layout.canonical_ordering);
+      const result = combinatorialEmbeddingToPosStepWise(edges, embeddingResult.canonical_ordering);
       renderRawGraphStepWise(opts.graphGroup, opts.camera, result, 250);
 
       opts.stepper.setStep(1);
@@ -129,7 +124,6 @@ export function setupGraphUI(opts: GraphUIOptions): { setMode: (mode: 'matrix' |
 
   return {
     setMode: (mode: 'matrix' | 'list') => (currentMode = mode),
-    getGraphData: () => graphData,
   };
 }
 

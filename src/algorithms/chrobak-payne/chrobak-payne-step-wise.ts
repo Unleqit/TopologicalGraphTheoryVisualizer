@@ -1,8 +1,9 @@
+import { GraphCanonicalOrdering } from '../../graph/graph-canonical-ordering';
 import { GraphEdge } from '../../graph/graph-edge';
-import { GraphEmbeddingStepResult } from '../../graph/graph-embedding-result';
+import { GraphEmbeddingStepResult } from '../../graph/graph-embedding-step-result';
 import { GraphNode } from '../../graph/graph.node';
 
-export function combinatorialEmbeddingToPosStepWise(edges: GraphEdge[], nodeLists: [number, number[]][]): GraphEmbeddingStepResult {
+export function combinatorialEmbeddingToPosStepWise(edges: GraphEdge[], nodeLists: GraphCanonicalOrdering): GraphEmbeddingStepResult {
   const steps: Record<number, [number, number]>[] = [];
 
   if (nodeLists.length < 4) {
@@ -18,7 +19,7 @@ export function combinatorialEmbeddingToPosStepWise(edges: GraphEdge[], nodeList
     });
 
     steps.push({ ...pos });
-    const result = steps2GraphEmbeddingstepResult(edges, steps);
+    const result = steps2GraphEmbeddingStepResult(edges, steps);
     return result;
   }
 
@@ -47,7 +48,6 @@ export function combinatorialEmbeddingToPosStepWise(edges: GraphEdge[], nodeList
   rightTChild[v3] = v2;
   leftTChild[v3] = null;
 
-  // 🔥 Capture initial triangle layout
   steps.push(computeAbsoluteSnapshot(v1, leftTChild, rightTChild, deltaX, yCoordinate));
 
   // ---- Phase 1 ----
@@ -83,15 +83,14 @@ export function combinatorialEmbeddingToPosStepWise(edges: GraphEdge[], nodeList
       rightTChild[wq1] = null;
     }
 
-    // 🔥 Capture snapshot after this insertion
     steps.push(computeAbsoluteSnapshot(v1, leftTChild, rightTChild, deltaX, yCoordinate));
   }
 
-  const result = steps2GraphEmbeddingstepResult(edges, steps);
+  const result = steps2GraphEmbeddingStepResult(edges, steps);
   return result;
 }
 
-function steps2GraphEmbeddingstepResult(edges: GraphEdge[], steps: Record<number, [number, number]>[]): GraphEmbeddingStepResult {
+function steps2GraphEmbeddingStepResult(edges: GraphEdge[], steps: Record<number, [number, number]>[]): GraphEmbeddingStepResult {
   const nodeSteps = steps.map((step) => Object.entries(step).map(([id, [x, y]]): GraphNode => ({ id: parseInt(id), x, y })));
   const edgeSteps = nodeSteps.map((nodes) => {
     const idSet = new Set(nodes.map((n) => n.id));
