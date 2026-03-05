@@ -3,6 +3,7 @@ import '../styles/base.css';
 import * as THREE from 'three';
 import { createCamera } from '../threejs/camera';
 import { createRenderer } from '../threejs/renderer';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { loadDefaultGraph } from '../layout/load-default-graph';
 import { renderRawGraphStepWise } from '../scenes/graph-scene';
 import { setupGraphUI, setupTabs } from '../ui/graph-input-card';
@@ -14,6 +15,16 @@ const canvas = document.getElementById('viz') as HTMLCanvasElement;
 const renderer = createRenderer(canvas);
 const scene = new THREE.Scene();
 const camera = createCamera();
+
+// --- Orbit Controls ---
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; // smooth motion
+controls.dampingFactor = 0.05;
+controls.zoomSpeed = 1.2;
+controls.panSpeed = 1.0;
+controls.screenSpacePanning = false; // pan relative to camera
+controls.enableRotate = true; // allow rotation
+controls.enableZoom = true; // allow zooming
 
 scene.add(new THREE.AmbientLight(0xffffff, 0.6));
 const dir = new THREE.DirectionalLight(0xffffff, 0.9);
@@ -72,6 +83,7 @@ function tick(t: number): void {
   if (cur !== lastStep) {
     lastStep = cur;
   }
+  controls.update();
   renderer.render(scene, camera);
   requestAnimationFrame(tick);
 }
