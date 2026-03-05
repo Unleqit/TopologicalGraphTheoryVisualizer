@@ -1,5 +1,4 @@
 import '../styles/base.css';
-import '../styles/styles.css';
 import { IntroScene } from '../scenes/intro-scene';
 import { createCamera } from '../threejs/camera';
 import { addDefaultLights } from '../threejs/lights';

@@ -1,5 +1,4 @@
 import '../styles/base.css';
-import '../styles/styles.css';
 
 import * as THREE from 'three';
 import { createCamera } from '../threejs/camera';
