@@ -119,7 +119,26 @@
                 </script>
 
                 <!-- LIST MODE -->
-                <div class="graphMode" data-mode="list">
+                <div class="graphMode" data-mode="list" style="position: relative">
+                  <!-- Highlight overlay -->
+                  <pre
+                    id="matrixHighlight2"
+                    style="
+                      position: absolute;
+                      top: -16px;
+                      left: 0px;
+                      padding: 0.75rem;
+                      font-family: monospace;
+                      color: gray;
+                      pointer-events: none;
+                      white-space: pre;
+                      line-height: 1.5;
+                      width: 100%;
+                      height: 100%;
+                      box-sizing: border-box;
+                      overflow: hidden;
+                    "
+                  ></pre>
                   <textarea
                     id="graphList"
                     class="matrixInput"
@@ -128,8 +147,56 @@
 0: 1 2
 1: 0 2
 2: 0 1"
-                  ></textarea>
+                    style="
+                      position: absolute;
+                      left: 0px;
+                      top: 0px;
+                      background: transparent;
+                      color: white;
+                      caret-color: white;
+                      font-family: monospace;
+                      line-height: 1.5;
+                      padding: 0.3rem 0 0 1.8rem;
+                      width: 100%;
+                      height: 100%;
+                      box-sizing: border-box;
+                      resize: none;
+                      overflow: auto;
+                    "
+                  >
+0 1 0
+1 0 1
+0 1 0</textarea
+                  >
                 </div>
+                <script>
+                  const textarea2 = document.getElementById('graphList');
+                  const highlight2 = document.getElementById('matrixHighlight2');
+
+                  function updateHighlight2() {
+                    const lines = textarea2.value.split('\n').filter((line) => line !== undefined);
+                    if (lines.length === 0) {
+                      highlight2.textContent = '';
+                      return;
+                    }
+
+                    // Row numbers + original line
+                    const numberedLines = lines.map((line, i) => `${i}: `);
+
+                    // Put it all together
+                    highlight2.textContent = numberedLines.join('\n');
+                  }
+
+                  // Initial render
+                  updateHighlight2();
+
+                  // Sync overlay with textarea on input & scroll
+                  textarea2.addEventListener('input', updateHighlight2);
+                  textarea2.addEventListener('scroll', () => {
+                    highlight2.scrollTop = textarea2.scrollTop;
+                    highlight2.scrollLeft = textarea2.scrollLeft;
+                  });
+                </script>
 
                 <div class="graphActions">
                   <button id="loadGraphBtn" class="btn primary" type="button">▶ Test & Embed</button>
