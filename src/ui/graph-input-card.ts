@@ -10,7 +10,6 @@ export interface GraphUIOptions {
   loadGraphBtn: HTMLButtonElement;
   statusEl: HTMLElement;
   graphGroup: THREE.Group;
-  sphere: THREE.Object3D;
   camera: THREE.PerspectiveCamera;
   stepper: ReturnType<typeof import('./setup-stepper').setupStepper>;
 }
@@ -105,7 +104,6 @@ export function setupGraphUI(opts: GraphUIOptions): { setMode: (mode: 'matrix' |
         return;
       }
 
-      opts.sphere.visible = false;
       opts.graphGroup.visible = true;
 
       const result = combinatorialEmbeddingToPosStepWise(edges, embeddingResult.canonical_ordering);

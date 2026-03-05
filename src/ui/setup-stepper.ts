@@ -15,7 +15,7 @@ export function setupStepper(): { getStep: () => number; setStep: (s: number) =>
     });
 
     const prog = qs<HTMLSpanElement>('#progress');
-    if (prog) {
+    if (prog && totalSteps > 1) {
       prog.textContent = `Step ${step + 1} / ${totalSteps}`;
     }
 

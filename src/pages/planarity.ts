@@ -2,11 +2,10 @@ import '../styles/base.css';
 import '../styles/styles.css';
 
 import * as THREE from 'three';
-import { createCamera, centerGroup } from '../threejs/camera';
+import { createCamera } from '../threejs/camera';
 import { createRenderer } from '../threejs/renderer';
 import { loadDefaultGraph } from '../layout/load-default-graph';
 import { renderRawGraphStepWise } from '../scenes/graph-scene';
-import { createSphere } from '../threejs/shapes/sphere';
 import { setupGraphUI, setupTabs } from '../ui/graph-input-card';
 import { setupStepper } from '../ui/setup-stepper';
 
@@ -22,9 +21,6 @@ const dir = new THREE.DirectionalLight(0xffffff, 0.9);
 dir.position.set(3, 4, 5);
 scene.add(dir);
 
-const sphere = createSphere();
-scene.add(sphere);
-
 const graphGroup = new THREE.Group();
 scene.add(graphGroup);
 
@@ -35,7 +31,6 @@ const ui = setupGraphUI({
   loadGraphBtn: document.getElementById('loadGraphBtn')! as HTMLButtonElement,
   statusEl: document.getElementById('graphStatus')!,
   graphGroup,
-  sphere,
   camera,
   stepper,
 });
@@ -53,7 +48,6 @@ async function initDefaultGraph(): Promise<void> {
     return;
   }
 
-  sphere.visible = false;
   graphGroup.visible = true;
 
   renderRawGraphStepWise(graphGroup, camera, result, 250);
@@ -63,20 +57,6 @@ initDefaultGraph();
 // ---------------- Render Loop ----------------
 const sphereCamPos = camera.position.clone();
 let lastStep = stepper.getStep();
-
-function applyStep(step: number): void {
-  if (step === 0) {
-    sphere.visible = true;
-    graphGroup.visible = false;
-    camera.position.copy(sphereCamPos);
-    camera.updateProjectionMatrix();
-  } else {
-    sphere.visible = false;
-    graphGroup.visible = true;
-    centerGroup(graphGroup, camera);
-  }
-}
-applyStep(lastStep);
 
 function resize(): void {
   const area = document.querySelector('.canvasArea')!;
@@ -92,11 +72,6 @@ function tick(t: number): void {
   const cur = stepper.getStep();
   if (cur !== lastStep) {
     lastStep = cur;
-    applyStep(cur);
-  }
-  if (sphere.visible) {
-    sphere.rotation.y = s * 0.45;
-    sphere.rotation.x = s * 0.2;
   }
   renderer.render(scene, camera);
   requestAnimationFrame(tick);
