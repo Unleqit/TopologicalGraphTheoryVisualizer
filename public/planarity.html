@@ -36,17 +36,87 @@
 
               <div class="graphCardBody">
                 <!-- MATRIX MODE -->
-                <div class="graphMode active" data-mode="matrix">
+                <div class="graphMode active" data-mode="matrix" style="position: relative">
+                  <!-- Highlight overlay -->
+                  <pre
+                    id="matrixHighlight"
+                    style="
+                      position: absolute;
+                      top: -16px;
+                      left: 0px;
+                      padding: 0.75rem;
+                      font-family: monospace;
+                      color: gray;
+                      pointer-events: none;
+                      white-space: pre;
+                      line-height: 1.5;
+                      width: 100%;
+                      height: 100%;
+                      box-sizing: border-box;
+                      overflow: hidden;
+                    "
+                  ></pre>
+
+                  <!-- Editable textarea -->
                   <textarea
                     id="graphMatrix"
                     class="matrixInput"
                     spellcheck="false"
-                    placeholder="Example:
+                    style="
+                      position: absolute;
+                      left: 0px;
+                      top: 0px;
+                      background: transparent;
+                      color: white;
+                      caret-color: white;
+                      font-family: monospace;
+                      line-height: 1.5;
+                      padding: 1.5rem 0 0 1.5rem;
+                      width: 100%;
+                      height: 100%;
+                      box-sizing: border-box;
+                      resize: none;
+                      overflow: auto;
+                    "
+                  >
 0 1 0
 1 0 1
-0 1 0"
-                  ></textarea>
+0 1 0</textarea
+                  >
                 </div>
+
+                <script>
+                  const textarea = document.getElementById('graphMatrix');
+                  const highlight = document.getElementById('matrixHighlight');
+
+                  function updateHighlight() {
+                    const lines = textarea.value.split('\n').filter((line) => line !== undefined);
+                    if (lines.length === 0) {
+                      highlight.textContent = '';
+                      return;
+                    }
+
+                    // Column header (0 1 2 …)
+                    const cols = lines[0].trim().split(/\s+/).length;
+                    const colHeader = '  ' + Array.from({ length: cols }, (_, i) => i).join(' ');
+
+                    // Row numbers + original line
+                    const numberedLines = lines.map((line, i) => `${i} `);
+
+                    // Put it all together
+                    highlight.textContent = [colHeader, ...numberedLines].join('\n');
+                  }
+
+                  // Initial render
+                  updateHighlight();
+
+                  // Sync overlay with textarea on input & scroll
+                  textarea.addEventListener('input', updateHighlight);
+                  textarea.addEventListener('scroll', () => {
+                    highlight.scrollTop = textarea.scrollTop;
+                    highlight.scrollLeft = textarea.scrollLeft;
+                  });
+                </script>
 
                 <!-- LIST MODE -->
                 <div class="graphMode" data-mode="list">
@@ -82,7 +152,6 @@
         <section class="panel canvasWrap" aria-label="Visualization area">
           <div class="canvasHead">
             <span class="badge">Three.js Visualization</span>
-            <span class="badge">Placeholder scene (swap later)</span>
           </div>
           <div class="canvasArea">
             <canvas id="viz"></canvas>
