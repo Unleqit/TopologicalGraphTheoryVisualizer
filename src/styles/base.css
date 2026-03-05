@@ -55,7 +55,11 @@ body {
 .brand {
   font-weight: 900;
   letter-spacing: -0.02em;
+  text-decoration: none;
+  cursor: pointer;
+  color: inherit;
 }
+
 .crumb {
   color: rgba(234, 240, 255, 0.78);
   font-size: 13px;
@@ -602,29 +606,4 @@ body {
 
 .graphMode.active {
   display: block;
-}
-
-.homeBtn {
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text);
-  text-decoration: none;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.08);
-  transition: all 0.18s ease;
-}
-
-.homeBtn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.22);
-}
-
-.homeBtn:active {
-  transform: translateY(1px);
 }
