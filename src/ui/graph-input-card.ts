@@ -47,16 +47,12 @@ export function setupGraphUI(opts: GraphUIOptions): { setMode: (mode: 'matrix' |
           throw new Error('Please enter an adjacency list.');
         }
         const tempMap = new Map<number, number[]>();
-        for (const line of text.split('\n')) {
-          const [nodeStr, neighborsStr] = line.split(':');
-          if (!neighborsStr) {
+        const splitResult = text.split('\n');
+        for (let i = 0; i < splitResult.length; ++i) {
+          if (!splitResult[i]) {
             throw new Error('Invalid list format.');
           }
-          const node = Number(nodeStr.trim());
-          if (Number.isNaN(node)) {
-            throw new Error('Invalid node index.');
-          }
-          const neighbors = neighborsStr
+          const neighbors = splitResult[i]
             .trim()
             .split(/\s+/)
             .filter(Boolean)
@@ -67,7 +63,7 @@ export function setupGraphUI(opts: GraphUIOptions): { setMode: (mode: 'matrix' |
               }
               return num;
             });
-          tempMap.set(node, neighbors);
+          tempMap.set(i, neighbors);
         }
         const n = Math.max(...tempMap.keys()) + 1;
         matrix = Array.from({ length: n }, () => Array(n).fill(0));
