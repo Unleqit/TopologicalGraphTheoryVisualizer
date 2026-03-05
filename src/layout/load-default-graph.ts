@@ -1,11 +1,11 @@
 import { combinatorialEmbeddingToPosStepWise } from '../algorithms/chrobak-payne/chrobak-payne-step-wise';
-import { DIAMOND1 } from '../default-graph';
+import { DEFAULT_GRAPH } from '../default-graph';
 import { GraphEmbeddingStepResult } from '../graph/graph-embedding-step-result';
 import { matrixToEdgeList } from '../graph/graph-utils';
 import { graphLayoutService } from './index';
 
 export async function loadDefaultGraph(): Promise<GraphEmbeddingStepResult | undefined> {
-  const { nodeCount, edges } = matrixToEdgeList(DIAMOND1);
+  const { nodeCount, edges } = matrixToEdgeList(DEFAULT_GRAPH);
   const embeddingResult = await graphLayoutService.compute(edges, nodeCount);
 
   if (!embeddingResult.planar) {
