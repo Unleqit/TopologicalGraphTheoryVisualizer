@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Graph on Sphere with Handle</title>
+
+  <style>
+    html,body{
+      margin:0;
+      height:100%;
+      overflow:hidden;
+      background:#0b1020;
+      font-family:Arial;
+      color:#e8ecff;
+    }
+
+    #ui{
+      position:absolute;
+      top:16px;
+      left:16px;
+      padding:14px;
+      background:rgba(0,0,0,0.35);
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.15);
+    }
+
+    button{
+      padding:10px 14px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,0.2);
+      background:rgba(255,255,255,0.08);
+      color:white;
+      cursor:pointer;
+      margin-right:6px;
+    }
+
+    button:disabled{
+      opacity:0.4;
+      cursor:default;
+    }
+  </style>
+
+  <script async src="https://ga.jspm.io/npm:es-module-shims@2.0.10/dist/es-module-shims.js"></script>
+
+  <script type="importmap">
+    {
+    "imports":{
+    "three":"https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.module.js",
+    "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.182.0/examples/jsm/"
+    }
+    }
+  </script>
+</head>
+
+<body>
+
+<div id="ui">
+  <button id="addHandle">Add Handle</button>
+  <button id="useHandle" disabled>Use Handle</button>
+</div>
+
+<script type="module">
+
+  import * as THREE from 'three'
+  import {OrbitControls} from 'three/addons/controls/OrbitControls.js'
+
+  const scene=new THREE.Scene()
+  scene.background=new THREE.Color(0x0b1020)
+
+  const camera=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,0.1,100)
+  camera.position.set(0,0,6)
+
+  const renderer=new THREE.WebGLRenderer({antialias:true})
+  renderer.setSize(innerWidth,innerHeight)
+  document.body.appendChild(renderer.domElement)
+
+  const controls=new OrbitControls(camera,renderer.domElement)
+  controls.enableDamping=true
+
+  scene.add(new THREE.AmbientLight(0xffffff,1.2))
+
+  const light=new THREE.DirectionalLight(0xffffff,1.2)
+  light.position.set(4,5,6)
+  scene.add(light)
+
+  const sphereRadius=2
+
+  const sphereMaterial=new THREE.MeshPhongMaterial({
+    color:0x5fa8ff,
+    transparent:true,
+    opacity:0.18,
+    side:THREE.DoubleSide
+  })
+
+  const sphere=new THREE.Mesh(
+      new THREE.SphereGeometry(sphereRadius,64,64),
+      sphereMaterial
+  )
+
+  scene.add(sphere)
+
+  function latLon(lat,lon){
+    lat=THREE.MathUtils.degToRad(lat)
+    lon=THREE.MathUtils.degToRad(lon)
+
+    return new THREE.Vector3(
+        sphereRadius*Math.cos(lat)*Math.sin(lon),
+        sphereRadius*Math.sin(lat),
+        sphereRadius*Math.cos(lat)*Math.cos(lon)
+    )
+  }
+
+  const V={
+    A:latLon(35,-35),
+    B:latLon(35,35),
+    C:latLon(-35,35),
+    D:latLon(-35,-35)
+  }
+
+  function surfaceCurve(a,b,segments=200){
+    const pts=[]
+    for(let i=0;i<=segments;i++){
+
+      const t=i/segments
+      const p=a.clone().multiplyScalar(1-t).add(b.clone().multiplyScalar(t))
+
+      p.normalize().multiplyScalar(sphereRadius*1.001)
+
+      pts.push(p)
+
+    }
+    return pts
+  }
+
+  function addEdge(points,color){
+    const geo=new THREE.BufferGeometry().setFromPoints(points)
+
+    const line=new THREE.Line(
+        geo,
+        new THREE.LineBasicMaterial({color})
+    )
+
+    scene.add(line)
+    return line
+  }
+
+  function addVertex(p){
+
+    const mesh=new THREE.Mesh(
+        new THREE.SphereGeometry(0.07,20,20),
+        new THREE.MeshStandardMaterial({color:0xffcc66})
+    )
+
+    mesh.position.copy(p.clone().multiplyScalar(1.01))
+    scene.add(mesh)
+  }
+
+  function crossing(p1,p2){
+
+    let best
+    let min=Infinity
+
+    for(let a of p1)
+      for(let b of p2){
+
+        const d=a.distanceToSquared(b)
+
+        if(d<min){
+
+          min=d
+          best=a.clone().add(b).multiplyScalar(0.5)
+
+        }
+
+      }
+
+    return best.normalize().multiplyScalar(sphereRadius*1.01)
+
+  }
+
+  let acLine
+  let bdLine
+  let crossMarker
+  let handleMesh
+  let handleCurve
+
+  function buildGraph(){
+
+    addEdge(surfaceCurve(V.A,V.B),0x90ee90)
+    addEdge(surfaceCurve(V.B,V.C),0x90ee90)
+    addEdge(surfaceCurve(V.C,V.D),0x90ee90)
+    addEdge(surfaceCurve(V.D,V.A),0x90ee90)
+
+    const ac=surfaceCurve(V.A,V.C)
+    const bd=surfaceCurve(V.B,V.D)
+
+    acLine=addEdge(ac,0xff6666)
+    bdLine=addEdge(bd,0x66d9ff)
+
+    const pos=crossing(ac,bd)
+
+    crossMarker=new THREE.Mesh(
+        new THREE.SphereGeometry(0.05,16,16),
+        new THREE.MeshBasicMaterial({color:0xffffff})
+    )
+
+    crossMarker.position.copy(pos)
+    scene.add(crossMarker)
+
+    Object.values(V).forEach(addVertex)
+  }
+
+  buildGraph()
+
+  function buildMugHandleCurve(start,end){
+
+    const a=start.clone().normalize()
+    const c=end.clone().normalize()
+
+    const mid=a.clone().add(c).normalize()
+
+    let plane=new THREE.Vector3().crossVectors(a,c)
+    if(plane.lengthSq()<1e-10) plane=new THREE.Vector3(0,1,0)
+
+    plane.normalize()
+
+    const side=new THREE.Vector3().crossVectors(plane,mid).normalize()
+
+    const lift=0.35
+    const flare=0.05
+
+    const p0=start.clone()
+
+    const p1=start.clone()
+    .multiplyScalar(1.04)
+    .add(mid.clone().multiplyScalar(0.05))
+    .add(side.clone().multiplyScalar(-flare))
+
+    const p2=mid.clone().multiplyScalar(sphereRadius+lift)
+
+    const p3=end.clone()
+    .multiplyScalar(1.04)
+    .add(mid.clone().multiplyScalar(0.05))
+    .add(side.clone().multiplyScalar(flare))
+
+    const p4=end.clone()
+
+    const curve=new THREE.CatmullRomCurve3([p0,p1,p2,p3,p4])
+    curve.curveType="centripetal"
+    curve.tension=0.35
+
+    return curve.getPoints(260)
+  }
+
+  function addHandle(){
+
+    handleCurve=buildMugHandleCurve(V.A,V.C)
+
+    const curve=new THREE.CatmullRomCurve3(handleCurve)
+
+    handleMesh=new THREE.Mesh(
+        new THREE.TubeGeometry(curve,260,0.09,18,false),
+        sphereMaterial
+    )
+
+    scene.add(handleMesh)
+
+    document.getElementById("useHandle").disabled=false
+  }
+
+  function useHandle(){
+
+    scene.remove(acLine)
+    scene.remove(crossMarker)
+
+    acLine=addEdge(handleCurve,0xff6666)
+
+    document.getElementById("useHandle").disabled=true
+  }
+
+  document.getElementById("addHandle").onclick=()=>{
+    addHandle()
+    document.getElementById("addHandle").disabled=true
+  }
+
+  document.getElementById("useHandle").onclick=useHandle
+
+  function animate(){
+
+    requestAnimationFrame(animate)
+
+    scene.rotation.y+=0.002
+
+    controls.update()
+
+    renderer.render(scene,camera)
+
+  }
+
+  animate()
+
+  addEventListener("resize",()=>{
+
+    camera.aspect=innerWidth/innerHeight
+    camera.updateProjectionMatrix()
+    renderer.setSize(innerWidth,innerHeight)
+
+  })
+
+</script>
+</body>
+</html>

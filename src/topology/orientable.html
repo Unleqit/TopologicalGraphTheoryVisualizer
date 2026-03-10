@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cylinder – Orientability Demo</title>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background: #0b1020;
+      color: #eef2ff;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    #app {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    canvas {
+      display: block;
+    }
+
+    .panel {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      width: min(440px, calc(100vw - 32px));
+      background: rgba(12, 18, 34, 0.78);
+      backdrop-filter: blur(8px);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+    }
+
+    .panel h1 {
+      margin: 0 0 8px;
+      font-size: 1.1rem;
+    }
+
+    .panel p {
+      margin: 0 0 10px;
+      line-height: 1.45;
+      color: #d5ddff;
+      font-size: 0.95rem;
+    }
+
+    .row {
+      margin-top: 14px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 0.92rem;
+      color: #eef2ff;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .readout {
+      margin-top: 6px;
+      font-size: 0.9rem;
+      color: #bfcaff;
+      min-height: 1.4em;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 12px;
+      font-size: 0.9rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18);
+      flex: 0 0 auto;
+    }
+
+    .red { background: #ff6478; }
+    .blue { background: #5da9ff; }
+    .yellow { background: #ffe082; }
+    .gray { background: rgba(255,255,255,0.4); }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 10px;
+      background: #2f67ff;
+      color: white;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    button:hover {
+      filter: brightness(1.08);
+    }
+
+    .footer {
+      position: absolute;
+      right: 16px;
+      bottom: 16px;
+      background: rgba(12, 18, 34, 0.74);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      color: #d8e1ff;
+    }
+  </style>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.179.1/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.179.1/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+<div id="app">
+  <div class="panel">
+    <h1>Cylinder – Orientability Demo</h1>
+    <p>
+      The yellow arrow transports a local “up/across-the-surface” direction
+      along the center circle of the cylinder.
+    </p>
+    <p>
+      After <strong>1 loop</strong>, the moving arrow returns to the same point
+      with the <strong>same direction</strong>. That shows the cylinder is
+      <strong>orientable</strong>.
+    </p>
+
+    <div class="row">
+      <label for="uSlider">Position along center circle (0 to 2 loops)</label>
+      <input id="uSlider" type="range" min="0" max="2000" value="0" step="1" />
+      <div class="readout" id="readout">turns = 0.000</div>
+
+      <div class="buttons">
+        <button id="resetBtn">Reset</button>
+        <button id="oneLoopBtn">Go to 1 loop</button>
+        <button id="twoLoopBtn">Go to 2 loops</button>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="swatch red"></span> one side across width</div>
+      <div class="legend-item"><span class="swatch blue"></span> other side across width</div>
+      <div class="legend-item"><span class="swatch yellow"></span> moving arrow</div>
+      <div class="legend-item"><span class="swatch gray"></span> start arrow</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Drag to orbit • Scroll to zoom
+  </div>
+</div>
+
+<script type="module">
+  import * as THREE from "three";
+  import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+  const app = document.getElementById("app");
+  const slider = document.getElementById("uSlider");
+  const readout = document.getElementById("readout");
+  const resetBtn = document.getElementById("resetBtn");
+  const oneLoopBtn = document.getElementById("oneLoopBtn");
+  const twoLoopBtn = document.getElementById("twoLoopBtn");
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0b1020);
+
+  const camera = new THREE.PerspectiveCamera(
+      50,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      100
+  );
+  camera.position.set(0, 2.8, 6.3);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  app.appendChild(renderer.domElement);
+
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.target.set(0, 0, 0);
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.72));
+
+  const light1 = new THREE.DirectionalLight(0xffffff, 1.0);
+  light1.position.set(5, 6, 4);
+  scene.add(light1);
+
+  const light2 = new THREE.DirectionalLight(0x99bbff, 0.45);
+  light2.position.set(-4, -2, -5);
+  scene.add(light2);
+
+  const group = new THREE.Group();
+  scene.add(group);
+
+  const radius = 2.2;
+  const halfHeight = 0.75;
+
+  // Cylinder parameterization:
+  // u = angle around cylinder
+  // v = vertical coordinate in [-halfHeight, halfHeight]
+  function cylinderPoint(u, v) {
+    const x = radius * Math.cos(u);
+    const y = radius * Math.sin(u);
+    const z = v;
+    return new THREE.Vector3(x, z, y);
+  }
+
+  function cylinderDu(u, v) {
+    const dx = -radius * Math.sin(u);
+    const dy = radius * Math.cos(u);
+    const dz = 0;
+    return new THREE.Vector3(dx, dz, dy);
+  }
+
+  function cylinderDv(u, v) {
+    return new THREE.Vector3(0, 1, 0);
+  }
+
+  function frameOnCylinder(u, v = 0) {
+    const p = cylinderPoint(u, v);
+    const tangent = cylinderDu(u, v).normalize();
+    const across = cylinderDv(u, v).normalize();
+    const normal = new THREE.Vector3().crossVectors(tangent, across).normalize();
+    return { p, tangent, across, normal };
+  }
+
+  function buildCylinderGeometry(segmentsU = 180, segmentsV = 24) {
+    const positions = [];
+    const colors = [];
+    const indices = [];
+
+    const red = new THREE.Color(0xff6478);
+    const blue = new THREE.Color(0x5da9ff);
+    const white = new THREE.Color(0xf6f8ff);
+
+    for (let i = 0; i <= segmentsU; i++) {
+      const u = (i / segmentsU) * Math.PI * 2;
+
+      for (let j = 0; j <= segmentsV; j++) {
+        const t = j / segmentsV;
+        const v = -halfHeight + t * (2 * halfHeight);
+
+        const p = cylinderPoint(u, v);
+        positions.push(p.x, p.y, p.z);
+
+        let c;
+        if (Math.abs(v) < halfHeight * 0.08) {
+          c = white;
+        } else {
+          c = v < 0 ? blue.clone() : red.clone();
+          c.lerp(white, 0.08);
+        }
+
+        colors.push(c.r, c.g, c.b);
+      }
+    }
+
+    for (let i = 0; i < segmentsU; i++) {
+      for (let j = 0; j < segmentsV; j++) {
+        const a = i * (segmentsV + 1) + j;
+        const b = (i + 1) * (segmentsV + 1) + j;
+        const c = (i + 1) * (segmentsV + 1) + (j + 1);
+        const d = i * (segmentsV + 1) + (j + 1);
+
+        indices.push(a, b, d);
+        indices.push(b, c, d);
+      }
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setIndex(indices);
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+    geometry.computeVertexNormals();
+
+    return geometry;
+  }
+
+  const cylinderGeometry = buildCylinderGeometry();
+
+  const cylinderMaterial = new THREE.MeshStandardMaterial({
+    vertexColors: true,
+    side: THREE.DoubleSide,
+    roughness: 0.45,
+    metalness: 0.04
+  });
+
+  const cylinderMesh = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
+  group.add(cylinderMesh);
+
+  const wireframe = new THREE.LineSegments(
+      new THREE.WireframeGeometry(cylinderGeometry),
+      new THREE.LineBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.12
+      })
+  );
+  group.add(wireframe);
+
+  const centerLinePoints = [];
+  const centerLineCount = 1000;
+  for (let i = 0; i <= centerLineCount; i++) {
+    const u = (i / centerLineCount) * Math.PI * 4; // show 2 loops in slider logic
+    centerLinePoints.push(cylinderPoint(u, 0));
+  }
+
+  const centerLineGeometry = new THREE.BufferGeometry().setFromPoints(centerLinePoints);
+  const centerLine = new THREE.Line(
+      centerLineGeometry,
+      new THREE.LineBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.95
+      })
+  );
+  group.add(centerLine);
+
+  function createArrow(color, opacity = 1) {
+    const arrow = new THREE.Group();
+
+    const shaft = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.018, 0.018, 0.50, 16),
+        new THREE.MeshStandardMaterial({
+          color,
+          transparent: opacity < 1,
+          opacity
+        })
+    );
+    shaft.position.y = 0.25;
+    arrow.add(shaft);
+
+    const head = new THREE.Mesh(
+        new THREE.ConeGeometry(0.055, 0.16, 20),
+        new THREE.MeshStandardMaterial({
+          color,
+          transparent: opacity < 1,
+          opacity
+        })
+    );
+    head.position.y = 0.58;
+    arrow.add(head);
+
+    return arrow;
+  }
+
+  const movingArrow = createArrow(0xffe082, 1.0);
+  const startArrow = createArrow(0xcfd8dc, 0.48);
+
+  group.add(movingArrow);
+  group.add(startArrow);
+
+  const startMarker = new THREE.Mesh(
+      new THREE.SphereGeometry(0.045, 18, 18),
+      new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        emissive: 0x333333
+      })
+  );
+  group.add(startMarker);
+
+  function placeArrow(arrow, frame, scale = 1) {
+    arrow.position.copy(frame.p);
+
+    const yAxis = new THREE.Vector3(0, 1, 0);
+    const q = new THREE.Quaternion().setFromUnitVectors(yAxis, frame.across);
+
+    arrow.quaternion.copy(q);
+    arrow.scale.setScalar(scale);
+  }
+
+  const initialFrame = frameOnCylinder(0, 0);
+  placeArrow(startArrow, initialFrame);
+  startMarker.position.copy(initialFrame.p);
+
+  function updateFromSlider() {
+    const t = Number(slider.value) / 1000; // 0..2
+    const u = t * Math.PI * 2;
+
+    const frame = frameOnCylinder(u, 0);
+    placeArrow(movingArrow, frame);
+
+    const distToStart = frame.p.distanceTo(initialFrame.p);
+    const align = frame.across.dot(initialFrame.across);
+
+    let text = `turns = ${t.toFixed(3)}`;
+
+    if (distToStart < 0.035) {
+      if (Math.abs(t - 1) < 0.03 && align > 0.999) {
+        text += "  • after 1 loop: same point, same direction";
+      } else if (Math.abs(t - 2) < 0.03 && align > 0.999) {
+        text += "  • after 2 loops: same point, same direction";
+      }
+    }
+
+    readout.textContent = text;
+  }
+
+  slider.addEventListener("input", updateFromSlider);
+
+  resetBtn.addEventListener("click", () => {
+    slider.value = 0;
+    updateFromSlider();
+  });
+
+  oneLoopBtn.addEventListener("click", () => {
+    slider.value = 1000;
+    updateFromSlider();
+  });
+
+  twoLoopBtn.addEventListener("click", () => {
+    slider.value = 2000;
+    updateFromSlider();
+  });
+
+  updateFromSlider();
+
+  function animate() {
+    controls.update();
+    renderer.render(scene, camera);
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+
+  window.addEventListener("resize", () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+</script>
+</body>
+</html>
