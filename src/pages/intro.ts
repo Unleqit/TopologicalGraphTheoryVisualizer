@@ -4,6 +4,7 @@ import { createCamera } from '../threejs/camera';
 import { addDefaultLights } from '../threejs/lights';
 import { createRenderer } from '../threejs/renderer';
 import { setupStepper } from '../ui/setup-stepper';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 const stepper = setupStepper();
 
@@ -12,6 +13,10 @@ const canvas = document.getElementById('viz') as HTMLCanvasElement;
 const renderer = createRenderer(canvas);
 const camera = createCamera();
 const introScene = new IntroScene();
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.target.set(0, 0, 0);
 
 addDefaultLights(introScene.scene);
 
@@ -45,6 +50,7 @@ function tick(t: number): void {
   }
 
   introScene.update(t);
+  controls.update();
 
   renderer.render(introScene.scene, camera);
   requestAnimationFrame(tick);

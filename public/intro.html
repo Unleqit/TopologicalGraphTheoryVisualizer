@@ -9,7 +9,7 @@
     <div class="shell">
       <div class="topbar">
         <a href="index.html" class="brand" aria-label="Go to homepage">Topological Graph Theory</a>
-        <div class="crumb">/ A Visual Introduction to Topology</div>
+        <div class="crumb">/ [WIP] A Visual Introduction to Topology</div>
       </div>
 
       <div class="main">
@@ -30,12 +30,17 @@
             </div>
 
             <div data-step="1" style="display: none">
-              <h3>Step 2 — Surfaces (orientable vs. nonorientable)</h3>
-              <p>Orientable examples: sphere, torus. Nonorientable examples: Möbius strip, Klein bottle (as a model).</p>
+              <h3>Step 2 — Orientable Surfaces</h3>
+              <p>Orientable examples: Sphere, Torus.</p>
             </div>
 
             <div data-step="2" style="display: none">
-              <h3>Step 3 — Homeomorphism + genus</h3>
+              <h3>Step 3 — Non-Orientable Surfaces</h3>
+              <p>Non-Orientable examples: Möbius strip, Klein bottle.</p>
+            </div>
+
+            <div data-step="3" style="display: none">
+              <h3>Step 4 — Homeomorphism + genus</h3>
               <p>Two shapes are “the same topologically” if there is a homeomorphism between them. Genus counts “handles” (roughly) for orientable surfaces.</p>
               <p>Later you’ll use genus ideas to understand embeddings of graphs beyond the plane.</p>
             </div>
@@ -45,7 +50,6 @@
         <section class="panel canvasWrap" aria-label="Visualization area">
           <div class="canvasHead">
             <span class="badge">Three.js Visualization</span>
-            <span class="badge">Placeholder scene (swap later)</span>
           </div>
           <div class="canvasArea">
             <canvas id="viz"></canvas>
