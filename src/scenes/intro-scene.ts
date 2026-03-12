@@ -113,25 +113,28 @@ export class IntroScene {
     const segmentsV = 22;
 
     function torusPoint(u: number, v: number): THREE.Vector3 {
-      const x = (R + r * Math.cos(v)) * Math.cos(u);
-      const y = (R + r * Math.cos(v)) * Math.sin(u);
+      const x = R * Math.cos(u);
+      const y = R * Math.sin(u);
       const z = r * Math.sin(v);
+
       return new THREE.Vector3(x, y, z);
     }
 
     function torusDu(u: number, v: number): THREE.Vector3 {
-      return new THREE.Vector3(-(R + r * Math.cos(v)) * Math.sin(u), (R + r * Math.cos(v)) * Math.cos(u), 0);
+      return new THREE.Vector3(-R * Math.sin(u), R * Math.cos(u), 0);
     }
 
     function torusDv(u: number, v: number): THREE.Vector3 {
-      return new THREE.Vector3(-r * Math.sin(v) * Math.cos(u), -r * Math.sin(v) * Math.sin(u), r * Math.cos(v));
+      return new THREE.Vector3(0, 0, r * Math.cos(v));
     }
 
-    function frameOnTorus(u: number, v = 0) {
+    function frameOnTorus(u: number, v = Math.PI) {
       const p = torusPoint(u, v);
+
       const tangent = torusDu(u, v).normalize();
       const across = torusDv(u, v).normalize();
       const normal = new THREE.Vector3().crossVectors(tangent, across).normalize();
+
       return { p, tangent, across, normal };
     }
 
@@ -563,7 +566,9 @@ export class IntroScene {
     const u = t * Math.PI * 2;
 
     const frame = this.frameOnTorus(u, 0);
-    this.placeArrow(this.movingArrow, frame);
+
+    // <-- use the new function here
+    this.placeArrowUpwards(this.movingArrow, frame);
 
     const distToStart = frame.p.distanceTo(this.initialFrame.p);
     const align = frame.across.dot(this.initialFrame.across);
@@ -590,6 +595,24 @@ export class IntroScene {
     const normal = new THREE.Vector3().crossVectors(tangent, across).normalize();
 
     return { p, tangent, across, normal };
+  }
+
+  private placeArrowUpwards(arrow: THREE.Group, frame: { p: THREE.Vector3 }) {
+    // Extract XY components
+    const xy = new THREE.Vector2(frame.p.x, frame.p.y);
+    const R = 1.3; // major radius of torus
+    const r = 0.5; // minor radius
+
+    // Normalize XY to the major radius (arrow rotates around center)
+    xy.setLength(R);
+
+    // Keep Z as the original (or set to top of torus tube if you like)
+    const z = frame.p.z;
+
+    arrow.position.set(xy.x, xy.y, z);
+
+    // Make arrow point along global Z
+    arrow.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1));
   }
 
   /* ----------------- SURFACE MORPH ------------------ */
