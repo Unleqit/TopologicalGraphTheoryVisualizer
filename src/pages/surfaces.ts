@@ -12,6 +12,7 @@ const stepper = setupStepper();
 const canvas = document.getElementById('viz') as HTMLCanvasElement;
 const renderer = createRenderer(canvas);
 const camera = createCamera();
+camera.position.set(0, 3, -7);
 const surfaceScene = new SurfaceScene();
 
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -52,7 +53,7 @@ function tick(t: number): void {
 
     switch (cur) {
       case 0:
-        controls.object.position.set(0, 0, 8);
+        controls.object.position.set(0, 3, -7);
         break;
       case 1:
         controls.object.position.set(2, 7, 8);
@@ -71,15 +72,3 @@ function tick(t: number): void {
 }
 
 requestAnimationFrame(tick);
-
-/*
-
-// Handle window resize
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-
-*/
