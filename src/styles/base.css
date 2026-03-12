@@ -620,3 +620,134 @@ body {
 .graphMode.active {
   display: block;
 }
+
+/* --- Cylinder Controls --- */
+.cylinder-controls {
+  position: relative;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius);
+  padding: var(--gap);
+  max-width: 420px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow);
+}
+
+.cylinder-controls h3 {
+  margin: 0 0 8px 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.cylinder-controls p {
+  margin: 0 0 12px 0;
+  color: rgba(234, 240, 255, 0.88);
+}
+
+.cylinder-controls label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.cylinder-controls input[type='range'] {
+  width: 100%;
+  appearance: none;
+  height: 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  margin-bottom: 6px;
+}
+
+.cylinder-controls input[type='range']::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #00ffcc;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.cylinder-controls input[type='range']::-webkit-slider-thumb:hover {
+  background: #00c3ff;
+}
+
+.cylinder-controls input[type='range']::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #00ffcc;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+}
+
+.cylinder-controls .readout {
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--muted);
+  min-height: 1.2em;
+}
+
+.cylinder-controls .buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.cylinder-controls button {
+  padding: 6px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cylinder-controls button:hover {
+  background: rgba(0, 255, 204, 0.12);
+  border-color: rgba(0, 255, 204, 0.24);
+}
+
+.cylinder-controls .legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.cylinder-controls .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cylinder-controls .swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.cylinder-controls .red {
+  background: #ff6478;
+}
+.cylinder-controls .blue {
+  background: #5da9ff;
+}
+.cylinder-controls .yellow {
+  background: #ffe082;
+}
+.cylinder-controls .gray {
+  background: rgba(255, 255, 255, 0.4);
+}

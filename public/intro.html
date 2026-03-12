@@ -32,17 +32,50 @@
             <div data-step="1" style="display: none">
               <h3>Step 2 — Orientable Surfaces</h3>
               <p>Orientable examples: Sphere, Torus.</p>
+
+              <div class="cylinder-controls" id="cylinderControls">
+                <h3>Cylinder – Orientability Demo</h3>
+                <p>Move the yellow arrow along the cylinder’s center circle.</p>
+
+                <label for="uSlider">Position along center circle (0 to 1 loops)</label>
+                <input id="uSlider" type="range" min="0" max="1000" value="0" step="1" />
+                <div class="readout" id="readout">turns = 0.000</div>
+
+                <div class="buttons">
+                  <button id="resetBtn">Reset</button>
+                </div>
+              </div>
             </div>
 
             <div data-step="2" style="display: none">
               <h3>Step 3 — Non-Orientable Surfaces</h3>
               <p>Non-Orientable examples: Möbius strip, Klein bottle.</p>
+              <div class="cylinder-controls" id="mobiusControls">
+                <h3>Möbius strip – Non-Orientability Demo</h3>
+                <p>Move the yellow arrow along the möbius strip.</p>
+
+                <label for="mobiusSlider">Position along center circle (0 to 1 loops)</label>
+                <input id="mobiusSlider" type="range" min="0" max="1000" value="0" step="1" />
+                <div class="readout" id="mobiusReadout">turns = 0.000</div>
+
+                <div class="buttons">
+                  <button id="resetBtn2">Reset</button>
+                </div>
+              </div>
             </div>
 
             <div data-step="3" style="display: none">
               <h3>Step 4 — Homeomorphism + genus</h3>
               <p>Two shapes are “the same topologically” if there is a homeomorphism between them. Genus counts “handles” (roughly) for orientable surfaces.</p>
               <p>Later you’ll use genus ideas to understand embeddings of graphs beyond the plane.</p>
+
+              <div class="cylinder-controls">
+                <div class="buttons" id="step3Controls">
+                  <h3>Genus and Embedding Demo</h3>
+                  <p>Press the "Show Handle" button to resolve the intersecting edges by adding a new handle.</p>
+                  <button id="handleBtn">Show Handle</button>
+                </div>
+              </div>
             </div>
           </div>
         </section>

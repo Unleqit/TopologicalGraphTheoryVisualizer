@@ -47,7 +47,20 @@ function tick(t: number): void {
   const cur = stepper.getStep();
   if (cur !== lastStep) {
     lastStep = cur;
+    controls.target.set(0, 0, 0);
     surfaceScene.applyStep(cur, t);
+
+    switch (cur) {
+      case 0:
+        controls.object.position.set(0, 0, 8);
+        break;
+      case 1:
+        controls.object.position.set(2, 7, 8);
+        break;
+      case 2:
+        controls.object.position.set(2, 3, 6);
+        break;
+    }
   }
 
   controls.update();

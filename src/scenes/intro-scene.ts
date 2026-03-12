@@ -11,6 +11,7 @@ export class IntroScene {
   private graphSphere!: THREE.Mesh;
   private V!: Record<string, THREE.Vector3>;
   private acLine!: THREE.Line;
+  private acLineOriginal!: THREE.Line;
   private bdLine!: THREE.Line;
   private crossMarker!: THREE.Mesh;
   private handleCurve!: THREE.Vector3[];
@@ -21,6 +22,7 @@ export class IntroScene {
   private handleAddTime = 4000; // ms after step start
   private handleUseTime = 7000; // ms after step start
   private sphereStepStart = 0;
+  private sphereStepStartTime = 0;
   private handleMorph = 0; // 0..1
   private handleMorphSpeed = 0.015;
   private morphingHandle = false;
@@ -97,6 +99,11 @@ export class IntroScene {
     this.mobiusInitialFrame = this.frameOnMobius(0, 0);
 
     this.placeArrow(this.mobiusStartArrow, this.mobiusInitialFrame);
+
+    // place yellow arrow at the same position as gray arrow initially
+    this.mobiusArrow.position.copy(this.mobiusStartArrow.position);
+    this.mobiusArrow.quaternion.copy(this.mobiusStartArrow.quaternion);
+
     this.mobiusMarker.position.copy(this.mobiusInitialFrame.p);
 
     this.mobiusGroup.visible = false;
@@ -108,7 +115,7 @@ export class IntroScene {
     this.torusGroup = new THREE.Group();
 
     const R = 1.3;
-    const r = 0.5;
+    const r = 0.7;
     const segmentsU = 80;
     const segmentsV = 22;
 
@@ -147,17 +154,27 @@ export class IntroScene {
       const blue = new THREE.Color(0x5da9ff);
       const white = new THREE.Color(0xf6f8ff);
 
+      const segmentsV = 22;
       for (let i = 0; i <= segmentsU; i++) {
         const u = (i / segmentsU) * Math.PI * 2;
 
         for (let j = 0; j <= segmentsV; j++) {
-          const v = (j / segmentsV) * Math.PI * 2;
+          const t = j / segmentsV; // normalized 0..1 along tube
+          const v = (t - 0.5) * 2 * r; // actual offset along minor radius
 
           const p = torusPoint(u, v);
           positions.push(p.x, p.y, p.z);
 
-          let c = v < Math.PI ? blue.clone() : red.clone();
-          c.lerp(white, 0.08);
+          let c: THREE.Color;
+
+          const stripeWidth = 0.08; // fraction of tube for white line
+          if (Math.abs(t - 0.5) < stripeWidth / 2) {
+            c = new THREE.Color(0xffffff); // white stripe in the middle
+          } else {
+            // top = red, bottom = blue
+            c = t < 0.5 ? blue.clone() : red.clone();
+            c.lerp(white, 0.08); // slight desaturation
+          }
 
           colors.push(c.r, c.g, c.b);
         }
@@ -291,6 +308,7 @@ export class IntroScene {
     const bd = surfaceCurve(this.V.B, this.V.D);
 
     this.acLine = addEdge(ac, 0xff6666);
+    this.acLineOriginal = this.acLine.clone();
     this.bdLine = addEdge(bd, 0x66d9ff);
 
     const crossPos = crossing(ac, bd);
@@ -426,6 +444,10 @@ export class IntroScene {
     this.mobiusGroup.visible = step === 2;
     this.sphereGraphGroup.visible = step === 3;
 
+    if (step === 0) {
+      this.sphereStepStartTime = performance.now();
+    }
+
     if (step === 3) {
       this.sphereStepStart = performance.now();
       this.handleAdded = false;
@@ -468,65 +490,33 @@ export class IntroScene {
     return curve.getPoints(260);
   }
 
-  private addHandle() {
-    this.handleCurve = this.buildMugHandleCurve(this.V.A, this.V.C);
-
-    const curve = new THREE.CatmullRomCurve3(this.handleCurve);
-
-    const material = new THREE.MeshPhongMaterial({ color: 0x5fa8ff, transparent: true, opacity: 0.35, side: THREE.DoubleSide });
-
-    this.handleMesh = new THREE.Mesh(new THREE.TubeGeometry(curve, 260, 0.09, 18, false), material);
-
-    this.sphereGraphGroup.add(this.handleMesh);
-  }
-
   private useHandle() {
     this.sphereGraphGroup.remove(this.acLine);
     this.sphereGraphGroup.remove(this.crossMarker);
 
     const geo = new THREE.BufferGeometry().setFromPoints(this.handleCurve);
-
     this.acLine = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0xff6666 }));
 
     this.sphereGraphGroup.add(this.acLine);
   }
 
   update(time: number): void {
-    const s = time * 0.001;
-    this.updateSurface(s);
-
-    if (this.torusGroup.visible) {
-      const loopDuration = 3000;
-      const turns = (time % loopDuration) / loopDuration;
-      this.updateFromSlider(turns);
-    }
-
-    if (this.mobiusGroup.visible) {
-      const loopDuration = 6000;
-      const turns = 4 * ((time % loopDuration) / loopDuration);
-      const u = turns * Math.PI;
-
-      const frame = this.frameOnMobius(u, 0);
-      this.placeArrow(this.mobiusArrow, frame);
+    if (this.sphere.visible) {
+      const elapsed = (performance.now() - this.sphereStepStartTime) * 0.001;
+      this.updateSurface(elapsed);
     }
 
     if (this.sphereGraphGroup.visible) {
-      const elapsed = time - this.sphereStepStart;
-
-      if (!this.handleAdded && elapsed > this.handleAddTime) {
-        this.startHandleMorph();
-        this.handleAdded = true;
-      }
-
-      if (!this.handleUsed && elapsed > this.handleUseTime) {
-        this.useHandle();
-        this.handleUsed = true;
-      }
-
       if (this.morphingHandle) {
         this.updateHandleMorph();
       }
     }
+  }
+
+  moveMobiusArrow(turns: number) {
+    const u = (turns / 1) * Math.PI * 2;
+    const frame = this.frameOnMobius(u, 0);
+    this.placeArrow(this.mobiusArrow, frame);
   }
 
   private startHandleMorph() {
@@ -562,24 +552,81 @@ export class IntroScene {
     }
   }
 
+  // check if handle already added
+  public isHandleAdded(): boolean {
+    return this.handleAdded;
+  }
+
+  // trigger handle morph manually
+  public startHandleMorphManual(): void {
+    this.startHandleMorph();
+    this.handleAdded = true;
+    this.handleUsed = false;
+
+    // When morph finishes, route the red line
+    const checkMorphEnd = () => {
+      if (!this.morphingHandle) {
+        this.useHandle(); // route red line through handle
+        this.handleUsed = true;
+      } else {
+        requestAnimationFrame(checkMorphEnd);
+      }
+    };
+    requestAnimationFrame(checkMorphEnd);
+  }
+
+  public resetHandle(): void {
+    if (!this.handleMesh) return;
+
+    // Animate shrinking of the handle
+    this.morphingHandle = true;
+    const shrinkSpeed = 0.03; // adjust speed as desired
+
+    const shrinkStep = () => {
+      this.handleMorph -= shrinkSpeed;
+
+      if (this.handleMorph <= 0) {
+        this.handleMorph = 0;
+        this.morphingHandle = false;
+
+        // remove handle mesh
+        this.sphereGraphGroup.remove(this.handleMesh);
+        this.handleMesh.geometry.dispose();
+        this.handleMesh = undefined as any;
+
+        // restore original crossing line
+        if (this.acLine !== this.acLineOriginal) {
+          this.sphereGraphGroup.remove(this.acLine);
+          this.acLine = this.acLineOriginal.clone();
+          this.sphereGraphGroup.add(this.acLine);
+        }
+
+        // restore cross marker
+        if (!this.sphereGraphGroup.children.includes(this.crossMarker)) {
+          this.sphereGraphGroup.add(this.crossMarker);
+        }
+
+        this.handleAdded = false;
+        this.handleUsed = false;
+      } else {
+        // shrink the handle gradually
+        const curve = new THREE.CatmullRomCurve3(this.handleCurve);
+        const r = 0.001 + 0.09 * this.handleMorph;
+        this.handleMesh.geometry.dispose();
+        this.handleMesh.geometry = new THREE.TubeGeometry(curve, 260, r, 18, false);
+
+        requestAnimationFrame(shrinkStep);
+      }
+    };
+
+    shrinkStep();
+  }
   updateFromSlider(t: number) {
     const u = t * Math.PI * 2;
+    const frame = this.frameOnTorus(u, 0); // or frameOnCylinder if you switch to cylinder
 
-    const frame = this.frameOnTorus(u, 0);
-
-    // <-- use the new function here
+    // move the yellow arrow along the cylinder
     this.placeArrowUpwards(this.movingArrow, frame);
-
-    const distToStart = frame.p.distanceTo(this.initialFrame.p);
-    const align = frame.across.dot(this.initialFrame.across);
-
-    if (distToStart < 0.035 && align > 0.999) {
-      if (Math.abs(t - 1) < 0.03) {
-        console.log('after 1 loop: same point, same direction');
-      } else if (Math.abs(t - 2) < 0.03) {
-        console.log('after 2 loops: same point, same direction');
-      }
-    }
   }
 
   private frameOnTorus(u: number, v = 0) {
