@@ -13,6 +13,8 @@ export class SurfaceScene {
   private morph = 0;
   private torusMorph = 0;
   private möbiusMorph = 0;
+  private stepStartTime = 0;
+  private currentStep = 0;
 
   constructor() {
     const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, wireframe: true, side: THREE.DoubleSide });
@@ -37,14 +39,19 @@ export class SurfaceScene {
     this.objects.push(obj);
   }
 
-  applyStep(step: number): void {
+  applyStep(step: number, time: number): void {
+    if (step !== this.currentStep) {
+      this.currentStep = step;
+      this.stepStartTime = time; // restart animation
+    }
+
     this.squareCylinderSphereMesh.visible = step === 0;
     this.squareCylinderTorusMesh.visible = step === 1;
     this.möbiusMesh.visible = step === 2;
   }
 
   update(time: number): void {
-    const s = time * 0.001;
+    const s = (time - this.stepStartTime) * 0.001;
 
     this.morph = (Math.sin(s * 0.4 - Math.PI / 2) + 1) * 0.5;
     this.torusMorph = (Math.sin(s * 0.4 - Math.PI / 2) + 1) * 0.5;

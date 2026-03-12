@@ -22,7 +22,7 @@ addDefaultLights(surfaceScene.scene);
 surfaceScene;
 
 let lastStep = stepper.getStep();
-surfaceScene.applyStep(lastStep);
+surfaceScene.applyStep(lastStep, 0);
 
 function resize(): void {
   const area = document.querySelector('.canvasArea') as HTMLElement;
@@ -47,7 +47,7 @@ function tick(t: number): void {
   const cur = stepper.getStep();
   if (cur !== lastStep) {
     lastStep = cur;
-    surfaceScene.applyStep(cur);
+    surfaceScene.applyStep(cur, t);
   }
 
   controls.update();
