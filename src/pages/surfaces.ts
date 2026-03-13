@@ -4,7 +4,6 @@ import { createCamera } from '../threejs/camera';
 import { addDefaultLights } from '../threejs/lights';
 import { createRenderer } from '../threejs/renderer';
 import { setupStepper } from '../ui/setup-stepper';
-import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 const stepper = setupStepper();
