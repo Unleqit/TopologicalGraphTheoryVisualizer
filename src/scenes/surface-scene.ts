@@ -16,16 +16,17 @@ const edges: GraphEdge[] = [
   [2, 0],
 ];
 
-const EDGE_SEGMENTS = 60;
+const EDGE_SEGMENTS = 40;
+const K33_EDGE_SEGMENTS = 140;
 
 //step 1 constants
 const k33Square: _3DGraphVertex[] = [
-  { vertex: { id: 0, x: 0.2, y: 0.8 }, position: new THREE.Vector3() }, // a0
-  { vertex: { id: 1, x: 0.5, y: 0.8 }, position: new THREE.Vector3() }, // a1
-  { vertex: { id: 2, x: 0.8, y: 0.8 }, position: new THREE.Vector3() }, // a2
-  { vertex: { id: 3, x: 0.2, y: 0.2 }, position: new THREE.Vector3() }, // b0
-  { vertex: { id: 4, x: 0.5, y: 0.2 }, position: new THREE.Vector3() }, // b1
-  { vertex: { id: 5, x: 0.8, y: 0.2 }, position: new THREE.Vector3() }, // b2
+  { vertex: { id: 1, x: 0.45, y: 0.42 }, position: new THREE.Vector3() }, // a0
+  { vertex: { id: 2, x: 0.5, y: 0.42 }, position: new THREE.Vector3() }, // a1
+  { vertex: { id: 3, x: 0.55, y: 0.42 }, position: new THREE.Vector3() }, // a2
+  { vertex: { id: 4, x: 0.45, y: 0.62 }, position: new THREE.Vector3() }, // b0
+  { vertex: { id: 5, x: 0.5, y: 0.62 }, position: new THREE.Vector3() }, // b1
+  { vertex: { id: 6, x: 0.55, y: 0.62 }, position: new THREE.Vector3() }, // b2
 ];
 
 const k33Edges: GraphEdge[] = [
@@ -39,8 +40,6 @@ const k33Edges: GraphEdge[] = [
   [2, 4],
   [2, 5],
 ];
-
-//TBD
 
 //step 2 constants
 //TBD
@@ -57,9 +56,7 @@ export class SurfaceScene {
   private edgeLines: THREE.Line[] = [];
 
   //step 1
-  private k5VertexMeshes: THREE.Mesh[] = [];
-  private k5EdgeLines: THREE.Line[] = [];
-
+  private k33TorusVertexMeshes: THREE.Mesh[] = [];
   //step 2
   //TBD
 
@@ -89,8 +86,8 @@ export class SurfaceScene {
     this.createEdgeLines();
 
     //step 1
-    this.createK5Meshes();
-
+    this.createK33TorusVertices();
+    this.createK33TorusEdges();
     //step 2
     //TBD
 
@@ -124,44 +121,86 @@ export class SurfaceScene {
       }
 
       const geo = new THREE.BufferGeometry().setFromPoints(points);
-
       const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0x00ffff }));
-
       this.scene.add(line);
       this.edgeLines.push(line);
     }
   }
 
-  private createK5Meshes() {
-    const vGeo = new THREE.SphereGeometry(0.05, 12, 12);
-    const vMat = new THREE.MeshStandardMaterial({ color: 0xff4444 });
+  private createLabelSprite(text: string): THREE.Sprite {
+    const canvas = document.createElement('canvas');
+    canvas.width = 128;
+    canvas.height = 128;
+
+    const ctx = canvas.getContext('2d')!;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.beginPath();
+    ctx.arc(64, 64, 60, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 80px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
+    const texture = new THREE.CanvasTexture(canvas);
+
+    const material = new THREE.SpriteMaterial({
+      map: texture,
+      transparent: true,
+      depthTest: false, // ensures label is not hidden inside geometry
+    });
+
+    const sprite = new THREE.Sprite(material);
+    sprite.scale.set(0.25, 0.25, 0.25);
+
+    return sprite;
+  }
+
+  private createK33TorusVertices() {
+    const geo = new THREE.SphereGeometry(0.06, 16, 16);
+    const matA = new THREE.MeshStandardMaterial({ color: 0xff8800 });
+    const matB = new THREE.MeshStandardMaterial({ color: 0xaa00ff });
 
     for (let i = 0; i < k33Square.length; i++) {
-      const m = new THREE.Mesh(vGeo, vMat);
-      this.scene.add(m);
-      this.k5VertexMeshes.push(m);
-    }
+      const mat = i < 3 ? matA : matB;
 
-    for (const e of k33Edges) {
+      const m = new THREE.Mesh(geo, mat);
+      m.visible = false;
+
+      const label = this.createLabelSprite(k33Square[i].vertex.id.toString());
+      label.position.set(0, 0.12, 0);
+      m.add(label);
+
+      this.scene.add(m);
+      this.k33TorusVertexMeshes.push(m);
+    }
+  }
+
+  private k33TorusEdgeLines: THREE.Line[] = [];
+  private createK33TorusEdges() {
+    for (const _ of k33Edges) {
       const pts: THREE.Vector3[] = [];
 
-      for (let i = 0; i <= EDGE_SEGMENTS; i++) {
+      for (let i = 0; i <= K33_EDGE_SEGMENTS; i++) {
         pts.push(new THREE.Vector3());
       }
 
       const geo = new THREE.BufferGeometry().setFromPoints(pts);
-
-      const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0xff6666 }));
+      const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0x00ff88 }));
+      line.visible = false;
 
       this.scene.add(line);
-      this.k5EdgeLines.push(line);
+      this.k33TorusEdgeLines.push(line);
     }
   }
 
   applyStep(step: number, time: number): void {
     if (step !== this.currentStep) {
       this.currentStep = step;
-      this.stepStartTime = time; // restart animation
+      this.stepStartTime = time;
     }
 
     this.squareCylinderSphereMesh.visible = step === 0;
@@ -229,12 +268,237 @@ export class SurfaceScene {
   }
 
   updateSquareCylinderTorus(s: number) {
-    this.torusMorph = (Math.sin(s * 0.4 - Math.PI / 2) + 1) * 0.5;
+    this.torusMorph = Math.min(s * 0.4, 1);
+    const tmp = Math.min(s * 0.4, 6);
 
-    // update morphed surface geometry
     const newTorusGeo = new ParametricGeometry(this.squareCylinderTorus.bind(this), 80, 60);
+
     this.squareCylinderTorusMesh.geometry.dispose();
     this.squareCylinderTorusMesh.geometry = newTorusGeo;
+
+    if (tmp > 1) this.k33ShowVerticesAtStart();
+    if (tmp > 1.5) this.k33ShowEdgesAtStart();
+    if (tmp > 2) this.k33FlipVertex2And5_HideAffectedEdges();
+    if (tmp > 2.5) this.k33FlipVertex2And5_FlipVertices();
+    if (tmp > 3) this.k33FlipVertex2And5_RedrawAffectedEdges();
+    if (tmp > 3.5) this.k33RouteEdge25AroundTorusSmallRadius_HideAffectedEdge();
+    if (tmp > 4) this.k33RouteEdge25AroundTorusSmallRadius_RedrawAffectedEdge();
+    if (tmp > 4.5) this.k33RouteEdge16AroundTorusLargeRadius_HideAffectedEdge();
+    if (tmp > 5) this.k33RouteEdge16AroundTorusLargeRadius_RedrawAffectedEdge();
+  }
+
+  k33ShowVerticesAtStart() {
+    for (let i = 0; i < k33Square.length; i++) {
+      const v = k33Square[i];
+      const p = new THREE.Vector3();
+      this.squareCylinderTorus(v.vertex.x, v.vertex.y, p);
+      const mesh = this.k33TorusVertexMeshes[i];
+      mesh.position.copy(p);
+      mesh.visible = true;
+    }
+  }
+
+  k33ShowEdgesAtStart() {
+    for (let i = 0; i < k33Edges.length; i++) {
+      const [i0, i1] = k33Edges[i];
+      const v0 = k33Square[i0].vertex;
+      const v1 = k33Square[i1].vertex;
+
+      const line = this.k33TorusEdgeLines[i];
+      line.visible = true;
+      const pos = line.geometry.attributes.position;
+
+      for (let j = 0; j <= K33_EDGE_SEGMENTS; j++) {
+        const t = j / K33_EDGE_SEGMENTS;
+
+        const u = THREE.MathUtils.lerp(v0.x, v1.x, t);
+        const v = THREE.MathUtils.lerp(v0.y, v1.y, t);
+
+        const p = new THREE.Vector3();
+        this.squareCylinderTorus(u, v, p);
+
+        pos.setXYZ(j, p.x, p.y, p.z);
+      }
+
+      pos.needsUpdate = true;
+    }
+  }
+
+  k33FlipVertex2And5_HideAffectedEdges() {
+    //24 25 26 15 35
+    const affectedLineMeshes = [this.k33TorusEdgeLines[1], this.k33TorusEdgeLines[3], this.k33TorusEdgeLines[4], this.k33TorusEdgeLines[5], this.k33TorusEdgeLines[7]];
+    for (let i = 0; i < affectedLineMeshes.length; i++) {
+      affectedLineMeshes[i].visible = false;
+    }
+  }
+
+  k33FlipVertex2And5_FlipVertices() {
+    const mesh2 = this.k33TorusVertexMeshes[1];
+    const mesh5 = this.k33TorusVertexMeshes[4];
+    const tmp = new THREE.Vector3();
+    tmp.copy(mesh2.position);
+    mesh2.position.copy(mesh5.position);
+    mesh5.position.copy(tmp);
+    mesh2.geometry.attributes.position.needsUpdate = true;
+    mesh5.geometry.attributes.position.needsUpdate = true;
+  }
+
+  k33FlipVertex2And5_RedrawAffectedEdges() {
+    //24 25 26 15 35
+    const affectedLineMeshes = [this.k33TorusEdgeLines[1], this.k33TorusEdgeLines[3], this.k33TorusEdgeLines[4], this.k33TorusEdgeLines[5], this.k33TorusEdgeLines[7]];
+    //54 52 56 12 32
+    const updatedLines = [
+      [4, 3],
+      [4, 1],
+      [4, 5],
+      [0, 1],
+      [2, 1],
+    ];
+
+    //replace cached lines
+    for (const mesh of affectedLineMeshes) {
+      const points = [];
+
+      for (let i = 0; i <= K33_EDGE_SEGMENTS; i++) {
+        points.push(new THREE.Vector3());
+      }
+
+      const geo = new THREE.BufferGeometry().setFromPoints(points);
+      const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0x00ffff }));
+      this.scene.add(line);
+      this.edgeLines[this.edgeLines.indexOf(line)!] = line;
+    }
+
+    for (let i = 0; i < updatedLines.length; i++) {
+      const [i0, i1] = updatedLines[i];
+      const v0 = k33Square[i0].vertex;
+      const v1 = k33Square[i1].vertex;
+
+      const line = affectedLineMeshes[i];
+      line.visible = true;
+      const pos = line.geometry.attributes.position;
+
+      for (let j = 0; j <= K33_EDGE_SEGMENTS; j++) {
+        const t = j / K33_EDGE_SEGMENTS;
+
+        const u = THREE.MathUtils.lerp(v0.x, v1.x, t);
+        const v = THREE.MathUtils.lerp(v0.y, v1.y, t);
+
+        const p = new THREE.Vector3();
+        this.squareCylinderTorus(u, v, p);
+
+        pos.setXYZ(j, p.x, p.y, p.z);
+      }
+
+      pos.needsUpdate = true;
+    }
+  }
+
+  k33RouteEdge25AroundTorusSmallRadius_HideAffectedEdge() {
+    this.k33TorusEdgeLines[3].visible = false;
+  }
+
+  k33RouteEdge25AroundTorusSmallRadius_RedrawAffectedEdge() {
+    //25
+    const affectedLineMeshes = [this.k33TorusEdgeLines[3]];
+    //52
+    const updatedLines = [[4, 1]];
+
+    //replace cached lines
+    for (const mesh of affectedLineMeshes) {
+      const points = [];
+
+      for (let i = 0; i <= K33_EDGE_SEGMENTS; i++) {
+        points.push(new THREE.Vector3());
+      }
+
+      const geo = new THREE.BufferGeometry().setFromPoints(points);
+      const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0x00ffff }));
+      this.scene.add(line);
+      this.edgeLines[this.edgeLines.indexOf(line)!] = line;
+    }
+
+    for (let i = 0; i < updatedLines.length; i++) {
+      const [i0, i1] = updatedLines[i];
+      const v0 = k33Square[i0].vertex;
+      const v1 = k33Square[i1].vertex;
+
+      const line = affectedLineMeshes[i];
+      line.visible = true;
+      const pos = line.geometry.attributes.position;
+
+      for (let j = 0; j <= K33_EDGE_SEGMENTS; j++) {
+        const t = j / K33_EDGE_SEGMENTS;
+
+        const u = THREE.MathUtils.lerp(v0.x, v1.x, t);
+        const v = this.lerpWrap01Long(v0.y, v1.y, t);
+
+        const p = new THREE.Vector3();
+        this.squareCylinderTorus(u, v, p);
+
+        pos.setXYZ(j, p.x, p.y, p.z);
+      }
+
+      pos.needsUpdate = true;
+    }
+  }
+
+  k33RouteEdge16AroundTorusLargeRadius_HideAffectedEdge() {
+    this.k33TorusEdgeLines[2].visible = false;
+  }
+
+  k33RouteEdge16AroundTorusLargeRadius_RedrawAffectedEdge() {
+    const affectedLineMeshes = [this.k33TorusEdgeLines[2]];
+    const updatedLines = [[0, 5]];
+
+    //replace cached lines
+    for (const mesh of affectedLineMeshes) {
+      const points = [];
+
+      for (let i = 0; i <= K33_EDGE_SEGMENTS; i++) {
+        points.push(new THREE.Vector3());
+      }
+
+      const geo = new THREE.BufferGeometry().setFromPoints(points);
+      const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0x00ffff }));
+      this.scene.add(line);
+      this.edgeLines[this.edgeLines.indexOf(line)!] = line;
+    }
+
+    for (let i = 0; i < updatedLines.length; i++) {
+      const [i0, i1] = updatedLines[i];
+      const v0 = k33Square[i0].vertex;
+      const v1 = k33Square[i1].vertex;
+
+      const line = affectedLineMeshes[i];
+      line.visible = true;
+      const pos = line.geometry.attributes.position;
+
+      for (let j = 0; j <= K33_EDGE_SEGMENTS; j++) {
+        const t = j / K33_EDGE_SEGMENTS;
+
+        const u = this.lerpWrap01Long(v0.x, v1.x, t);
+        const v = THREE.MathUtils.lerp(v0.y, v1.y, t);
+
+        const p = new THREE.Vector3();
+        this.squareCylinderTorus(u, v, p);
+
+        pos.setXYZ(j, p.x, p.y, p.z);
+      }
+
+      pos.needsUpdate = true;
+    }
+  }
+
+  lerpWrap01Long(a: number, b: number, t: number): number {
+    let delta = b - a;
+    if (Math.abs(delta) < 0.5) {
+      delta = delta > 0 ? delta - 1 : delta + 1;
+    }
+    let u = a + delta * t;
+    if (u < 0) u += 1;
+    if (u > 1) u -= 1;
+    return u;
   }
 
   updateSquareMöbius(s: number) {
@@ -286,7 +550,7 @@ export class SurfaceScene {
     // ----- cylinder -----
     const bend = Math.PI * 2 * Math.min(t * 2, 1);
     const radius = 1;
-    const angle = (v - 0.5) * bend;
+    const angle = (v - 0.15) * bend;
     const cylinder = new THREE.Vector3(x * 1.5, Math.sin(angle) * radius, (1 - Math.cos(angle)) * radius - radius);
 
     // ------ torus --------
