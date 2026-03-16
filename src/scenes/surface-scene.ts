@@ -183,13 +183,11 @@ export class SurfaceScene {
   private createK33TorusEdges() {
     for (const _ of k33Edges) {
       const pts: THREE.Vector3[] = [];
-
-      for (let i = 0; i <= K33_EDGE_SEGMENTS; i++) {
-        pts.push(new THREE.Vector3());
-      }
+      for (let i = 0; i <= K33_EDGE_SEGMENTS; i++) pts.push(new THREE.Vector3());
 
       const geo = new THREE.BufferGeometry().setFromPoints(pts);
-      const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0x00ff88 }));
+      const mat = new THREE.LineBasicMaterial({ color: 0x00ffcc, linewidth: 3 });
+      const line = new THREE.Line(geo, mat);
       line.visible = false;
 
       this.scene.add(line);
@@ -267,15 +265,128 @@ export class SurfaceScene {
     }
   }
 
+  createTextLabel(text: string): THREE.Sprite {
+    const canvas = document.createElement('canvas');
+    const size = 128;
+    canvas.width = size;
+    canvas.height = size;
+
+    const ctx = canvas.getContext('2d')!;
+    ctx.clearRect(0, 0, size, size);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 64px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    ctx.fillText(text, size / 2, size / 2);
+
+    const texture = new THREE.CanvasTexture(canvas);
+
+    const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
+
+    const sprite = new THREE.Sprite(material);
+    sprite.scale.set(0.4, 0.4, 1);
+
+    return sprite;
+  }
+
+  updateEdgeLine(line: THREE.Line, i0: number, i1: number) {
+    const posAttr = line.geometry.attributes.position;
+
+    const v0 = k33Square[i0].vertex;
+    const v1 = k33Square[i1].vertex;
+
+    for (let j = 0; j <= K33_EDGE_SEGMENTS; j++) {
+      const t = j / K33_EDGE_SEGMENTS;
+
+      // interpolate in UV space
+      const u = THREE.MathUtils.lerp(v0.x, v1.x, t);
+      const v = THREE.MathUtils.lerp(v0.y, v1.y, t);
+
+      const p = new THREE.Vector3();
+      // morph into torus
+      this.squareCylinderTorus(u, v, p);
+
+      // horizontal stretch if needed
+      p.x *= this.stretchyness;
+
+      posAttr.setXYZ(j, p.x, p.y, p.z);
+    }
+
+    posAttr.needsUpdate = true;
+  }
+
+  private stretchyness = 4.5;
   updateSquareCylinderTorus(s: number) {
     this.torusMorph = Math.min(s * 0.4, 1);
     const tmp = Math.min(s * 0.4, 6);
 
+    // Update torus mesh geometry
     const newTorusGeo = new ParametricGeometry(this.squareCylinderTorus.bind(this), 80, 60);
-
     this.squareCylinderTorusMesh.geometry.dispose();
     this.squareCylinderTorusMesh.geometry = newTorusGeo;
 
+    if (tmp <= 1) {
+      this.stretchyness = THREE.MathUtils.lerp(4.5, 1, tmp);
+
+      // Scale factor for vertices based on morph: big on square, thin on cylinder, normal on torus
+      const t = this.torusMorph;
+
+      // inside updateSquareCylinderTorus
+      for (let i = 0; i < k33Square.length; i++) {
+        const v = k33Square[i];
+        const mesh = this.k33TorusVertexMeshes[i];
+
+        const pos = new THREE.Vector3();
+        this.squareCylinderTorus(v.vertex.x, v.vertex.y, pos);
+
+        // horizontal stretch for square→cylinder morph
+        pos.x *= this.stretchyness;
+
+        mesh.position.copy(pos);
+        mesh.visible = true;
+
+        // --- vertex scale interpolation ---
+        const scaleSquare = 0.15; // scale on square/cylinder
+        const scaleTorus = 0.06; // scale on torus
+        const scale = THREE.MathUtils.lerp(scaleSquare, scaleTorus, Math.max(0, this.torusMorph - 0.5) * 2); // smoothly interpolate after t>0.5
+        mesh.scale.set(scale, scale, scale);
+
+        // --- fix label sprite scaling ---
+        if (mesh.children.length > 0) {
+          const sprite = mesh.children[0] as THREE.Sprite;
+          sprite.scale.set(0.25 / scale, 0.25 / scale, 0.25 / scale);
+        }
+      }
+
+      // Update K3,3 edges positions along current morph
+      for (let i = 0; i < k33Edges.length; i++) {
+        const [i0, i1] = k33Edges[i];
+        const v0 = k33Square[i0].vertex;
+        const v1 = k33Square[i1].vertex;
+
+        const line = this.k33TorusEdgeLines[i];
+        line.visible = true;
+        const posAttr = line.geometry.attributes.position;
+
+        for (let j = 0; j <= K33_EDGE_SEGMENTS; j++) {
+          const tEdge = j / K33_EDGE_SEGMENTS;
+          const u = THREE.MathUtils.lerp(v0.x, v1.x, tEdge);
+          const vCoord = THREE.MathUtils.lerp(v0.y, v1.y, tEdge);
+
+          const p = new THREE.Vector3();
+          this.squareCylinderTorus(u, vCoord, p);
+
+          // horizontal stretch for edges too
+          p.x *= this.stretchyness;
+
+          posAttr.setXYZ(j, p.x, p.y, p.z);
+        }
+
+        posAttr.needsUpdate = true;
+      }
+    }
     if (tmp > 1) this.k33ShowVerticesAtStart();
     if (tmp > 1.5) this.k33ShowEdgesAtStart();
     if (tmp > 2) this.k33FlipVertex2And5_HideAffectedEdges();
@@ -363,10 +474,7 @@ export class SurfaceScene {
         points.push(new THREE.Vector3());
       }
 
-      const geo = new THREE.BufferGeometry().setFromPoints(points);
-      const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0x00ffff }));
-      this.scene.add(line);
-      this.edgeLines[this.edgeLines.indexOf(line)!] = line;
+      this.updateEdgeLine.call(this, mesh, 4, 1);
     }
 
     for (let i = 0; i < updatedLines.length; i++) {
@@ -412,10 +520,7 @@ export class SurfaceScene {
         points.push(new THREE.Vector3());
       }
 
-      const geo = new THREE.BufferGeometry().setFromPoints(points);
-      const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0x00ffff }));
-      this.scene.add(line);
-      this.edgeLines[this.edgeLines.indexOf(line)!] = line;
+      this.updateEdgeLine.call(this, mesh, 4, 1);
     }
 
     for (let i = 0; i < updatedLines.length; i++) {
@@ -459,10 +564,7 @@ export class SurfaceScene {
         points.push(new THREE.Vector3());
       }
 
-      const geo = new THREE.BufferGeometry().setFromPoints(points);
-      const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0x00ffff }));
-      this.scene.add(line);
-      this.edgeLines[this.edgeLines.indexOf(line)!] = line;
+      this.updateEdgeLine.call(this, mesh, 4, 1);
     }
 
     for (let i = 0; i < updatedLines.length; i++) {
