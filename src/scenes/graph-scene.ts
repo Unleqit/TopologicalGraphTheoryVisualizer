@@ -68,10 +68,7 @@ function createTextLabel(text: string): THREE.Sprite {
 
   const texture = new THREE.CanvasTexture(canvas);
 
-  const material = new THREE.SpriteMaterial({
-    map: texture,
-    transparent: true,
-  });
+  const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
 
   const sprite = new THREE.Sprite(material);
   sprite.scale.set(0.4, 0.4, 1); // adjust depending on your scene scale
