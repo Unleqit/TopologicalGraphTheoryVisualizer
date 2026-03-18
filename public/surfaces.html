@@ -24,12 +24,40 @@
 
           <div class="dialog-body">
             <div data-step="0">
-              <h3>Step 1 — Gluing edges of a square</h3>
-              <p>Edge identifications can create surfaces like a torus or projective plane (depending on orientation).</p>
+              <h3>Step 1 — Gluing edges of a square - Genus 0</h3>
+              <p>
+                By gluing edges of a square together, one can create other shapes like a cylinder, or a sphere. <br />
+                All shapes obtainable from this approach have a genus of 0, causing any graph without edge intersections in the plane to also have no edge intersections on such a
+                shape.
+              </p>
             </div>
             <div data-step="1" style="display: none">
-              <h3>Step 2 — Build common surfaces</h3>
-              <p>Sphere (planar case), torus (one handle), double torus (two handles), and more.</p>
+              <h3>Step 2 — Gluing edges of a square - Genus 1</h3>
+              <p>
+                One can also glue the edges of a square to a cylinder and then bend said cylinder to form a torus by gluing its two openings together. <br />
+                As the torus has a genus of 1, some graphs which previously did not reveal a planar embedding, can now be embedded. <br />
+                An example of this is the Kuratowski subgraph <span style="font-size: 1em">K<sub>3,3</sub></span
+                >, which is first rearranged on the sphere by rerouting its intersecting graph edges (2,5) and (1,6) over those pairs of square edges that are later joined during
+                the gluing process. <br />
+              </p>
+
+              <div class="cylinder-controls" id="cylinderControls" style="margin-bottom: 10px">
+                <h3>
+                  Part 1 - Rearranging <span style="font-size: 1em">K<sub>3,3</sub></span> in the plane
+                </h3>
+                <p>Step through each part of the edge rerouting process:</p>
+                <label for="slider1"></label>
+                <input id="slider1" type="range" min="0" max="7" value="0" step="1" />
+                <div class="readout" id="readout1">Step: 0</div>
+              </div>
+
+              <div class="cylinder-controls" id="cylinderControls">
+                <h3>Part 2 - Square &rarr; Cylinder &rarr; Torus</h3>
+                <p>Check out the morphing process in greater detail:</p>
+                <label for="slider2"></label>
+                <input id="slider2" type="range" min="0" max="1" value="0" step="0.001" />
+                <div class="readout" id="readout2">Step: 0</div>
+              </div>
             </div>
 
             <div data-step="2" style="display: none">
