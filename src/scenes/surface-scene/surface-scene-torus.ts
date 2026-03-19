@@ -54,9 +54,12 @@ export class SurfaceSceneTorus {
   private vertices: Map<number, VertexRecord> = new Map();
   private edges: Map<string, EdgeRecord> = new Map();
   private once: boolean[] = Array.from({ length: 10 }, () => false);
+  private updateFunction: (value: number) => void;
 
-  constructor(scene: THREE.Scene) {
+  constructor(scene: THREE.Scene, updateFunction: (value: number) => void) {
     this.scene = scene;
+    this.updateFunction = updateFunction;
+
     const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, wireframe: false, side: THREE.DoubleSide });
     const torusGeo = new ParametricGeometry(this.squareCylinderTorus.bind(this), 80, 60);
 
@@ -172,6 +175,7 @@ export class SurfaceSceneTorus {
   }
 
   private test: boolean = false;
+  private prev: number = -1;
   updateSquareCylinderTorusGraphEmbedding(s: number, automatic: boolean = true): void {
     if (this.test && automatic) {
       return;
@@ -180,29 +184,65 @@ export class SurfaceSceneTorus {
       this.test = true;
     }
 
-    const tmp = automatic ? Math.min(s * 0.4, 7) + 1 : s + 1;
+    let tmp = automatic ? Math.min(s * 0.4, 7) + 1 : s + 1;
 
-    if (tmp > 2) {
-      this.k33FlipVertex2And5_HideAffectedEdges();
+    this.updateFunction(tmp);
+
+    //incremental embedding -> build graph
+    if (this.prev === tmp) {
+      return;
     }
-    if (tmp > 2.5) {
-      this.k33FlipVertex2And5_FlipVertices();
+
+    if (this.prev < tmp) {
+      if (tmp >= 1.5) {
+        this.k33FlipVertex2And5_HideAffectedEdges();
+      }
+      if (tmp >= 2) {
+        this.k33FlipVertex2And5_FlipVertices();
+      }
+      if (tmp >= 2.5) {
+        this.k33FlipVertex2And5_RedrawAffectedEdges();
+      }
+      if (tmp >= 3) {
+        this.k33RouteEdge25AroundTorusSmallRadius_HideAffectedEdge();
+      }
+      if (tmp >= 3.5) {
+        this.k33RouteEdge25AroundTorusSmallRadius_RedrawAffectedEdge();
+      }
+      if (tmp >= 4) {
+        this.k33RouteEdge16AroundTorusLargeRadius_HideAffectedEdge();
+      }
+      if (tmp >= 4.5) {
+        this.k33RouteEdge16AroundTorusLargeRadius_RedrawAffectedEdge();
+      }
+    } else {
+      //undo last action
+      tmp += 0.5;
+      if (tmp < 2) {
+        this._undoK33FlipVertex2And5_HideAffectedEdges();
+      }
+      if (tmp < 2.5) {
+        this._undoK33FlipVertex2And5_FlipVertices();
+      }
+      if (tmp < 3) {
+        this._undoK33FlipVertex2And5_RedrawAffectedEdges();
+      }
+      if (tmp < 3.5) {
+        this._undoK33RouteEdge25AroundTorusSmallRadius_HideAffectedEdge();
+      }
+      if (tmp < 4) {
+        this._undoK33RouteEdge25AroundTorusSmallRadius_RedrawAffectedEdge();
+      }
+      if (tmp < 4.5) {
+        this._undoK33RouteEdge16AroundTorusLargeRadius_HideAffectedEdge();
+      }
+      if (tmp < 5) {
+        this._undoK33RouteEdge16AroundTorusLargeRadius_RedrawAffectedEdge();
+      }
+      tmp -= 0.5;
     }
-    if (tmp > 3) {
-      this.k33FlipVertex2And5_RedrawAffectedEdges();
-    }
-    if (tmp > 3.5) {
-      this.k33RouteEdge25AroundTorusSmallRadius_HideAffectedEdge();
-    }
-    if (tmp > 4) {
-      this.k33RouteEdge25AroundTorusSmallRadius_RedrawAffectedEdge();
-    }
-    if (tmp > 4.5) {
-      this.k33RouteEdge16AroundTorusLargeRadius_HideAffectedEdge();
-    }
-    if (tmp > 5) {
-      this.k33RouteEdge16AroundTorusLargeRadius_RedrawAffectedEdge();
-    }
+
+    this.prev = tmp;
   }
 
   updateSquareCylinderTorus(s: number, automatic: boolean = true): void {
@@ -385,6 +425,182 @@ export class SurfaceSceneTorus {
     this.addShadowElements(shadowVertices, shadowEdges, new THREE.MeshBasicMaterial(), K33_EDGE_SEGMENTS, false, true);
     this.redrawVertices(this.vertices.values());
     this.redrawEdges(this.edges.values());
+  }
+
+  //--------------------undo--------------------------
+
+  _undoK33ShowVerticesAtStart(): void {
+    if (!this.once[0]) {
+      return;
+    }
+    this.once[0] = false;
+    this.redrawVertices(this.vertices.values(), this.square, true, true);
+  }
+
+  _undoK33ShowEdgesAtStart(): void {
+    if (!this.once[1]) {
+      return;
+    }
+    this.once[1] = false;
+    this.redrawEdges(this.edges.values(), K33_EDGE_SEGMENTS, this.square, true, true);
+  }
+
+  _undoK33FlipVertex2And5_HideAffectedEdges(): void {
+    if (!this.once[2]) {
+      return;
+    }
+    this.once[2] = false;
+
+    for (const id of ['2,4', '2,5', '2,6', '1,5', '3,5']) {
+      const aaa = id.split(',');
+      const i0 = Number.parseInt(aaa[0]);
+      const i1 = Number.parseInt(aaa[1]);
+      const v0 = this.vertices.get(i0);
+      const v1 = this.vertices.get(i1);
+      if (v0 && v1) {
+        const line = createEdgeLine([i0, i1], K33_EDGE_SEGMENTS, true);
+        const record: EdgeRecord = { id, v0, v1, line, isShadow: false, visible: true };
+        this.edges.set(record.id, record);
+        this.scene.add(line);
+      }
+    }
+
+    this.redrawEdges(this.edges.values(), K33_EDGE_SEGMENTS, this.square, true, true);
+  }
+
+  _undoK33FlipVertex2And5_FlipVertices(): void {
+    if (!this.once[3]) {
+      return;
+    }
+
+    this.once[3] = false;
+    const v2 = this.vertices.get(2);
+    const v5 = this.vertices.get(5);
+
+    if (!v2 || !v5) {
+      return;
+    }
+
+    const tmp = v2.mesh.position.clone();
+    v2.mesh.position.copy(v5.mesh.position);
+    v5.mesh.position.copy(tmp);
+    v2.mesh.geometry.attributes.position.needsUpdate = true;
+    v5.mesh.geometry.attributes.position.needsUpdate = true;
+
+    const tmpData = v2.data;
+    v2.data = v5.data;
+    v5.data = tmpData;
+  }
+
+  _undoK33FlipVertex2And5_RedrawAffectedEdges(): void {
+    if (!this.once[4]) {
+      return;
+    }
+    this.once[4] = false;
+
+    ['2,4', '2,5', '2,6', '1,5', '3,5'].forEach((edgeId) => {
+      const edge = this.edges.get(edgeId);
+      if (edge) {
+        this.scene.remove(edge.line);
+        this.edges.delete(edgeId);
+      }
+    });
+  }
+
+  _undoK33RouteEdge25AroundTorusSmallRadius_HideAffectedEdge(): void {
+    if (!this.once[5]) {
+      return;
+    }
+    this.once[5] = false;
+
+    for (const id of ['2,5']) {
+      const aaa = id.split(',');
+      const i0 = Number.parseInt(aaa[0]);
+      const i1 = Number.parseInt(aaa[1]);
+      const v0 = this.vertices.get(i0);
+      const v1 = this.vertices.get(i1);
+      if (v0 && v1) {
+        const line = createEdgeLine([i0, i1], K33_EDGE_SEGMENTS, true);
+        const record: EdgeRecord = { id, v0, v1, line, isShadow: false, visible: true };
+        this.edges.set(record.id, record);
+        this.scene.add(line);
+      }
+    }
+
+    this.redrawEdges(this.edges.values(), K33_EDGE_SEGMENTS, this.square, true, true);
+  }
+
+  _undoK33RouteEdge25AroundTorusSmallRadius_RedrawAffectedEdge(): void {
+    if (!this.once[6]) {
+      return;
+    }
+    this.once[6] = false;
+
+    ['2,7', '5,8'].forEach((edgeId) => {
+      const edge = this.edges.get(edgeId);
+      if (edge) {
+        this.scene.remove(edge.line);
+        this.edges.delete(edgeId);
+      }
+    });
+
+    const v7 = this.vertices.get(7);
+    const v8 = this.vertices.get(8);
+
+    if (!v7 || !v8) {
+      return;
+    }
+
+    this.scene.remove(v7.mesh);
+    this.scene.remove(v8.mesh);
+  }
+
+  _undoK33RouteEdge16AroundTorusLargeRadius_HideAffectedEdge(): void {
+    if (!this.once[7]) {
+      return;
+    }
+    this.once[7] = false;
+
+    for (const id of ['1,6']) {
+      const aaa = id.split(',');
+      const i0 = Number.parseInt(aaa[0]);
+      const i1 = Number.parseInt(aaa[1]);
+      const v0 = this.vertices.get(i0);
+      const v1 = this.vertices.get(i1);
+      if (v0 && v1) {
+        const line = createEdgeLine([i0, i1], K33_EDGE_SEGMENTS, true);
+        const record: EdgeRecord = { id, v0, v1, line, isShadow: false, visible: true };
+        this.edges.set(record.id, record);
+        this.scene.add(line);
+      }
+    }
+
+    this.redrawEdges(this.edges.values(), K33_EDGE_SEGMENTS, this.square, true, true);
+  }
+
+  _undoK33RouteEdge16AroundTorusLargeRadius_RedrawAffectedEdge(): void {
+    if (!this.once[8]) {
+      return;
+    }
+    this.once[8] = false;
+
+    ['1,9', '6,10'].forEach((edgeId) => {
+      const edge = this.edges.get(edgeId);
+      if (edge) {
+        this.scene.remove(edge.line);
+        this.edges.delete(edgeId);
+      }
+    });
+
+    const v9 = this.vertices.get(9);
+    const v10 = this.vertices.get(10);
+
+    if (!v9 || !v10) {
+      return;
+    }
+
+    this.scene.remove(v9.mesh);
+    this.scene.remove(v10.mesh);
   }
 
   private redrawVertices(

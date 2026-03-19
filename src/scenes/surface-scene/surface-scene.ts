@@ -6,12 +6,14 @@ import { SurfaceSceneTorus } from './surface-scene-torus';
 export class SurfaceScene {
   readonly scene = new THREE.Scene();
   readonly sphereScene = new SurfaceSceneSphere(this.scene);
-  readonly torusScene = new SurfaceSceneTorus(this.scene);
+  private torusScene;
   readonly möbiusScene = new SurfaceSceneMöbius(this.scene);
   private stepStartTime = 0;
   private currentStep = 0;
 
-  constructor() {}
+  constructor(updateFunction: (value: number) => void) {
+    this.torusScene = new SurfaceSceneTorus(this.scene, updateFunction);
+  }
 
   applyStep(step: number, time: number): void {
     if (step !== this.currentStep) {

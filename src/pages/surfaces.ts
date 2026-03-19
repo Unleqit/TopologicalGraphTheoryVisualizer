@@ -29,12 +29,28 @@ const canvas = document.getElementById('viz') as HTMLCanvasElement;
 const renderer = createRenderer(canvas);
 const camera = createCamera();
 camera.position.set(0, 3, -7);
-const surfaceScene = new SurfaceScene();
+const surfaceScene = new SurfaceScene(updateSliders);
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
 addDefaultLights(surfaceScene.scene);
+
+function updateSliders(value: number): void {
+  const val1 = (value - 1) * 2;
+  const val2 = value - 6.5;
+
+  if (val1 <= 7) {
+    const val = val1.toFixed(0);
+    slider1.value = val;
+    readout1.textContent = `Step: ${val}`;
+  }
+  if (val2 >= 0 && val2 <= 1) {
+    const val = val2.toFixed(3);
+    slider2.value = val;
+    readout2.textContent = `Step: ${val}`;
+  }
+}
 
 let lastStep = stepper.getStep();
 surfaceScene.applyStep(lastStep, 0);
