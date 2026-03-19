@@ -34,11 +34,11 @@
             <div data-step="1" style="display: none">
               <h3>Step 2 — Gluing edges of a square - Genus 1</h3>
               <p>
-                One can also glue the edges of a square to a cylinder and then bend said cylinder to form a torus by gluing its two openings together. <br />
-                As the torus has a genus of 1, some graphs which previously did not reveal a planar embedding, can now be embedded. <br />
+                One may glue the two opposing edges of a square to a cylinder and bend it into a torus by gluing its two openings together. <br />
+                A torus has a genus of 1, some graphs that previously did not reveal a planar embedding can now be embedded. <br />
                 An example of this is the Kuratowski subgraph <span style="font-size: 1em">K<sub>3,3</sub></span
-                >, which is first rearranged on the sphere by rerouting its intersecting graph edges (2,5) and (1,6) over those pairs of square edges that are later joined during
-                the gluing process. <br />
+                >, which is first rearranged by flipping the vertices 2 and 5 to reduce the amount of intersecting edges and then rerouting the remaining intersecting edges (2,5)
+                and (1,6) over opposing square borders, causing them to connect again at the end of the gluing process. <br />
               </p>
 
               <div class="cylinder-controls" id="cylinderControls" style="margin-bottom: 10px">
@@ -62,7 +62,29 @@
 
             <div data-step="2" style="display: none">
               <h3>Step 3 — Visualize embeddings on surfaces</h3>
-              <p>The same graph can behave differently depending on the surface (genus matters).</p>
+              <p>
+                By folding the square whilst twisting it 180 degrees and gluing its vertical edges together, one can obtain the infamous Möbius strip, which has also a genus of 1.
+                Therefore we can proceed to find an embedding of <span style="font-size: 1em">K<sub>3,3</sub></span> on it without any intersections. For this, we first flip the
+                vertices 2 and 5 of the graph and reroute the remaining intersecting graph lines (3,4) and (1,6) over the vertical borders of the square. <br />
+                Doing this causes them to connect again on the Möbius strip, thus yielding a planar embedding.
+              </p>
+              <div class="cylinder-controls" id="cylinderControls" style="margin-bottom: 10px">
+                <h3>
+                  Part 1 - Rearranging <span style="font-size: 1em">K<sub>3,3</sub></span> in the plane
+                </h3>
+                <p>Step through each part of the edge rerouting process:</p>
+                <label for="slider3"></label>
+                <input id="slider3" type="range" min="0" max="7" value="0" step="1" />
+                <div class="readout" id="readout3">Step: 0</div>
+              </div>
+
+              <div class="cylinder-controls" id="cylinderControls">
+                <h3>Part 2 - Square &rarr; Möbius strip</h3>
+                <p>Check out the morphing process in greater detail:</p>
+                <label for="slider4"></label>
+                <input id="slider4" type="range" min="0" max="1" value="0" step="0.001" />
+                <div class="readout" id="readout4">Step: 0</div>
+              </div>
             </div>
           </div>
         </section>
