@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { SurfaceSceneSphere } from './surface-scene-sphere';
-import { SurfaceSceneMöbius } from './surface-scene-möbius';
 import { SurfaceSceneTorus } from './surface-scene-torus';
+import { SurfaceSceneMöbius } from './surface-scene-möbius';
 
 export class SurfaceScene {
   readonly scene = new THREE.Scene();
@@ -11,9 +11,9 @@ export class SurfaceScene {
   private stepStartTime = 0;
   private currentStep = 0;
 
-  constructor(updateFunctionTorus: (value: number) => void, updateFunctionMöbius: (value: number) => void) {
-    this.torusScene = new SurfaceSceneTorus(this.scene, updateFunctionTorus);
-    this.möbiusScene = new SurfaceSceneMöbius(this.scene, updateFunctionMöbius);
+  constructor(updateUIFunctionTorus: (value: number) => void, updateUIFunctionMöbius: (value: number) => void) {
+    this.torusScene = new SurfaceSceneTorus(this.scene, updateUIFunctionTorus);
+    this.möbiusScene = new SurfaceSceneMöbius(this.scene, updateUIFunctionMöbius);
   }
 
   applyStep(step: number, time: number): void {
@@ -35,12 +35,12 @@ export class SurfaceScene {
         this.sphereScene.updateSquareCylinderSphere(s);
         break;
       case 1:
-        this.torusScene.updateSquareCylinderTorusGraphEmbedding(1 + s);
-        this.torusScene.updateSquareCylinderTorus(s);
+        this.torusScene.updateGraphEmbedding(1 + s);
+        this.torusScene.updateShape(s);
         break;
       case 2:
-        this.möbiusScene.updateSquareMöbiusGraphEmbedding(1 + s);
-        this.möbiusScene.updateSquareMöbius(s);
+        this.möbiusScene.updateGraphEmbedding(1 + s);
+        this.möbiusScene.updateShape(s);
         break;
     }
   }
@@ -48,12 +48,12 @@ export class SurfaceScene {
   onSlider1Change(t: number, t2: number): void {
     switch (this.currentStep) {
       case 1:
-        this.torusScene.updateSquareCylinderTorusGraphEmbedding(t * 0.5, false);
-        this.torusScene.updateSquareCylinderTorus(t2, false);
+        this.torusScene.updateGraphEmbedding(t * 0.5, false);
+        this.torusScene.updateShape(t2, false);
         break;
       case 2:
-        this.möbiusScene.updateSquareMöbiusGraphEmbedding(t * 0.5, false);
-        this.möbiusScene.updateSquareMöbius(t2, false);
+        this.möbiusScene.updateGraphEmbedding(t * 0.5, false);
+        this.möbiusScene.updateShape(t2, false);
         break;
     }
   }
@@ -61,10 +61,10 @@ export class SurfaceScene {
   onSlider2Change(t: number): void {
     switch (this.currentStep) {
       case 1:
-        this.torusScene.updateSquareCylinderTorus(t, false);
+        this.torusScene.updateShape(t, false);
         break;
       case 2:
-        this.möbiusScene.updateSquareMöbius(t, false);
+        this.möbiusScene.updateShape(t, false);
         break;
     }
   }
