@@ -1,9 +1,7 @@
 import * as THREE from 'three';
-import { GraphEdge } from '../graph/graph-edge';
-import { GraphNode } from '../graph/graph.node';
-import { createNodeCircle } from '../threejs/shapes/node-circle';
-import { centerGroup } from '../threejs/camera';
-import { GraphEmbeddingStepResult } from '../graph/graph-embedding-step-result';
+import { GraphEdge } from '../../graph/types/graph-edge';
+import { GraphNode } from '../../graph/types/graph.node';
+import { GraphEmbeddingStepResult } from '../../graph/types/graph-embedding-step-result';
 
 export async function renderRawGraphStepWise(group: THREE.Group, camera: THREE.PerspectiveCamera, stepResult: GraphEmbeddingStepResult, stepMs: number = 250): Promise<void> {
   for (let i = 0; i < stepResult.nodes.length; ++i) {
@@ -38,7 +36,7 @@ export function renderRawGraph(group: THREE.Group, nodes: GraphNode[], edges: Gr
   for (const n of nodes) {
     const pos = nodeMap.get(n.id)!;
 
-    const node = createNodeCircle();
+    const node = new THREE.Mesh(new THREE.CircleGeometry(0.15, 24), new THREE.MeshBasicMaterial({ color: 0x1976d2 }));
     node.position.copy(pos);
     group.add(node);
 
@@ -74,4 +72,11 @@ function createTextLabel(text: string): THREE.Sprite {
   sprite.scale.set(0.4, 0.4, 1); // adjust depending on your scene scale
 
   return sprite;
+}
+
+function centerGroup(group: THREE.Group, camera: THREE.PerspectiveCamera): void {
+  const box = new THREE.Box3().setFromObject(group);
+  const sphere = box.getBoundingSphere(new THREE.Sphere());
+  group.position.sub(sphere.center);
+  camera.position.set(0, 0, sphere.radius * 3);
 }

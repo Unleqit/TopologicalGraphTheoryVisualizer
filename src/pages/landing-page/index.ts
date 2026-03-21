@@ -1,4 +1,4 @@
-import '../styles/base.css';
+import '../../styles/base.css';
 
 // Title element
 const titleEl = document.getElementById('title') as HTMLElement | null;

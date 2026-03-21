@@ -8,9 +8,9 @@
     "serve": "browser-sync start --server dist --files \"dist/**/*\" --port 3000 --no-open",
     "dev": "concurrently \"npm run watch\" \"npm run serve\""
   },
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "author": "SafaeKa & Unleqit",
+  "license": "BSD-3-Clause",
+  "description": "A web-based interactive module for topological graph theory",
   "type": "module",
   "devDependencies": {
     "@eslint/js": "^9.39.2",

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { GraphNode } from '../graph/graph.node';
-import { GraphEdge } from '../graph/graph-edge';
-import { _3DGraphVertex } from '../graph/graph-3d-vertex';
+import { GraphNode } from '../graph/types/graph.node';
+import { GraphEdge } from '../graph/types/graph-edge';
+import { _3DGraphVertex } from '../graph/types/graph-3d-vertex';
 
 export function createLabelSprite(text: string): THREE.Sprite {
   const canvas = document.createElement('canvas');

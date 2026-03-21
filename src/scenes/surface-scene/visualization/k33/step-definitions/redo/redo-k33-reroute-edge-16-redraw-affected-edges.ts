@@ -1,6 +1,6 @@
 import { Vector3, MeshBasicMaterial } from 'three';
-import { _3DGraphVertex } from '../../../../../../graph/graph-3d-vertex';
-import { GraphEdge } from '../../../../../../graph/graph-edge';
+import { _3DGraphVertex } from '../../../../../../graph/types/graph-3d-vertex';
+import { GraphEdge } from '../../../../../../graph/types/graph-edge';
 import { redrawVertices } from '../../../helpers/redraw-vertices';
 import { VisualizationContext } from '../../../types/visualization-context';
 import { addShadowElements } from '../../../helpers/add-shadow-elements';

@@ -1,6 +1,6 @@
 import { Material, MeshBasicMaterial } from 'three';
-import { _3DGraphVertex } from '../../../../graph/graph-3d-vertex';
-import { GraphEdge } from '../../../../graph/graph-edge';
+import { _3DGraphVertex } from '../../../../graph/types/graph-3d-vertex';
+import { GraphEdge } from '../../../../graph/types/graph-edge';
 import { createVertexMesh, createEdgeLine } from '../../../utils';
 import { EdgeRecord } from '../types/edge-record';
 import { VertexRecord } from '../types/vertex-record';

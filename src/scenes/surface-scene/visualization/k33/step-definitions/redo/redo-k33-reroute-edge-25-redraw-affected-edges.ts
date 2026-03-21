@@ -1,7 +1,7 @@
 import { Vector3, MeshBasicMaterial } from 'three';
 import { lerp } from 'three/src/math/MathUtils.js';
-import { _3DGraphVertex } from '../../../../../../graph/graph-3d-vertex';
-import { GraphEdge } from '../../../../../../graph/graph-edge';
+import { _3DGraphVertex } from '../../../../../../graph/types/graph-3d-vertex';
+import { GraphEdge } from '../../../../../../graph/types/graph-edge';
 import { VisualizationContext } from '../../../types/visualization-context';
 import { K33_EDGE_SEGMENTS } from '../../k33-definition';
 import { addShadowElements } from '../../../helpers/add-shadow-elements';

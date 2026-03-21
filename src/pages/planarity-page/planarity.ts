@@ -1,13 +1,11 @@
-import '../styles/base.css';
-
+import '../../styles/base.css';
 import * as THREE from 'three';
-import { createCamera } from '../threejs/camera';
-import { createRenderer } from '../threejs/renderer';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { loadDefaultGraph } from '../layout/load-default-graph';
-import { renderRawGraphStepWise } from '../scenes/graph-scene';
-import { setupGraphUI, setupTabs } from '../ui/graph-input-card';
-import { setupStepper } from '../ui/setup-stepper';
+import { loadDefaultGraph } from '../../graph/layout/load-default-graph';
+import { renderRawGraphStepWise } from '../../scenes/graph-scene/graph-scene';
+import { setupGraphUI, setupTabs } from '../../ui/graph-input-card';
+import { setupStepper } from '../../ui/setup-stepper';
+import { createRenderer, createCamera } from '../utils';
 
 const stepper = setupStepper();
 const canvas = document.getElementById('viz') as HTMLCanvasElement;

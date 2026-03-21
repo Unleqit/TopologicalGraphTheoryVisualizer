@@ -1,7 +1,7 @@
-import { combinatorialEmbeddingToPosStepWise } from '../algorithms/chrobak-payne/chrobak-payne-step-wise';
-import { DEFAULT_GRAPH } from '../default-graph';
-import { GraphEmbeddingStepResult } from '../graph/graph-embedding-step-result';
-import { matrixToEdgeList } from '../graph/graph-utils';
+import { combinatorialEmbeddingToPosStepWise } from '../../algorithms/chrobak-payne/chrobak-payne-step-wise';
+import { DEFAULT_GRAPH } from '../../default-graph';
+import { GraphEmbeddingStepResult } from '../types/graph-embedding-step-result';
+import { matrixToEdgeList } from '../graph-utils';
 import { graphLayoutService } from './index';
 
 export async function loadDefaultGraph(): Promise<GraphEmbeddingStepResult | undefined> {

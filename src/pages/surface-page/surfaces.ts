@@ -1,10 +1,8 @@
-import { SurfaceScene } from '../scenes/surface-scene/surface-scene';
-import '../styles/base.css';
-import { createCamera } from '../threejs/camera';
-import { addDefaultLights } from '../threejs/lights';
-import { createRenderer } from '../threejs/renderer';
-import { setupStepper } from '../ui/setup-stepper';
+import '../../styles/base.css';
+import { SurfaceScene } from '../../scenes/surface-scene/surface-scene';
+import { setupStepper } from '../../ui/setup-stepper';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { addDefaultLights, createCamera, createRenderer } from '../utils';
 
 //--- torus ---
 const slider1 = document.getElementById('slider1') as HTMLInputElement;

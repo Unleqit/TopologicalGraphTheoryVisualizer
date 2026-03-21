@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { ParametricGeometry } from 'three/examples/jsm/geometries/ParametricGeometry.js';
-import { _3DGraphVertex } from '../../graph/graph-3d-vertex';
-import { GraphEdge } from '../../graph/graph-edge';
+import { _3DGraphVertex } from '../../graph/types/graph-3d-vertex';
+import { GraphEdge } from '../../graph/types/graph-edge';
 import { createVertexMeshes, createEdgeLines } from '../utils';
 
 //step 0 constants

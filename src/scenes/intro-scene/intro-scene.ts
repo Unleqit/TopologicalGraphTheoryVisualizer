@@ -287,7 +287,7 @@ export class IntroScene {
     const crossing = (p1: THREE.Vector3[], p2: THREE.Vector3[]) => {
       let best: THREE.Vector3;
       let min = Infinity;
-      for (const a of p1)
+      for (const a of p1) {
         for (const b of p2) {
           const d = a.distanceToSquared(b);
           if (d < min) {
@@ -295,6 +295,7 @@ export class IntroScene {
             best = a.clone().add(b).multiplyScalar(0.5);
           }
         }
+      }
       return best!.normalize().multiplyScalar(sphereRadius * 1.01);
     };
 
@@ -376,7 +377,7 @@ export class IntroScene {
         const p = this.mobiusPoint(u, v);
         positions.push(p.x, p.y, p.z);
 
-        let c = v < 0 ? blue.clone() : red.clone();
+        const c = v < 0 ? blue.clone() : red.clone();
         c.lerp(white, 0.08);
 
         colors.push(c.r, c.g, c.b);
@@ -464,7 +465,9 @@ export class IntroScene {
     const mid = a.clone().add(c).normalize();
 
     let plane = new THREE.Vector3().crossVectors(a, c);
-    if (plane.lengthSq() < 1e-10) plane = new THREE.Vector3(0, 1, 0);
+    if (plane.lengthSq() < 1e-10) {
+      plane = new THREE.Vector3(0, 1, 0);
+    }
 
     plane.normalize();
 
@@ -576,7 +579,9 @@ export class IntroScene {
   }
 
   public resetHandle(): void {
-    if (!this.handleMesh) return;
+    if (!this.handleMesh) {
+      return;
+    }
 
     // Animate shrinking of the handle
     this.morphingHandle = true;

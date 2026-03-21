@@ -1,10 +1,8 @@
-import '../styles/base.css';
-import { IntroScene } from '../scenes/intro-scene';
-import { createCamera } from '../threejs/camera';
-import { addDefaultLights } from '../threejs/lights';
-import { createRenderer } from '../threejs/renderer';
-import { setupStepper } from '../ui/setup-stepper';
+import '../../styles/base.css';
+import { IntroScene } from '../../scenes/intro-scene/intro-scene';
+import { setupStepper } from '../../ui/setup-stepper';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { addDefaultLights, createCamera, createRenderer } from '../utils';
 
 const stepper = setupStepper();
 

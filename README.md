@@ -8,7 +8,7 @@ Core features of the project include:
 
 - Test whether a graph is **planar** (Boyer–Myrvold algorithm).
 - Compute a **planar embedding/layout** if possible (Chrobak–Payne algorithm).
-- Visualize graphs using **Three.js**.
+- Visualize graphs, graph embeddings and surfaces using **Three.js**.
 - Input graphs via **adjacency matrices** or **adjacency lists**.
 
 This project is built with **TypeScript**, **Three.js**, and **Pyodide**.
@@ -19,28 +19,52 @@ This project is built with **TypeScript**, **Three.js**, and **Pyodide**.
 
 - **Step-based interface** for learning about graph planarity and embeddings.
 - **Dynamic graph input** with tabs for adjacency matrices or lists.
-- **Real-time layout computation** using the `networkx` Python module via Pyodide.
-- **Three.js visualization** with smooth rendering and interactive camera (TBD?).
+- **Real-time layout computation** using the `networkx` Python module in the browser via Pyodide.
+- **Three.js visualization** with smooth rendering and an interactive camera you can control.
 - **Preserved input** across steps, allowing experimentation without losing data.
 
 ---
 
 ## Project Structure
 
-As we intend for this app to be hostable and runnable in as many environments as possible, we did not create a dedicated backend for the app, but rather baked the whole business and application logic into this web app.
+As we intend for this app to be hostable and runnable in as many environments as possible, we did not create a dedicated backend for the app, but rather baked the whole business and application logic into this web app, which allows us to host it on services like Github pages.
 
-Below is the purpose of the different folders (TODO: change to fix new structure):
+Below is an in-depth explanation of the project structure:
 
-- `dist`: This is where the bundled outputs go, which will be served to your browser
-- `node_modules`: node_modules
-- `public`: Contains all HTML files
-- `src`: Here are all CSS/JS/TS files, which need to be bundled by Webpack
+- `dist`: Bundled output files served to your browser
+- `node_modules`: Third party modules
+- `public`: HTML files for each page
+- `src`: Source files that will be bundled by Webpack
+  - `algorithms/chrobak-payne`: **Chrobak-Payne** algorithm from **networkx**, ported to TS and modified to output step-wise results
+  - `graph`: Planarity testing logic
+    - `layout`: Layout-computation logic for planar graphs
+  - `pages`: Page logic
+    - `intro-page`: "Introduction to topology" page
+    - `landing-page`: Menu page
+    - `planarity-page`: "Planarity testing & Embedding" page
+    - `surface-page`: "Extending to other surfaces" page
+  - `scenes`: Implementations for all **Three.js** scenes of the app
+    - `intro-scene`: Scenes of the module "Introduction"
+    - `graph-scene`: Scenes of the module "Planarity testing & Embedding"
+    - `surface-scene`: Scenes of the module "Extending to other surfaces"
+      - `coordinate-transform-functions`: Coordinate transformation logic
+      - `visualization`: Visualization logic for surfaces and their embeddings
+        - `helpers`: Utility methods for visualization
+        - `k33`: Embdding logic for the **Kuratowski** subgraph $K_{3,3}$
+          - `step-definitons`: Reordering steps executed before gluing edges together
+            - `redo`: Forward steps
+            - `undo`: Backward steps
+        - `types`: Types for visualization
+  - `styles`: Style files
+  - `ui`: UI-related logic
+- `eslintrc.json`: Legacy ESLint config ued to exclude some subdirectories from linting
 - `.gitignore`: Git-related rules
 - `.prettierrc`: Formatting-related rules
 - `eslint.config.js`: Linting-related rules
 - `package.json`: Contains scripts (e.g. `dev` from `npm run dev`), package info and dependencies
 - `tsconfig.json`: TypeScript-related rules
-- `webpack.config.js`: Webpack-related rules
+- `webpack.config.js`: Webpack-related rules used during development
+- `webpack.prod.js`: Webpack-related rules used when deploying the app to Github pages
 
 ---
 

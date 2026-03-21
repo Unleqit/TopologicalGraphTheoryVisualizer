@@ -1,6 +1,6 @@
 import { Vector3 } from 'three';
-import { _3DGraphVertex } from '../../../../graph/graph-3d-vertex';
-import { GraphEdge } from '../../../../graph/graph-edge';
+import { _3DGraphVertex } from '../../../../graph/types/graph-3d-vertex';
+import { GraphEdge } from '../../../../graph/types/graph-edge';
 
 export const K33_EDGE_SEGMENTS = 140;
 

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { GraphEdge } from './graph-edge';
-import { GraphNode } from './graph.node';
+import { GraphEdge } from './types/graph-edge';
+import { GraphNode } from './types/graph.node';
 
 export function createGraphGroup(): THREE.Group {
   return new THREE.Group();

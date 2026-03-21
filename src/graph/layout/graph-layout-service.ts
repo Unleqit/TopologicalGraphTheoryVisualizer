@@ -1,4 +1,4 @@
-import { GraphEmbeddingPythonResult } from '../graph/graph-embedding-python-result';
+import { GraphEmbeddingPythonResult } from '../types/graph-embedding-python-result';
 
 export class GraphLayoutService {
   private worker: Worker;

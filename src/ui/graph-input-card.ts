@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { matrixToEdgeList } from '../graph/graph-utils';
-import { graphLayoutService } from '../layout/index';
-import { renderRawGraphStepWise } from '../scenes/graph-scene';
+import { graphLayoutService } from '../graph/layout/index';
+import { renderRawGraphStepWise } from '../scenes/graph-scene/graph-scene';
 import { combinatorialEmbeddingToPosStepWise } from '../algorithms/chrobak-payne/chrobak-payne-step-wise';
 
 export interface GraphUIOptions {
@@ -116,9 +116,7 @@ export function setupGraphUI(opts: GraphUIOptions): { setMode: (mode: 'matrix' |
 
   opts.loadGraphBtn.addEventListener('click', loadGraphFromInput);
 
-  return {
-    setMode: (mode: 'matrix' | 'list') => (currentMode = mode),
-  };
+  return { setMode: (mode: 'matrix' | 'list') => (currentMode = mode) };
 }
 
 export function setupTabs(tabButtons: NodeListOf<HTMLButtonElement>, modes: NodeListOf<HTMLElement>, setMode: (mode: 'matrix' | 'list') => void): void {

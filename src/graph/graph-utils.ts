@@ -1,4 +1,4 @@
-import { GraphEdge } from './graph-edge';
+import { GraphEdge } from './types/graph-edge';
 
 export function matrixToEdgeList(matrix: number[][]): { nodeCount: number; edges: GraphEdge[] } {
   const n = matrix.length;

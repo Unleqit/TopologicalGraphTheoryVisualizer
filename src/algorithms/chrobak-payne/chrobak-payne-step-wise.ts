@@ -1,7 +1,7 @@
-import { GraphCanonicalOrdering } from '../../graph/graph-canonical-ordering';
-import { GraphEdge } from '../../graph/graph-edge';
-import { GraphEmbeddingStepResult } from '../../graph/graph-embedding-step-result';
-import { GraphNode } from '../../graph/graph.node';
+import { GraphCanonicalOrdering } from '../../graph/types/graph-canonical-ordering';
+import { GraphEdge } from '../../graph/types/graph-edge';
+import { GraphEmbeddingStepResult } from '../../graph/types/graph-embedding-step-result';
+import { GraphNode } from '../../graph/types/graph.node';
 
 export function combinatorialEmbeddingToPosStepWise(edges: GraphEdge[], nodeLists: GraphCanonicalOrdering): GraphEmbeddingStepResult {
   const steps: Record<number, [number, number]>[] = [];
