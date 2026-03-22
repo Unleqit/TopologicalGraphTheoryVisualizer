@@ -1,16 +1,16 @@
-import * as THREE from 'three';
 import { matrixToEdgeList } from '../graph/graph-utils';
 import { graphLayoutService } from '../graph/layout/index';
 import { renderRawGraphStepWise } from '../scenes/graph-scene/graph-scene';
 import { combinatorialEmbeddingToPosStepWise } from '../algorithms/chrobak-payne/chrobak-payne-step-wise';
+import { Group, PerspectiveCamera } from 'three';
 
 export interface GraphUIOptions {
   graphMatrixInput: HTMLTextAreaElement;
   graphListInput: HTMLTextAreaElement;
   loadGraphBtn: HTMLButtonElement;
   statusEl: HTMLElement;
-  graphGroup: THREE.Group;
-  camera: THREE.PerspectiveCamera;
+  graphGroup: Group;
+  camera: PerspectiveCamera;
   stepper: ReturnType<typeof import('./setup-stepper').setupStepper>;
 }
 

@@ -4,8 +4,7 @@ import { GraphEdge } from '../../../../graph/types/graph-edge';
 import { createVertexMesh, createEdgeLine } from '../../../utils';
 import { EdgeRecord } from '../types/edge-record';
 import { VertexRecord } from '../types/vertex-record';
-import { VisualizationContext } from '../types/visualization-context';
-import { K33_EDGE_SEGMENTS } from '../k33/k33-definition';
+import { VisualizationContext } from '../visualization-context';
 
 export function addShadowElements(
   context: VisualizationContext,
@@ -15,8 +14,8 @@ export function addShadowElements(
   verticesVisible: boolean = false,
   edgesVisible: boolean = true
 ): void {
-  const shadowVertexMeshes = shadowVertices.map((vertex) => createVertexMesh(mat, vertex, verticesVisible));
-  const shadowEdgeLines = shadowEdges.map((edge) => createEdgeLine(edge, K33_EDGE_SEGMENTS, edgesVisible));
+  const shadowVertexMeshes = shadowVertices.map(() => createVertexMesh(mat, verticesVisible));
+  const shadowEdgeLines = shadowEdges.map(() => createEdgeLine(context.edgeSegmentCount, edgesVisible));
 
   for (let i = 0; i < shadowVertices.length; i++) {
     const gv = shadowVertices[i];

@@ -1,17 +1,17 @@
 import '../../styles/base.css';
-import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { loadDefaultGraph } from '../../graph/layout/load-default-graph';
 import { renderRawGraphStepWise } from '../../scenes/graph-scene/graph-scene';
 import { setupGraphUI, setupTabs } from '../../ui/graph-input-card';
 import { setupStepper } from '../../ui/setup-stepper';
 import { createRenderer, createCamera } from '../utils';
+import { AmbientLight, DirectionalLight, Group, Scene } from 'three';
 
 const stepper = setupStepper();
 const canvas = document.getElementById('viz') as HTMLCanvasElement;
 
 const renderer = createRenderer(canvas);
-const scene = new THREE.Scene();
+const scene = new Scene();
 const camera = createCamera();
 
 // --- Orbit Controls ---
@@ -24,12 +24,12 @@ controls.screenSpacePanning = false; // pan relative to camera
 controls.enableRotate = true; // allow rotation
 controls.enableZoom = true; // allow zooming
 
-scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+scene.add(new AmbientLight(0xffffff, 0.6));
+const dir = new DirectionalLight(0xffffff, 0.9);
 dir.position.set(3, 4, 5);
 scene.add(dir);
 
-const graphGroup = new THREE.Group();
+const graphGroup = new Group();
 scene.add(graphGroup);
 
 // ---------------- UI ----------------

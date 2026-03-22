@@ -1,127 +1,74 @@
-import * as THREE from 'three';
 import { ParametricGeometry } from 'three/examples/jsm/geometries/ParametricGeometry.js';
-import { _3DGraphVertex } from '../../graph/types/graph-3d-vertex';
-import { GraphEdge } from '../../graph/types/graph-edge';
-import { createVertexMeshes, createEdgeLines } from '../utils';
-
-//step 0 constants
-const vertices: _3DGraphVertex[] = [
-  { vertex: { id: 0, x: 0.2, y: 0.3 }, position: new THREE.Vector3() },
-  { vertex: { id: 1, x: 0.8, y: 0.4 }, position: new THREE.Vector3() },
-  { vertex: { id: 2, x: 0.5, y: 0.8 }, position: new THREE.Vector3() },
-];
-
-const edges: GraphEdge[] = [
-  [0, 1],
-  [1, 2],
-  [2, 0],
-];
-
-const EDGE_SEGMENTS = 40;
+import { EmbeddingInstance } from './visualization/embedding-instance';
+import { square } from './coordinate-transformation-functions/square';
+import { squareCylinderSphere } from './coordinate-transformation-functions/square-cylinder-sphere';
+import { VisualizationContext } from './visualization/visualization-context';
+import { VisualizationContextUpdateUISource } from './visualization/types/visualization-context-ui-update-source';
+import { VisualizationStep } from './visualization/types/visualization-step';
+import { K3_EDGE_SEGMENTS, k3Edges, k3Vertices } from './visualization/step-definitions/k3/k3-definition';
+import { showVerticesAtStart } from './visualization/step-definitions/common/redo/redo-show-vertices-at-start';
+import { _undoShowVerticesAtStart } from './visualization/step-definitions/common/undo/undo-show-vertices-at-start';
+import { showEdgesAtStart } from './visualization/step-definitions/common/redo/redo-show-edges-at-start';
+import { _undoShowEdgesAtStart } from './visualization/step-definitions/common/undo/undo-show-edges-at-start';
+import { Scene, MeshStandardMaterial, DoubleSide, Mesh, Vector3 } from 'three';
 
 export class SurfaceSceneSphere {
-  private scene: THREE.Scene;
-  private squareCylinderSphereMesh: THREE.Mesh;
-  private vertexMeshes: THREE.Mesh[] = [];
-  private edgeLines: THREE.Line[] = [];
-  private objects: THREE.Object3D[] = [];
-  private morph = 0;
+  private EmbeddingInstance: EmbeddingInstance;
+  private initialXScale: number;
+  private initialYScale: number;
 
-  constructor(scene: THREE.Scene) {
-    this.scene = scene;
-    const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, wireframe: false, side: THREE.DoubleSide });
-    const geo = new ParametricGeometry(this.squareCylinderSphere.bind(this), 140, 80);
+  constructor(scene: Scene, updateUIFunction: (value: number, source: VisualizationContextUpdateUISource) => void) {
+    this.initialXScale = 1.5;
+    this.initialYScale = 1.5;
 
-    this.squareCylinderSphereMesh = new THREE.Mesh(geo, mat);
+    const patchedCoordinateTransformationFunction = this.patchCoordinateTransformationFunction(square);
+    const patchedMorphFunction = this.patchMorphFunction(squareCylinderSphere);
 
-    const vertexMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-    this.vertexMeshes = createVertexMeshes(vertexMat, vertices, true);
-    this.vertexMeshes.forEach((v) => this.scene.add(v));
+    const mat = new MeshStandardMaterial({ color: 0xffffff, wireframe: false, side: DoubleSide });
+    const torusGeo = new ParametricGeometry(patchedMorphFunction, 80, 60);
+    const mesh = new Mesh(torusGeo, mat);
+    const context = new VisualizationContext(scene, mesh, patchedCoordinateTransformationFunction, patchedMorphFunction, updateUIFunction, this.initialXScale, this.initialYScale);
 
-    this.edgeLines = createEdgeLines(edges, EDGE_SEGMENTS, true);
-    this.edgeLines.forEach((e) => this.scene.add(e));
+    const steps: VisualizationStep[] = [
+      { description: '0', stepNumber: 0, redo: showVerticesAtStart, undo: _undoShowVerticesAtStart },
+      { description: '1', stepNumber: 1, redo: showEdgesAtStart, undo: _undoShowEdgesAtStart },
+    ];
 
-    this.add(this.squareCylinderSphereMesh);
+    this.EmbeddingInstance = new EmbeddingInstance(context, k3Vertices, k3Edges, K3_EDGE_SEGMENTS, steps, 2, 1, 3);
   }
 
-  private add(obj: THREE.Object3D): void {
-    this.scene.add(obj);
-    this.objects.push(obj);
+  public setVisible(visible: boolean): void {
+    this.EmbeddingInstance.setVisible(visible);
   }
 
-  setVisible(visible: boolean) {
-    this.squareCylinderSphereMesh.visible = visible;
-    this.vertexMeshes.forEach((mesh) => (mesh.visible = visible));
-    this.edgeLines.forEach((line) => (line.visible = visible));
+  public autoUpdate(t: number): void {
+    this.EmbeddingInstance.autoUpdate(t);
   }
 
-  updateSquareCylinderSphere(s: number) {
-    //update morphed object geometry
-    this.morph = (Math.sin(s * 0.4 - Math.PI / 2) + 1) * 0.5;
-    const newGeo = new ParametricGeometry(this.squareCylinderSphere.bind(this), 140, 80);
-    this.squareCylinderSphereMesh.geometry.dispose();
-    this.squareCylinderSphereMesh.geometry = newGeo;
-
-    //update vertices of embedded graph
-    for (let i = 0; i < vertices.length; i++) {
-      const v = vertices[i];
-      const pos = new THREE.Vector3();
-      this.squareCylinderSphere(v.vertex.x, v.vertex.y, pos);
-      this.vertexMeshes[i].position.copy(pos);
-    }
-
-    //update edges of embedded graph
-    for (let i = 0; i < edges.length; i++) {
-      const e = edges[i];
-      const v0 = vertices[e[0]];
-      const v1 = vertices[e[1]];
-
-      const line = this.edgeLines[i];
-      const pos = (line.geometry as THREE.BufferGeometry).attributes.position;
-
-      for (let j = 0; j <= EDGE_SEGMENTS; j++) {
-        const t = j / EDGE_SEGMENTS;
-
-        const u = THREE.MathUtils.lerp(v0.vertex.x, v1.vertex.x, t);
-        const v = THREE.MathUtils.lerp(v0.vertex.y, v1.vertex.y, t);
-
-        const p = new THREE.Vector3();
-        this.squareCylinderSphere(u, v, p);
-
-        pos.setXYZ(j, p.x, p.y, p.z);
-      }
-
-      pos.needsUpdate = true;
-    }
+  public updateGraphEmbedding(t: number, automatic: boolean = true): void {
+    this.EmbeddingInstance.updateGraphEmbedding(t, automatic);
   }
 
-  squareCylinderSphere(u: number, v: number, target: THREE.Vector3) {
-    const t = this.morph;
+  public updateShape(t: number, automatic: boolean = true): void {
+    this.EmbeddingInstance.updateShape(t, automatic);
+  }
 
-    // ----- square ------
-    const x = u * 2 - 1;
-    const y = v * 2 - 1;
-    const square = new THREE.Vector3(x * 1.5, y * 1.5, 0);
+  private patchMorphFunction(fn: (u: number, v: number, p: Vector3, morph: number, xScale: number, yScale: number) => void): (u: number, v: number, p: Vector3) => void {
+    return (u: number, v: number, p: Vector3) => {
+      fn(
+        u,
+        v,
+        p,
+        this.EmbeddingInstance?.context.morph ?? 0,
+        this.EmbeddingInstance?.context.meshXScale ?? this.initialXScale,
+        this.EmbeddingInstance?.context.meshYScale ?? this.initialYScale
+      );
+    };
+  }
 
-    // ----- cylinder -----
-    const bend = Math.PI * 2 * Math.min(t * 2, 1);
-    const radius = 1;
-    const angle = (u - 0.5) * bend;
-    const cylinder = new THREE.Vector3(Math.sin(angle) * radius, y * 1.5, (1 - Math.cos(angle)) * radius - radius);
-
-    // ----- sphere -----
-    const R = 1.4;
-    const theta = u * 2 * Math.PI;
-    const phi = (v - 0.5) * Math.PI;
-    const sphere = new THREE.Vector3(Math.cos(phi) * Math.cos(theta), Math.sin(phi), Math.cos(phi) * Math.sin(theta)).multiplyScalar(R);
-
-    //different animations
-    if (t < 0.5) {
-      const k = t * 2;
-      target.lerpVectors(square, cylinder, k);
-    } else {
-      const k = (t - 0.5) * 2;
-      target.lerpVectors(cylinder, sphere, k);
-    }
+  private patchCoordinateTransformationFunction(fn: (u: number, v: number, p: Vector3, xScale: number, yScale: number) => void): (u: number, v: number, p: Vector3) => void {
+    return (u: number, v: number, p: Vector3) => {
+      fn(u, v, p, this.EmbeddingInstance?.context.meshXScale ?? this.initialXScale, this.EmbeddingInstance?.context.meshYScale ?? this.initialYScale);
+    };
   }
 }

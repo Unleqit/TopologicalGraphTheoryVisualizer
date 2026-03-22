@@ -1,9 +1,12 @@
-import * as THREE from 'three';
 import { GraphNode } from '../graph/types/graph.node';
 import { GraphEdge } from '../graph/types/graph-edge';
 import { _3DGraphVertex } from '../graph/types/graph-3d-vertex';
+import { Line2 } from 'three/examples/jsm/lines/Line2.js';
+import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
+import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
+import { Sprite, CanvasTexture, SpriteMaterial, Material, Mesh, SphereGeometry, Line, Vector3, MathUtils } from 'three';
 
-export function createLabelSprite(text: string): THREE.Sprite {
+export function createLabelSprite(text: string): Sprite {
   const canvas = document.createElement('canvas');
   canvas.width = 128;
   canvas.height = 128;
@@ -21,69 +24,76 @@ export function createLabelSprite(text: string): THREE.Sprite {
   ctx.textBaseline = 'middle';
   ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
-  const texture = new THREE.CanvasTexture(canvas);
+  const texture = new CanvasTexture(canvas);
 
-  const material = new THREE.SpriteMaterial({
-    map: texture,
-    transparent: true,
-    depthTest: false, // ensures label is not hidden inside geometry
-  });
+  const material = new SpriteMaterial({ map: texture, transparent: true, depthTest: false });
 
-  const sprite = new THREE.Sprite(material);
+  const sprite = new Sprite(material);
   sprite.scale.set(0.25, 0.25, 0.25);
 
   return sprite;
 }
 
-export function createLabeledVertexMeshes(mat: THREE.Material, vertices: _3DGraphVertex[], visible: boolean = false): THREE.Mesh[] {
+export function createLabeledVertexMeshes(mat: Material, vertices: _3DGraphVertex[], visible: boolean = false): Mesh[] {
   const vertexMeshes = [];
   for (const v of vertices) {
-    vertexMeshes.push(createLabeledVertexMesh(mat, v, visible));
+    vertexMeshes.push(createLabeledVertexMesh(mat, v.vertex.id.toString(), visible));
   }
   return vertexMeshes;
 }
 
-export function createLabeledVertexMesh(mat: THREE.Material, vertex: _3DGraphVertex, visible: boolean = false): THREE.Mesh {
-  const geo = new THREE.SphereGeometry(0.05, 16, 16);
-  const mesh = new THREE.Mesh(geo, mat);
+export function createLabeledVertexMesh(mat: Material, vertexID: string, visible: boolean = false): Mesh {
+  const geo = new SphereGeometry(0.05, 16, 16);
+  const mesh = new Mesh(geo, mat);
   mesh.visible = visible;
-  const label = createLabelSprite(vertex.vertex.id.toString());
+  const label = createLabelSprite(vertexID);
   mesh.add(label);
   return mesh;
 }
 
-export function createVertexMeshes(mat: THREE.Material, vertices: _3DGraphVertex[], visible: boolean = false): THREE.Mesh[] {
+export function createVertexMeshes(mat: Material, vertices: _3DGraphVertex[], visible: boolean = false): Mesh[] {
   const vertexMeshes = [];
   for (const v of vertices) {
-    vertexMeshes.push(createVertexMesh(mat, v, visible));
+    vertexMeshes.push(createVertexMesh(mat, visible));
   }
   return vertexMeshes;
 }
 
-export function createVertexMesh(mat: THREE.Material, vertex: _3DGraphVertex, visible: boolean = false): THREE.Mesh {
-  const geo = new THREE.SphereGeometry(0.05, 16, 16);
-  const mesh = new THREE.Mesh(geo, mat);
+export function createVertexMesh(mat: Material, visible: boolean = false): Mesh {
+  const geo = new SphereGeometry(0.05, 16, 16);
+  const mesh = new Mesh(geo, mat);
   mesh.visible = visible;
-
   return mesh;
 }
 
-export function createEdgeLines(edges: GraphEdge[], EDGE_SEGMENTS: number, visible: boolean = false) {
+export function createEdgeLines(edges: GraphEdge[], EDGE_SEGMENTS: number, visible: boolean = false): Line2[] {
   const edgeLines = [];
   for (const e of edges) {
-    edgeLines.push(createEdgeLine(e, EDGE_SEGMENTS, visible));
+    edgeLines.push(createEdgeLine(EDGE_SEGMENTS, visible));
   }
   return edgeLines;
 }
 
-export function createEdgeLine(edge: GraphEdge, EDGE_SEGMENTS: number, visible: boolean = false) {
-  const points = [];
+export function createEdgeLine(EDGE_SEGMENTS: number, visible: boolean = false): Line2 {
+  const positions: number[] = [];
+
   for (let i = 0; i <= EDGE_SEGMENTS; i++) {
-    points.push(new THREE.Vector3());
+    positions.push(0, 0, 0);
   }
-  const geo = new THREE.BufferGeometry().setFromPoints(points);
-  const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0x00ffff }));
+
+  const geometry = new LineGeometry();
+  geometry.setPositions(positions);
+
+  const material = new LineMaterial({ color: 0x00ffff, linewidth: 3 });
+  material.resolution.set(window.innerWidth, window.innerHeight);
+
+  window.addEventListener('resize', () => {
+    material.resolution.set(window.innerWidth, window.innerHeight);
+  });
+
+  const line = new Line2(geometry, material);
   line.visible = visible;
+
   return line;
 }
 
@@ -102,13 +112,13 @@ export function lerpWrap01Long(a: number, b: number, t: number): number {
   return u;
 }
 
-export function updateEdgeLine(line: THREE.Line, v0: GraphNode, v1: GraphNode, EDGE_SEGMENTS: number, morphFunction: (u: number, v: number, p: THREE.Vector3) => void) {
+export function updateEdgeLine(line: Line, v0: GraphNode, v1: GraphNode, EDGE_SEGMENTS: number, morphFunction: (u: number, v: number, p: Vector3) => void) {
   const posAttr = line.geometry.attributes.position;
   for (let j = 0; j <= EDGE_SEGMENTS; j++) {
     const t = j / EDGE_SEGMENTS;
-    const u = THREE.MathUtils.lerp(v0.x, v1.x, t);
-    const v = THREE.MathUtils.lerp(v0.y, v1.y, t);
-    const p = new THREE.Vector3();
+    const u = MathUtils.lerp(v0.x, v1.x, t);
+    const v = MathUtils.lerp(v0.y, v1.y, t);
+    const p = new Vector3();
     morphFunction(u, v, p);
     posAttr.setXYZ(j, p.x, p.y, p.z);
   }

@@ -1,9 +1,25 @@
-import * as THREE from 'three';
 import { GraphEdge } from '../../graph/types/graph-edge';
 import { GraphNode } from '../../graph/types/graph.node';
 import { GraphEmbeddingStepResult } from '../../graph/types/graph-embedding-step-result';
+import {
+  Group,
+  PerspectiveCamera,
+  Vector3,
+  BufferGeometry,
+  BufferAttribute,
+  LineSegments,
+  LineBasicMaterial,
+  Mesh,
+  CircleGeometry,
+  MeshBasicMaterial,
+  Sprite,
+  CanvasTexture,
+  SpriteMaterial,
+  Box3,
+  Sphere,
+} from 'three';
 
-export async function renderRawGraphStepWise(group: THREE.Group, camera: THREE.PerspectiveCamera, stepResult: GraphEmbeddingStepResult, stepMs: number = 250): Promise<void> {
+export async function renderRawGraphStepWise(group: Group, camera: PerspectiveCamera, stepResult: GraphEmbeddingStepResult, stepMs: number = 250): Promise<void> {
   for (let i = 0; i < stepResult.nodes.length; ++i) {
     renderRawGraph(group, stepResult.nodes[i], stepResult.edges[i]);
     centerGroup(group, camera);
@@ -11,13 +27,13 @@ export async function renderRawGraphStepWise(group: THREE.Group, camera: THREE.P
   }
 }
 
-export function renderRawGraph(group: THREE.Group, nodes: GraphNode[], edges: GraphEdge[]): void {
+export function renderRawGraph(group: Group, nodes: GraphNode[], edges: GraphEdge[]): void {
   group.clear();
 
-  const nodeMap = new Map<number, THREE.Vector3>();
+  const nodeMap = new Map<number, Vector3>();
 
   for (const n of nodes) {
-    nodeMap.set(Number(n.id), new THREE.Vector3(n.x, n.y, 0));
+    nodeMap.set(Number(n.id), new Vector3(n.x, n.y, 0));
   }
 
   const edgeVerts: number[] = [];
@@ -28,15 +44,15 @@ export function renderRawGraph(group: THREE.Group, nodes: GraphNode[], edges: Gr
     edgeVerts.push(a!.x, a!.y, 0, b!.x, b!.y, 0);
   }
 
-  const geom = new THREE.BufferGeometry();
-  geom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(edgeVerts), 3));
+  const geom = new BufferGeometry();
+  geom.setAttribute('position', new BufferAttribute(new Float32Array(edgeVerts), 3));
 
-  group.add(new THREE.LineSegments(geom, new THREE.LineBasicMaterial({ color: 0x00ffcc })));
+  group.add(new LineSegments(geom, new LineBasicMaterial({ color: 0x00ffcc })));
 
   for (const n of nodes) {
     const pos = nodeMap.get(n.id)!;
 
-    const node = new THREE.Mesh(new THREE.CircleGeometry(0.15, 24), new THREE.MeshBasicMaterial({ color: 0x1976d2 }));
+    const node = new Mesh(new CircleGeometry(0.15, 24), new MeshBasicMaterial({ color: 0x1976d2 }));
     node.position.copy(pos);
     group.add(node);
 
@@ -48,7 +64,7 @@ export function renderRawGraph(group: THREE.Group, nodes: GraphNode[], edges: Gr
   }
 }
 
-function createTextLabel(text: string): THREE.Sprite {
+function createTextLabel(text: string): Sprite {
   const canvas = document.createElement('canvas');
   const size = 128;
   canvas.width = size;
@@ -64,19 +80,19 @@ function createTextLabel(text: string): THREE.Sprite {
 
   ctx.fillText(text, size / 2, size / 2);
 
-  const texture = new THREE.CanvasTexture(canvas);
+  const texture = new CanvasTexture(canvas);
 
-  const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
+  const material = new SpriteMaterial({ map: texture, transparent: true });
 
-  const sprite = new THREE.Sprite(material);
+  const sprite = new Sprite(material);
   sprite.scale.set(0.4, 0.4, 1); // adjust depending on your scene scale
 
   return sprite;
 }
 
-function centerGroup(group: THREE.Group, camera: THREE.PerspectiveCamera): void {
-  const box = new THREE.Box3().setFromObject(group);
-  const sphere = box.getBoundingSphere(new THREE.Sphere());
+function centerGroup(group: Group, camera: PerspectiveCamera): void {
+  const box = new Box3().setFromObject(group);
+  const sphere = box.getBoundingSphere(new Sphere());
   group.position.sub(sphere.center);
   camera.position.set(0, 0, sphere.radius * 3);
 }

@@ -30,7 +30,26 @@
                 All shapes obtainable from this approach have a genus of 0, causing any graph without edge intersections in the plane to also have no edge intersections on such a
                 shape.
               </p>
+
+              <div class="cylinder-controls" id="cylinderControls" style="margin-bottom: 10px">
+                <h3>
+                  Part 1 - Drawing <span style="font-size: 1em">K<sub>3</sub></span>
+                </h3>
+                <p>Step through each part of the edge rerouting process:</p>
+                <label for="slider-1"></label>
+                <input id="slider-1" type="range" min="0" max="1" value="0" step="0.001" />
+                <div class="readout" id="readout-1">Step: 0</div>
+              </div>
+
+              <div class="cylinder-controls" id="cylinderControls" , style="margin-bottom: 10px">
+                <h3>Part 2 - Square &rarr; Cylinder &rarr; Sphere</h3>
+                <p>Check out the morphing process in greater detail:</p>
+                <label for="slider0"></label>
+                <input id="slider0" type="range" min="0" max="1" value="0" step="0.001" />
+                <div class="readout" id="readout0">Step: 0</div>
+              </div>
             </div>
+
             <div data-step="1" style="display: none">
               <h3>Step 2 — Gluing edges of a square - Genus 1</h3>
               <p>
@@ -43,11 +62,11 @@
 
               <div class="cylinder-controls" id="cylinderControls" style="margin-bottom: 10px">
                 <h3>
-                  Part 1 - Rearranging <span style="font-size: 1em">K<sub>3,3</sub></span> in the plane
+                  Part 1 - Drawing & Rearranging <span style="font-size: 1em">K<sub>3,3</sub></span>
                 </h3>
                 <p>Step through each part of the edge rerouting process:</p>
                 <label for="slider1"></label>
-                <input id="slider1" type="range" min="0" max="7" value="0" step="1" />
+                <input id="slider1" type="range" min="0" max="1" value="0" step="0.001" />
                 <div class="readout" id="readout1">Step: 0</div>
               </div>
 
@@ -70,11 +89,11 @@
               </p>
               <div class="cylinder-controls" id="cylinderControls" style="margin-bottom: 10px">
                 <h3>
-                  Part 1 - Rearranging <span style="font-size: 1em">K<sub>3,3</sub></span> in the plane
+                  Part 1 - Drawing & Rearranging <span style="font-size: 1em">K<sub>3,3</sub></span>
                 </h3>
                 <p>Step through each part of the edge rerouting process:</p>
                 <label for="slider3"></label>
-                <input id="slider3" type="range" min="0" max="7" value="0" step="1" />
+                <input id="slider3" type="range" min="0" max="1" value="0" step="0.001" />
                 <div class="readout" id="readout3">Step: 0</div>
               </div>
 

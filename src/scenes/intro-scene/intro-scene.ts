@@ -1,21 +1,46 @@
-import * as THREE from 'three';
+import {
+  Scene,
+  Object3D,
+  Mesh,
+  Group,
+  Vector3,
+  Line,
+  LineSegments,
+  BufferGeometry,
+  SphereGeometry,
+  MeshStandardMaterial,
+  DoubleSide,
+  WireframeGeometry,
+  LineBasicMaterial,
+  Color,
+  Float32BufferAttribute,
+  MeshPhongMaterial,
+  MathUtils,
+  MeshBasicMaterial,
+  CylinderGeometry,
+  ConeGeometry,
+  Quaternion,
+  CatmullRomCurve3,
+  TubeGeometry,
+  Vector2,
+} from 'three';
 
 export class IntroScene {
-  readonly scene = new THREE.Scene();
-  private objects: THREE.Object3D[] = [];
+  readonly scene = new Scene();
+  private objects: Object3D[] = [];
 
-  private sphere: THREE.Mesh;
+  private sphere: Mesh;
 
   // --- STEP 3: sphere graph ---
-  private sphereGraphGroup: THREE.Group;
-  private graphSphere!: THREE.Mesh;
-  private V!: Record<string, THREE.Vector3>;
-  private acLine!: THREE.Line;
-  private acLineOriginal!: THREE.Line;
-  private bdLine!: THREE.Line;
-  private crossMarker!: THREE.Mesh;
-  private handleCurve!: THREE.Vector3[];
-  private handleMesh!: THREE.Mesh;
+  private sphereGraphGroup: Group;
+  private graphSphere!: Mesh;
+  private V!: Record<string, Vector3>;
+  private acLine!: Line;
+  private acLineOriginal!: Line;
+  private bdLine!: Line;
+  private crossMarker!: Mesh;
+  private handleCurve!: Vector3[];
+  private handleMesh!: Mesh;
   private handleAdded = false;
   private handleUsed = false;
 
@@ -28,61 +53,61 @@ export class IntroScene {
   private morphingHandle = false;
 
   // --- Möbius ---
-  private mobiusGroup: THREE.Group;
-  private mobiusMesh: THREE.Mesh;
-  private mobiusWire: THREE.LineSegments;
-  private mobiusArrow: THREE.Group;
-  private mobiusStartArrow: THREE.Group;
-  private mobiusMarker: THREE.Mesh;
+  private mobiusGroup: Group;
+  private mobiusMesh: Mesh;
+  private mobiusWire: LineSegments;
+  private mobiusArrow: Group;
+  private mobiusStartArrow: Group;
+  private mobiusMarker: Mesh;
   private mobiusInitialFrame: any;
 
   // --- torus with arrows ---
-  private torusGroup: THREE.Group;
-  private torusMesh: THREE.Mesh;
-  private torusWireframe: THREE.LineSegments;
-  private movingArrow: THREE.Group;
-  private startArrow: THREE.Group;
-  private startMarker: THREE.Mesh;
-  private initialFrame: { p: THREE.Vector3; tangent: THREE.Vector3; across: THREE.Vector3; normal: THREE.Vector3 };
+  private torusGroup: Group;
+  private torusMesh: Mesh;
+  private torusWireframe: LineSegments;
+  private movingArrow: Group;
+  private startArrow: Group;
+  private startMarker: Mesh;
+  private initialFrame: { p: Vector3; tangent: Vector3; across: Vector3; normal: Vector3 };
 
   //sphere morphing
-  private geometry: THREE.BufferGeometry;
+  private geometry: BufferGeometry;
   private basePositions: Float32Array;
   private baseNormals: Float32Array;
 
   constructor() {
-    const baseGeometry = new THREE.SphereGeometry(1.4, 48, 24);
+    const baseGeometry = new SphereGeometry(1.4, 48, 24);
     this.geometry = baseGeometry.clone();
     this.basePositions = (this.geometry.attributes.position.array as Float32Array).slice();
     this.baseNormals = (this.geometry.attributes.normal.array as Float32Array).slice();
 
-    this.sphere = new THREE.Mesh(this.geometry, new THREE.MeshStandardMaterial({ color: 0xffffff, wireframe: true }));
+    this.sphere = new Mesh(this.geometry, new MeshStandardMaterial({ color: 0xffffff, wireframe: true }));
 
     /* ------------------------------------------------ */
     /*                    MOBIUS STRIP                  */
     /* ------------------------------------------------ */
 
-    this.mobiusGroup = new THREE.Group();
+    this.mobiusGroup = new Group();
 
     const mobiusGeometry = this.buildMobiusGeometry();
 
-    const mobiusMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide, roughness: 0.45, metalness: 0.04 });
+    const mobiusMaterial = new MeshStandardMaterial({ vertexColors: true, side: DoubleSide, roughness: 0.45, metalness: 0.04 });
 
-    this.mobiusMesh = new THREE.Mesh(mobiusGeometry, mobiusMaterial);
+    this.mobiusMesh = new Mesh(mobiusGeometry, mobiusMaterial);
     this.mobiusGroup.add(this.mobiusMesh);
 
-    this.mobiusWire = new THREE.LineSegments(new THREE.WireframeGeometry(mobiusGeometry), new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.12 }));
+    this.mobiusWire = new LineSegments(new WireframeGeometry(mobiusGeometry), new LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.12 }));
 
     this.mobiusGroup.add(this.mobiusWire);
 
-    const centerPoints: THREE.Vector3[] = [];
+    const centerPoints: Vector3[] = [];
 
     for (let i = 0; i <= 420; i++) {
       const u = (i / 420) * Math.PI * 2;
       centerPoints.push(this.mobiusPoint(u, 0));
     }
 
-    const centerLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(centerPoints), new THREE.LineBasicMaterial({ color: 0xffffff }));
+    const centerLine = new Line(new BufferGeometry().setFromPoints(centerPoints), new LineBasicMaterial({ color: 0xffffff }));
 
     this.mobiusGroup.add(centerLine);
 
@@ -92,7 +117,7 @@ export class IntroScene {
     this.mobiusGroup.add(this.mobiusArrow);
     this.mobiusGroup.add(this.mobiusStartArrow);
 
-    this.mobiusMarker = new THREE.Mesh(new THREE.SphereGeometry(0.045, 18, 18), new THREE.MeshStandardMaterial({ color: 0xffffff }));
+    this.mobiusMarker = new Mesh(new SphereGeometry(0.045, 18, 18), new MeshStandardMaterial({ color: 0xffffff }));
 
     this.mobiusGroup.add(this.mobiusMarker);
 
@@ -112,27 +137,27 @@ export class IntroScene {
     /*                     TORUS                        */
     /* ------------------------------------------------ */
 
-    this.torusGroup = new THREE.Group();
+    this.torusGroup = new Group();
 
     const R = 1.3;
     const r = 0.7;
     const segmentsU = 80;
     const segmentsV = 22;
 
-    function torusPoint(u: number, v: number): THREE.Vector3 {
+    function torusPoint(u: number, v: number): Vector3 {
       const x = R * Math.cos(u);
       const y = R * Math.sin(u);
       const z = r * Math.sin(v);
 
-      return new THREE.Vector3(x, y, z);
+      return new Vector3(x, y, z);
     }
 
-    function torusDu(u: number, v: number): THREE.Vector3 {
-      return new THREE.Vector3(-R * Math.sin(u), R * Math.cos(u), 0);
+    function torusDu(u: number, v: number): Vector3 {
+      return new Vector3(-R * Math.sin(u), R * Math.cos(u), 0);
     }
 
-    function torusDv(u: number, v: number): THREE.Vector3 {
-      return new THREE.Vector3(0, 0, r * Math.cos(v));
+    function torusDv(u: number, v: number): Vector3 {
+      return new Vector3(0, 0, r * Math.cos(v));
     }
 
     function frameOnTorus(u: number, v = Math.PI) {
@@ -140,19 +165,19 @@ export class IntroScene {
 
       const tangent = torusDu(u, v).normalize();
       const across = torusDv(u, v).normalize();
-      const normal = new THREE.Vector3().crossVectors(tangent, across).normalize();
+      const normal = new Vector3().crossVectors(tangent, across).normalize();
 
       return { p, tangent, across, normal };
     }
 
-    function buildTorusGeometry(): THREE.BufferGeometry {
+    function buildTorusGeometry(): BufferGeometry {
       const positions: number[] = [];
       const colors: number[] = [];
       const indices: number[] = [];
 
-      const red = new THREE.Color(0xff6478);
-      const blue = new THREE.Color(0x5da9ff);
-      const white = new THREE.Color(0xf6f8ff);
+      const red = new Color(0xff6478);
+      const blue = new Color(0x5da9ff);
+      const white = new Color(0xf6f8ff);
 
       const segmentsV = 22;
       for (let i = 0; i <= segmentsU; i++) {
@@ -165,11 +190,11 @@ export class IntroScene {
           const p = torusPoint(u, v);
           positions.push(p.x, p.y, p.z);
 
-          let c: THREE.Color;
+          let c: Color;
 
           const stripeWidth = 0.08; // fraction of tube for white line
           if (Math.abs(t - 0.5) < stripeWidth / 2) {
-            c = new THREE.Color(0xffffff); // white stripe in the middle
+            c = new Color(0xffffff); // white stripe in the middle
           } else {
             // top = red, bottom = blue
             c = t < 0.5 ? blue.clone() : red.clone();
@@ -192,10 +217,10 @@ export class IntroScene {
         }
       }
 
-      const geometry = new THREE.BufferGeometry();
+      const geometry = new BufferGeometry();
       geometry.setIndex(indices);
-      geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-      geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+      geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
+      geometry.setAttribute('color', new Float32BufferAttribute(colors, 3));
       geometry.computeVertexNormals();
 
       return geometry;
@@ -203,11 +228,11 @@ export class IntroScene {
 
     const torusGeometry = buildTorusGeometry();
 
-    this.torusMesh = new THREE.Mesh(torusGeometry, new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide }));
+    this.torusMesh = new Mesh(torusGeometry, new MeshStandardMaterial({ vertexColors: true, side: DoubleSide }));
 
     this.torusGroup.add(this.torusMesh);
 
-    this.torusWireframe = new THREE.LineSegments(new THREE.WireframeGeometry(torusGeometry), new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.12 }));
+    this.torusWireframe = new LineSegments(new WireframeGeometry(torusGeometry), new LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.12 }));
 
     this.torusGroup.add(this.torusWireframe);
 
@@ -217,7 +242,7 @@ export class IntroScene {
     this.torusGroup.add(this.movingArrow);
     this.torusGroup.add(this.startArrow);
 
-    this.startMarker = new THREE.Mesh(new THREE.SphereGeometry(0.045, 18, 18), new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x333333 }));
+    this.startMarker = new Mesh(new SphereGeometry(0.045, 18, 18), new MeshStandardMaterial({ color: 0xffffff, emissive: 0x333333 }));
 
     this.torusGroup.add(this.startMarker);
 
@@ -228,7 +253,7 @@ export class IntroScene {
 
     this.torusGroup.visible = false;
 
-    this.sphereGraphGroup = new THREE.Group();
+    this.sphereGraphGroup = new Group();
     this.sphereGraphGroup.visible = false;
     this.buildSphereGraphStep();
 
@@ -242,23 +267,23 @@ export class IntroScene {
     const sphereRadius = 2;
 
     // sphere
-    const sphereMaterial = new THREE.MeshPhongMaterial({ color: 0x5fa8ff, side: THREE.DoubleSide });
+    const sphereMaterial = new MeshPhongMaterial({ color: 0x5fa8ff, side: DoubleSide });
 
-    this.graphSphere = new THREE.Mesh(new THREE.SphereGeometry(sphereRadius, 64, 64), sphereMaterial);
+    this.graphSphere = new Mesh(new SphereGeometry(sphereRadius, 64, 64), sphereMaterial);
 
     this.sphereGraphGroup.add(this.graphSphere);
 
     // vertices in lat/lon
     const latLon = (lat: number, lon: number) => {
-      lat = THREE.MathUtils.degToRad(lat);
-      lon = THREE.MathUtils.degToRad(lon);
-      return new THREE.Vector3(sphereRadius * Math.cos(lat) * Math.sin(lon), sphereRadius * Math.sin(lat), sphereRadius * Math.cos(lat) * Math.cos(lon));
+      lat = MathUtils.degToRad(lat);
+      lon = MathUtils.degToRad(lon);
+      return new Vector3(sphereRadius * Math.cos(lat) * Math.sin(lon), sphereRadius * Math.sin(lat), sphereRadius * Math.cos(lat) * Math.cos(lon));
     };
 
     this.V = { A: latLon(35, -35), B: latLon(35, 35), C: latLon(-35, 35), D: latLon(-35, -35) };
 
-    const surfaceCurve = (a: THREE.Vector3, b: THREE.Vector3, segments = 200) => {
-      const pts: THREE.Vector3[] = [];
+    const surfaceCurve = (a: Vector3, b: Vector3, segments = 200) => {
+      const pts: Vector3[] = [];
       for (let i = 0; i <= segments; i++) {
         const t = i / segments;
         const p = a
@@ -271,21 +296,21 @@ export class IntroScene {
       return pts;
     };
 
-    const addEdge = (points: THREE.Vector3[], color: number) => {
-      const geo = new THREE.BufferGeometry().setFromPoints(points);
-      const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color }));
+    const addEdge = (points: Vector3[], color: number) => {
+      const geo = new BufferGeometry().setFromPoints(points);
+      const line = new Line(geo, new LineBasicMaterial({ color }));
       this.sphereGraphGroup.add(line);
       return line;
     };
 
-    const addVertex = (p: THREE.Vector3) => {
-      const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.07, 20, 20), new THREE.MeshStandardMaterial({ color: 0xffcc66 }));
+    const addVertex = (p: Vector3) => {
+      const mesh = new Mesh(new SphereGeometry(0.07, 20, 20), new MeshStandardMaterial({ color: 0xffcc66 }));
       mesh.position.copy(p.clone().multiplyScalar(1.01));
       this.sphereGraphGroup.add(mesh);
     };
 
-    const crossing = (p1: THREE.Vector3[], p2: THREE.Vector3[]) => {
-      let best: THREE.Vector3;
+    const crossing = (p1: Vector3[], p2: Vector3[]) => {
+      let best: Vector3;
       let min = Infinity;
       for (const a of p1) {
         for (const b of p2) {
@@ -313,7 +338,7 @@ export class IntroScene {
     this.bdLine = addEdge(bd, 0x66d9ff);
 
     const crossPos = crossing(ac, bd);
-    this.crossMarker = new THREE.Mesh(new THREE.SphereGeometry(0.05, 16, 16), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    this.crossMarker = new Mesh(new SphereGeometry(0.05, 16, 16), new MeshBasicMaterial({ color: 0xffffff }));
     this.crossMarker.position.copy(crossPos);
     this.sphereGraphGroup.add(this.crossMarker);
 
@@ -322,14 +347,14 @@ export class IntroScene {
 
   /* ----------------- MOBIUS MATH ------------------ */
 
-  private mobiusPoint(u: number, v: number, radius = 1.3): THREE.Vector3 {
+  private mobiusPoint(u: number, v: number, radius = 1.3): Vector3 {
     const x = (radius + v * Math.cos(u / 2)) * Math.cos(u);
     const y = (radius + v * Math.cos(u / 2)) * Math.sin(u);
     const z = v * Math.sin(u / 2);
-    return new THREE.Vector3(x, z, y);
+    return new Vector3(x, z, y);
   }
 
-  private mobiusDu(u: number, v: number, radius = 1.3): THREE.Vector3 {
+  private mobiusDu(u: number, v: number, radius = 1.3): Vector3 {
     const A = radius + v * Math.cos(u / 2);
     const dA = -0.5 * v * Math.sin(u / 2);
 
@@ -337,22 +362,22 @@ export class IntroScene {
     const dy = dA * Math.sin(u) + A * Math.cos(u);
     const dz = 0.5 * v * Math.cos(u / 2);
 
-    return new THREE.Vector3(dx, dz, dy);
+    return new Vector3(dx, dz, dy);
   }
 
-  private mobiusDv(u: number, v: number): THREE.Vector3 {
+  private mobiusDv(u: number, v: number): Vector3 {
     const dx = Math.cos(u / 2) * Math.cos(u);
     const dy = Math.cos(u / 2) * Math.sin(u);
     const dz = Math.sin(u / 2);
 
-    return new THREE.Vector3(dx, dz, dy);
+    return new Vector3(dx, dz, dy);
   }
 
   private frameOnMobius(u: number, v = 0) {
     const p = this.mobiusPoint(u, v);
     const tangent = this.mobiusDu(u, v).normalize();
     const across = this.mobiusDv(u, v).normalize();
-    const normal = new THREE.Vector3().crossVectors(tangent, across).normalize();
+    const normal = new Vector3().crossVectors(tangent, across).normalize();
     return { p, tangent, across, normal };
   }
 
@@ -363,9 +388,9 @@ export class IntroScene {
     const colors: number[] = [];
     const indices: number[] = [];
 
-    const red = new THREE.Color(0xff6478);
-    const blue = new THREE.Color(0x5da9ff);
-    const white = new THREE.Color(0xffffff);
+    const red = new Color(0xff6478);
+    const blue = new Color(0x5da9ff);
+    const white = new Color(0xffffff);
 
     for (let i = 0; i <= segmentsU; i++) {
       const u = (i / segmentsU) * Math.PI * 2;
@@ -396,10 +421,10 @@ export class IntroScene {
       }
     }
 
-    const g = new THREE.BufferGeometry();
+    const g = new BufferGeometry();
     g.setIndex(indices);
-    g.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    g.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    g.setAttribute('position', new Float32BufferAttribute(positions, 3));
+    g.setAttribute('color', new Float32BufferAttribute(colors, 3));
     g.computeVertexNormals();
 
     return g;
@@ -408,14 +433,14 @@ export class IntroScene {
   /* ----------------- ARROWS ------------------ */
 
   private createArrow(color: number, opacity = 1) {
-    const arrow = new THREE.Group();
+    const arrow = new Group();
 
-    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.5, 16), new THREE.MeshStandardMaterial({ color, transparent: opacity < 1, opacity }));
+    const shaft = new Mesh(new CylinderGeometry(0.018, 0.018, 0.5, 16), new MeshStandardMaterial({ color, transparent: opacity < 1, opacity }));
 
     shaft.position.y = 0.25;
     arrow.add(shaft);
 
-    const head = new THREE.Mesh(new THREE.ConeGeometry(0.055, 0.16, 20), new THREE.MeshStandardMaterial({ color, transparent: opacity < 1, opacity }));
+    const head = new Mesh(new ConeGeometry(0.055, 0.16, 20), new MeshStandardMaterial({ color, transparent: opacity < 1, opacity }));
 
     head.position.y = 0.58;
     arrow.add(head);
@@ -423,18 +448,18 @@ export class IntroScene {
     return arrow;
   }
 
-  private placeArrow(arrow: THREE.Group, frame: any) {
+  private placeArrow(arrow: Group, frame: any) {
     arrow.position.copy(frame.p);
 
-    const yAxis = new THREE.Vector3(0, 1, 0);
-    const q = new THREE.Quaternion().setFromUnitVectors(yAxis, frame.across);
+    const yAxis = new Vector3(0, 1, 0);
+    const q = new Quaternion().setFromUnitVectors(yAxis, frame.across);
 
     arrow.quaternion.copy(q);
   }
 
   /* ----------------- UTILITY ------------------ */
 
-  private add(obj: THREE.Object3D): void {
+  private add(obj: Object3D): void {
     this.scene.add(obj);
     this.objects.push(obj);
   }
@@ -456,7 +481,7 @@ export class IntroScene {
     }
   }
 
-  private buildMugHandleCurve(start: THREE.Vector3, end: THREE.Vector3) {
+  private buildMugHandleCurve(start: Vector3, end: Vector3) {
     const sphereRadius = 2;
 
     const a = start.clone().normalize();
@@ -464,14 +489,14 @@ export class IntroScene {
 
     const mid = a.clone().add(c).normalize();
 
-    let plane = new THREE.Vector3().crossVectors(a, c);
+    let plane = new Vector3().crossVectors(a, c);
     if (plane.lengthSq() < 1e-10) {
-      plane = new THREE.Vector3(0, 1, 0);
+      plane = new Vector3(0, 1, 0);
     }
 
     plane.normalize();
 
-    const side = new THREE.Vector3().crossVectors(plane, mid).normalize();
+    const side = new Vector3().crossVectors(plane, mid).normalize();
 
     const lift = 0.35;
     const flare = 0.05;
@@ -486,7 +511,7 @@ export class IntroScene {
 
     const p4 = end.clone();
 
-    const curve = new THREE.CatmullRomCurve3([p0, p1, p2, p3, p4]);
+    const curve = new CatmullRomCurve3([p0, p1, p2, p3, p4]);
     curve.curveType = 'centripetal';
     curve.tension = 0.35;
 
@@ -497,8 +522,8 @@ export class IntroScene {
     this.sphereGraphGroup.remove(this.acLine);
     this.sphereGraphGroup.remove(this.crossMarker);
 
-    const geo = new THREE.BufferGeometry().setFromPoints(this.handleCurve);
-    this.acLine = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0xff6666 }));
+    const geo = new BufferGeometry().setFromPoints(this.handleCurve);
+    this.acLine = new Line(geo, new LineBasicMaterial({ color: 0xff6666 }));
 
     this.sphereGraphGroup.add(this.acLine);
   }
@@ -525,12 +550,12 @@ export class IntroScene {
   private startHandleMorph() {
     this.handleCurve = this.buildMugHandleCurve(this.V.A, this.V.C);
 
-    const curve = new THREE.CatmullRomCurve3(this.handleCurve);
+    const curve = new CatmullRomCurve3(this.handleCurve);
 
-    const material = new THREE.MeshPhongMaterial({ color: 0x5fa8ff, transparent: true, opacity: 0.35, side: THREE.DoubleSide });
+    const material = new MeshPhongMaterial({ color: 0x5fa8ff, transparent: true, opacity: 0.35, side: DoubleSide });
 
-    this.handleMesh = new THREE.Mesh(
-      new THREE.TubeGeometry(curve, 260, 0.001, 18, false), // start tiny
+    this.handleMesh = new Mesh(
+      new TubeGeometry(curve, 260, 0.001, 18, false), // start tiny
       material
     );
 
@@ -545,10 +570,10 @@ export class IntroScene {
 
     const r = 0.001 + 0.09 * this.handleMorph;
 
-    const curve = new THREE.CatmullRomCurve3(this.handleCurve);
+    const curve = new CatmullRomCurve3(this.handleCurve);
 
     this.handleMesh.geometry.dispose();
-    this.handleMesh.geometry = new THREE.TubeGeometry(curve, 260, r, 18, false);
+    this.handleMesh.geometry = new TubeGeometry(curve, 260, r, 18, false);
 
     if (this.handleMorph >= 1) {
       this.morphingHandle = false;
@@ -615,10 +640,10 @@ export class IntroScene {
         this.handleUsed = false;
       } else {
         // shrink the handle gradually
-        const curve = new THREE.CatmullRomCurve3(this.handleCurve);
+        const curve = new CatmullRomCurve3(this.handleCurve);
         const r = 0.001 + 0.09 * this.handleMorph;
         this.handleMesh.geometry.dispose();
-        this.handleMesh.geometry = new THREE.TubeGeometry(curve, 260, r, 18, false);
+        this.handleMesh.geometry = new TubeGeometry(curve, 260, r, 18, false);
 
         requestAnimationFrame(shrinkStep);
       }
@@ -638,20 +663,20 @@ export class IntroScene {
     const R = 1.3;
     const r = 0.5;
 
-    const p = new THREE.Vector3((R + r * Math.cos(v)) * Math.cos(u), (R + r * Math.cos(v)) * Math.sin(u), r * Math.sin(v));
+    const p = new Vector3((R + r * Math.cos(v)) * Math.cos(u), (R + r * Math.cos(v)) * Math.sin(u), r * Math.sin(v));
 
-    const tangent = new THREE.Vector3(-(R + r * Math.cos(v)) * Math.sin(u), (R + r * Math.cos(v)) * Math.cos(u), 0).normalize();
+    const tangent = new Vector3(-(R + r * Math.cos(v)) * Math.sin(u), (R + r * Math.cos(v)) * Math.cos(u), 0).normalize();
 
-    const across = new THREE.Vector3(-r * Math.sin(v) * Math.cos(u), -r * Math.sin(v) * Math.sin(u), r * Math.cos(v)).normalize();
+    const across = new Vector3(-r * Math.sin(v) * Math.cos(u), -r * Math.sin(v) * Math.sin(u), r * Math.cos(v)).normalize();
 
-    const normal = new THREE.Vector3().crossVectors(tangent, across).normalize();
+    const normal = new Vector3().crossVectors(tangent, across).normalize();
 
     return { p, tangent, across, normal };
   }
 
-  private placeArrowUpwards(arrow: THREE.Group, frame: { p: THREE.Vector3 }) {
+  private placeArrowUpwards(arrow: Group, frame: { p: Vector3 }) {
     // Extract XY components
-    const xy = new THREE.Vector2(frame.p.x, frame.p.y);
+    const xy = new Vector2(frame.p.x, frame.p.y);
     const R = 1.3; // major radius of torus
     const r = 0.5; // minor radius
 
@@ -664,7 +689,7 @@ export class IntroScene {
     arrow.position.set(xy.x, xy.y, z);
 
     // Make arrow point along global Z
-    arrow.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1));
+    arrow.quaternion.setFromUnitVectors(new Vector3(0, 1, 0), new Vector3(0, 0, 1));
   }
 
   /* ----------------- SURFACE MORPH ------------------ */

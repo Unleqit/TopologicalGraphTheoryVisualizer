@@ -1,39 +1,51 @@
-import * as THREE from 'three';
 import { ParametricGeometry } from 'three/examples/jsm/geometries/ParametricGeometry.js';
 import { EdgeRecord } from './types/edge-record';
 import { VertexRecord } from './types/vertex-record';
-import { VisualizationContext } from './types/visualization-context';
+import { VisualizationContext } from './visualization-context';
 import { VisualizationStep } from './types/visualization-step';
-import { createK33TorusEdges } from './k33/k33-create-edges';
-import { createK33TorusVertices } from './k33/k33-create-vertices';
-import { K33_EDGE_SEGMENTS } from './k33/k33-definition';
-import { k33ShowEdgesAtStart } from './k33/step-definitions/redo/redo-k33-show-edges-at-start';
-import { k33ShowVerticesAtStart } from './k33/step-definitions/redo/redo-k33-show-vertices-at-start';
 import { ensureNotDoneBefore } from './helpers/ensure-not-done-before-redo';
 import { ensureDoneBefore } from './helpers/ensure-done-before-undo';
+import { _3DGraphVertex } from '../../../graph/types/graph-3d-vertex';
+import { GraphEdge } from '../../../graph/types/graph-edge';
+import { createVertexRecords } from './helpers/create-vertex-records';
+import { createEdgeRecordsFromGraphEdges } from './helpers/create-edge-records';
+import { redrawVertexRecords } from './helpers/redraw-vertex-records';
+import { redrawEdgeRecords } from './helpers/redraw-edge-records';
+import { Object3D } from 'three';
 
 export class EmbeddingInstance {
   public context: VisualizationContext;
   private test: boolean = false;
   private prev: number = -1;
   private graphEmbeddingReorderingSteps;
+  private reorderingAnimationDuration: number;
+  private pauseDuration: number;
+  private morphingAnimationDuration: number;
 
-  constructor(context: VisualizationContext, graphEmbeddingReorderingSteps: VisualizationStep[]) {
+  constructor(
+    context: VisualizationContext,
+    vertices: _3DGraphVertex[],
+    edges: GraphEdge[],
+    edgeSegmentCount: number,
+    graphEmbeddingReorderingSteps: VisualizationStep[],
+    reorderingAnimationDuration: number,
+    pauseDuration: number,
+    morphingAnimationDuration: number
+  ) {
     this.context = context;
+    this.context.vertices = new Map(createVertexRecords(vertices).map((record) => [record.id, record]));
+    this.context.edges = new Map(createEdgeRecordsFromGraphEdges(this.context.vertices, edges, edgeSegmentCount).map((record) => [record.id, record]));
+    this.context.edgeSegmentCount = edgeSegmentCount;
     this.graphEmbeddingReorderingSteps = graphEmbeddingReorderingSteps.sort((a, b) => a.stepNumber - b.stepNumber);
+    this.reorderingAnimationDuration = Math.max(reorderingAnimationDuration, 1);
+    this.pauseDuration = pauseDuration;
+    this.morphingAnimationDuration = Math.max(morphingAnimationDuration, 1);
 
     this.setVisible(true);
-
-    createK33TorusVertices(this.context);
-    createK33TorusEdges(this.context);
-
     this.add(this.context.mesh);
-
-    k33ShowVerticesAtStart(this.context);
-    k33ShowEdgesAtStart(this.context);
   }
 
-  private add(obj: THREE.Object3D): void {
+  private add(obj: Object3D): void {
     this.context.scene.add(obj);
     this.context.objects.push(obj);
   }
@@ -60,7 +72,30 @@ export class EmbeddingInstance {
     e.line.visible = visible;
   }
 
-  public updateSquareCylinderTorusGraphEmbedding(s: number, automatic: boolean = true): void {
+  private startTime: number = -1;
+  public autoUpdate(time: number): void {
+    if (this.startTime < 0) {
+      this.startTime = time;
+      return;
+    }
+
+    const tmp = (time - this.startTime) * 0.001;
+    const divisor = this.reorderingAnimationDuration;
+
+    const tmp2 = (time - (this.startTime + (1 / 0.001) * divisor + (1 / 0.001) * this.pauseDuration)) * 0.001;
+    const divisor2 = this.morphingAnimationDuration;
+
+    const normed = tmp / divisor;
+    const normed2 = tmp2 / divisor2;
+
+    if (normed <= 1) {
+      this.updateGraphEmbedding(normed);
+    } else if (normed2 >= 0 && normed2 <= 1) {
+      this.updateShape(normed2);
+    }
+  }
+
+  public updateGraphEmbedding(normed: number, automatic: boolean = true): void {
     if (this.test && automatic) {
       return;
     }
@@ -68,32 +103,32 @@ export class EmbeddingInstance {
       this.test = true;
     }
 
-    const tmp = automatic ? Math.min(s * 0.4, 7) + 1 : s + 1;
-    this.context.updateUIFunction(tmp);
+    this.context.updateUIFunction(normed, 'reorder');
 
-    if (this.prev === tmp) {
+    if (this.prev === normed) {
       return;
     }
+    const stepCount = this.graphEmbeddingReorderingSteps.length;
 
-    if (this.prev < tmp) {
+    if (this.prev < normed) {
       for (const step of this.graphEmbeddingReorderingSteps) {
-        if (tmp >= step.stepNumber / 2 + 0.5 && ensureNotDoneBefore(this.context, step.stepNumber)) {
+        if (normed >= step.stepNumber / stepCount && ensureNotDoneBefore(this.context, step.stepNumber)) {
           step.redo(this.context);
         }
       }
     } else {
       for (const step of this.graphEmbeddingReorderingSteps) {
-        if (tmp < step.stepNumber / 2 + 1 && ensureDoneBefore(this.context, step.stepNumber)) {
+        if (normed < step.stepNumber / stepCount && ensureDoneBefore(this.context, step.stepNumber)) {
           step.undo(this.context);
         }
       }
     }
-    this.prev = tmp;
+    this.prev = normed;
   }
 
   //--------------------undo--------------------------
 
-  updateShape(s: number, automatic: boolean = true): void {
+  updateShape(normed: number, automatic: boolean = true): void {
     if (this.test && automatic) {
       return;
     }
@@ -101,12 +136,10 @@ export class EmbeddingInstance {
       this.test = true;
     }
 
-    const tmp = automatic ? Math.min(s * 0.4, 7) - 5 : s;
-    this.context.morph = tmp;
+    this.context.updateUIFunction(normed, 'transform');
 
-    if (tmp >= 0 && tmp <= 1) {
-      this.k33MorphSquareUsingMorphFunction();
-    }
+    this.context.morph = normed;
+    this.k33MorphSquareUsingMorphFunction();
   }
 
   k33MorphSquareUsingMorphFunction(): void {
@@ -114,46 +147,7 @@ export class EmbeddingInstance {
     this.context.mesh.geometry.dispose();
     this.context.mesh.geometry = newTorusGeo;
 
-    const joinedVertices = Array.from(this.context.vertices.values());
-    for (let i = 0; i < joinedVertices.length; i++) {
-      const v = joinedVertices[i];
-      const mesh = joinedVertices[i].mesh;
-      const pos = new THREE.Vector3();
-      this.context.morphFunction(v.data.vertex.x, v.data.vertex.y, pos);
-
-      mesh.position.copy(pos);
-      const scaleSquare = 0.15; // scale on square/cylinder
-      const scaleTorus = 0.06; // scale on torus
-      const scale = THREE.MathUtils.lerp(scaleSquare, scaleTorus, Math.max(0, this.context.morph - 0.5) * 2); // smoothly interpolate after t>0.5
-      mesh.scale.set(scale, scale, scale);
-
-      if (mesh.children.length > 0) {
-        const sprite = mesh.children[0] as THREE.Sprite;
-        sprite.scale.set(0.25 / scale, 0.25 / scale, 0.25 / scale);
-      }
-
-      mesh.geometry.attributes.position.needsUpdate = true;
-    }
-
-    // Update K3,3 edges positions along current morph
-    const joinedEdges = Array.from(this.context.edges.values());
-    for (let i = 0; i < joinedEdges.length; i++) {
-      const [v0, v1] = [joinedEdges[i].v0, joinedEdges[i].v1];
-
-      const line = joinedEdges[i].line;
-      const posAttr = line.geometry.attributes.position;
-
-      for (let j = 0; j <= K33_EDGE_SEGMENTS; j++) {
-        const tEdge = j / K33_EDGE_SEGMENTS;
-        const u = THREE.MathUtils.lerp(v0.data.vertex.x, v1.data.vertex.x, tEdge);
-        const vCoord = THREE.MathUtils.lerp(v0.data.vertex.y, v1.data.vertex.y, tEdge);
-
-        const p = new THREE.Vector3();
-        this.context.morphFunction(u, vCoord, p);
-        posAttr.setXYZ(j, p.x, p.y, p.z);
-      }
-
-      posAttr.needsUpdate = true;
-    }
+    redrawVertexRecords(this.context, this.context.morphFunction);
+    redrawEdgeRecords(this.context, this.context.morphFunction, false);
   }
 }
