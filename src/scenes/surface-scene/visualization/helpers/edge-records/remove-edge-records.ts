@@ -1,4 +1,4 @@
-import { VisualizationContext } from '../visualization-context';
+import { VisualizationContext } from '../../visualization-context';
 
 export function removeEdgeRecordsByIDs(context: VisualizationContext, edgeIDs: string[]): void {
   edgeIDs.forEach((edgeId) => {

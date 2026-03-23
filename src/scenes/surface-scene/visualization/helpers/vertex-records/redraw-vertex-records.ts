@@ -1,5 +1,5 @@
 import { Vector3 } from 'three';
-import { VisualizationContext } from '../visualization-context';
+import { VisualizationContext } from '../../visualization-context';
 
 export function redrawVertexRecords(
   context: VisualizationContext,

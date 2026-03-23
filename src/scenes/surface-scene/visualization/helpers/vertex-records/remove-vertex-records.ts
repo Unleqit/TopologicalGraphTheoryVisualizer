@@ -1,4 +1,4 @@
-import { VisualizationContext } from '../visualization-context';
+import { VisualizationContext } from '../../visualization-context';
 
 export function removeVertexRecordsByIDs(context: VisualizationContext, vertexIDs: number[]): void {
   vertexIDs.forEach((vertexID) => {

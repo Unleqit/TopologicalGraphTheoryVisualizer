@@ -1,4 +1,4 @@
-import { redrawVertexRecords } from '../../../helpers/redraw-vertex-records';
+import { redrawVertexRecords } from '../../../helpers/vertex-records/redraw-vertex-records';
 import { VisualizationContext } from '../../../visualization-context';
 
 export function showVerticesAtStart(context: VisualizationContext): void {

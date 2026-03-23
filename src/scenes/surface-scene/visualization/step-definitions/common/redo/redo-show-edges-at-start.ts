@@ -1,4 +1,4 @@
-import { redrawEdgeRecords } from '../../../helpers/redraw-edge-records';
+import { redrawEdgeRecords } from '../../../helpers/edge-records/redraw-edge-records';
 import { VisualizationContext } from '../../../visualization-context';
 
 export function showEdgesAtStart(context: VisualizationContext): void {

@@ -3,15 +3,17 @@ import { EdgeRecord } from './types/edge-record';
 import { VertexRecord } from './types/vertex-record';
 import { VisualizationContext } from './visualization-context';
 import { VisualizationStep } from './types/visualization-step';
-import { ensureNotDoneBefore } from './helpers/ensure-not-done-before-redo';
-import { ensureDoneBefore } from './helpers/ensure-done-before-undo';
 import { _3DGraphVertex } from '../../../graph/types/graph-3d-vertex';
 import { GraphEdge } from '../../../graph/types/graph-edge';
-import { createVertexRecords } from './helpers/create-vertex-records';
-import { createEdgeRecordsFromGraphEdges } from './helpers/create-edge-records';
-import { redrawVertexRecords } from './helpers/redraw-vertex-records';
-import { redrawEdgeRecords } from './helpers/redraw-edge-records';
+import { createVertexRecords } from './helpers/vertex-records/create-vertex-records';
+import { createEdgeRecordsFromGraphEdges } from './helpers/edge-records/create-edge-records';
+import { redrawVertexRecords } from './helpers/vertex-records/redraw-vertex-records';
+import { redrawEdgeRecords } from './helpers/edge-records/redraw-edge-records';
 import { Object3D } from 'three';
+import { VisualizationContextUIDisplayResult } from './types/visualization-context-ui-display-result';
+import { clamp } from 'three/src/math/MathUtils.js';
+import { ensureNotVisibleBeforeRedo } from './helpers/visibility/ensure-not-visible-before-redo';
+import { ensureVisibleBeforeUndo } from './helpers/visibility/ensure-visible-before-undo';
 
 export class EmbeddingInstance {
   public context: VisualizationContext;
@@ -103,30 +105,32 @@ export class EmbeddingInstance {
       this.test = true;
     }
 
-    this.context.updateUIFunction(normed, 'reorder');
-
     if (this.prev === normed) {
       return;
     }
-    const stepCount = this.graphEmbeddingReorderingSteps.length;
+
+    const totalStepCount = this.graphEmbeddingReorderingSteps.length;
+    const newStepIndex = clamp(Number.parseInt((normed * totalStepCount - 0.5).toFixed(0)), 0, totalStepCount - 1);
+    const newStep = this.graphEmbeddingReorderingSteps[newStepIndex];
+
+    const displayResult: VisualizationContextUIDisplayResult = { description: newStep.description, normedStepValue: normed, stepValue: newStep.stepNumber };
+    this.context.updateUIFunction(displayResult, 'reorder');
 
     if (this.prev < normed) {
       for (const step of this.graphEmbeddingReorderingSteps) {
-        if (normed >= step.stepNumber / stepCount && ensureNotDoneBefore(this.context, step.stepNumber)) {
+        if (normed >= step.stepNumber / totalStepCount && ensureNotVisibleBeforeRedo(this.context, step.stepNumber)) {
           step.redo(this.context);
         }
       }
     } else {
       for (const step of this.graphEmbeddingReorderingSteps) {
-        if (normed < step.stepNumber / stepCount && ensureDoneBefore(this.context, step.stepNumber)) {
+        if (normed < step.stepNumber / totalStepCount && ensureVisibleBeforeUndo(this.context, step.stepNumber)) {
           step.undo(this.context);
         }
       }
     }
     this.prev = normed;
   }
-
-  //--------------------undo--------------------------
 
   updateShape(normed: number, automatic: boolean = true): void {
     if (this.test && automatic) {
@@ -136,7 +140,8 @@ export class EmbeddingInstance {
       this.test = true;
     }
 
-    this.context.updateUIFunction(normed, 'transform');
+    const displayResult: VisualizationContextUIDisplayResult = { description: '', normedStepValue: normed, stepValue: -1 };
+    this.context.updateUIFunction(displayResult, 'transform');
 
     this.context.morph = normed;
     this.k33MorphSquareUsingMorphFunction();

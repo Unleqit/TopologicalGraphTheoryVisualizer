@@ -1,7 +1,7 @@
 import { Scene, Object3D, Mesh, Vector3 } from 'three';
 import { EdgeRecord } from './types/edge-record';
 import { VertexRecord } from './types/vertex-record';
-import { VisualizationContextUpdateUISource } from './types/visualization-context-ui-update-source';
+import { UpdateUIFunction } from './types/update-ui-function';
 
 export class VisualizationContext {
   public scene: Scene;
@@ -14,7 +14,7 @@ export class VisualizationContext {
   public edges: Map<string, EdgeRecord> = new Map();
   public edgeSegmentCount: number = 0;
   public once: boolean[];
-  public updateUIFunction: (value: number, source: VisualizationContextUpdateUISource) => void;
+  public updateUIFunction: UpdateUIFunction;
   public coordinateTransformFunction: (u: number, v: number, p: Vector3) => void;
   public morphFunction: (u: number, v: number, p: Vector3) => void;
 
@@ -23,7 +23,7 @@ export class VisualizationContext {
     mesh: Mesh,
     coordinateTransformFunction: (u: number, v: number, p: Vector3) => void,
     morphFunction: (u: number, v: number, p: Vector3) => void,
-    updateUIFunction: (value: number, source: VisualizationContextUpdateUISource) => void,
+    updateUIFunction: UpdateUIFunction,
     once: number = 10,
     meshXScale: number = 1.5,
     meshYScale: number = 1.5

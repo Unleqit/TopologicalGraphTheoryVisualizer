@@ -1,6 +1,6 @@
 import { Vector3 } from 'three';
 import { lerp } from 'three/src/math/MathUtils.js';
-import { VisualizationContext } from '../visualization-context';
+import { VisualizationContext } from '../../visualization-context';
 
 export function redrawEdgeRecords(
   context: VisualizationContext,

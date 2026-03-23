@@ -50,8 +50,8 @@ Below is an in-depth explanation of the project structure:
       - `coordinate-transform-functions`: Coordinate transformation logic
       - `visualization`: Visualization logic for surfaces and their embeddings
         - `helpers`: Utility methods for visualization
-        - `k33`: Embdding logic for the **Kuratowski** subgraph $K_{3,3}$
-          - `step-definitons`: Reordering steps executed before gluing edges together
+        - `step-definitons`: Reordering steps executed before gluing edges together
+          - `k33`: Embdding logic for the **Kuratowski** subgraph $K_{3,3}$
             - `redo`: Forward steps
             - `undo`: Backward steps
         - `types`: Types for visualization

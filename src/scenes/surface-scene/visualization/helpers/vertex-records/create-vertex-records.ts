@@ -1,5 +1,5 @@
-import { _3DGraphVertex } from '../../../../graph/types/graph-3d-vertex';
-import { VertexRecord } from '../types/vertex-record';
+import { _3DGraphVertex } from '../../../../../graph/types/graph-3d-vertex';
+import { VertexRecord } from '../../types/vertex-record';
 
 export function createVertexRecords(vertices: _3DGraphVertex[]): VertexRecord[] {
   const records = [];

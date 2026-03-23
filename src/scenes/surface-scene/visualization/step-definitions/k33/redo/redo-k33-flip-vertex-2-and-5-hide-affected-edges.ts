@@ -1,4 +1,4 @@
-import { removeEdgeRecordsByIDs } from '../../../helpers/remove-edge-records';
+import { removeEdgeRecordsByIDs } from '../../../helpers/edge-records/remove-edge-records';
 import { VisualizationContext } from '../../../visualization-context';
 
 export function k33FlipVertex2And5_HideAffectedEdges(context: VisualizationContext): void {

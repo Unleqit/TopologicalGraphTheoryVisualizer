@@ -3,8 +3,8 @@ import { _3DGraphVertex } from '../../../../../../graph/types/graph-3d-vertex';
 import { GraphEdge } from '../../../../../../graph/types/graph-edge';
 import { VisualizationContext } from '../../../visualization-context';
 import { addShadowElements } from '../../../helpers/add-shadow-elements';
-import { redrawVertexRecords } from '../../../helpers/redraw-vertex-records';
-import { redrawEdgeRecords } from '../../../helpers/redraw-edge-records';
+import { redrawVertexRecords } from '../../../helpers/vertex-records/redraw-vertex-records';
+import { redrawEdgeRecords } from '../../../helpers/edge-records/redraw-edge-records';
 
 export function k33RerouteEdge25_RedrawAffectedEdge(context: VisualizationContext): void {
   const shadowVertices: _3DGraphVertex[] = [

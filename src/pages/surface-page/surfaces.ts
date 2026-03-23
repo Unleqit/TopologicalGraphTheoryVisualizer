@@ -4,6 +4,7 @@ import { setupStepper } from '../../ui/setup-stepper';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { addDefaultLights, createCamera, createRenderer } from '../utils';
 import { VisualizationContextUpdateUISource } from '../../scenes/surface-scene/visualization/types/visualization-context-ui-update-source';
+import { VisualizationContextUIDisplayResult } from '../../scenes/surface-scene/visualization/types/visualization-context-ui-display-result';
 
 //--- sphere ---
 const slider_1 = document.getElementById('slider-1') as HTMLInputElement;
@@ -31,7 +32,7 @@ slider_1.addEventListener('input', () => {
 slider0.addEventListener('input', () => {
   const t = Number(slider0.value);
   surfaceScene.onSlider2Change(t);
-  readout0.textContent = `Step: ${t.toFixed(3)}`;
+  readout0.textContent = `Morph: ${(t * 100 + 0.4).toFixed(0)}%`;
 });
 
 slider1.addEventListener('input', () => {
@@ -42,7 +43,7 @@ slider1.addEventListener('input', () => {
 slider2.addEventListener('input', () => {
   const t = Number(slider2.value);
   surfaceScene.onSlider2Change(t);
-  readout2.textContent = `Step: ${t.toFixed(3)}`;
+  readout2.textContent = `Morph: ${(t * 100 + 0.4).toFixed(0)}%`;
 });
 
 slider3.addEventListener('input', () => {
@@ -53,42 +54,39 @@ slider3.addEventListener('input', () => {
 slider4.addEventListener('input', () => {
   const t = Number(slider4.value);
   surfaceScene.onSlider2Change(t);
-  readout4.textContent = `Step: ${t.toFixed(3)}`;
+  readout4.textContent = `Morph: ${(t * 100 + 0.4).toFixed(0)}`;
 });
 
-function updateSlidersSphere(value: number, source: VisualizationContextUpdateUISource): void {
-  if (source === 'reorder' && value <= 1) {
-    slider_1.value = value.toFixed(3);
-    readout_1.textContent = `Step: ${(value * 2).toFixed(0)}`;
+function updateSlidersSphere(result: VisualizationContextUIDisplayResult, source: VisualizationContextUpdateUISource): void {
+  if (source === 'reorder' && result.normedStepValue <= 1) {
+    slider_1.value = result.normedStepValue.toFixed(3);
+    readout_1.textContent = `Step ${result.stepValue}: ${result.description}`;
   }
-  if (source === 'transform' && value >= 0 && value <= 1) {
-    const val = value.toFixed(3);
-    slider0.value = val;
-    readout0.textContent = `Step: ${val}`;
-  }
-}
-
-function updateSlidersTorus(value: number, source: VisualizationContextUpdateUISource): void {
-  if (source === 'reorder' && value <= 1) {
-    slider1.value = value.toFixed(3);
-    readout1.textContent = `Step: ${(value * 9).toFixed(0)}`;
-  }
-  if (source === 'transform' && value >= 0 && value <= 1) {
-    const val = value.toFixed(3);
-    slider2.value = val;
-    readout2.textContent = `Step: ${val}`;
+  if (source === 'transform' && result.normedStepValue >= 0 && result.normedStepValue <= 1) {
+    slider0.value = result.normedStepValue.toFixed(3);
+    readout0.textContent = `Morph: ${(result.normedStepValue * 100 + 0.4).toFixed(0)}%`;
   }
 }
 
-function updateSlidersMöbius(value: number, source: VisualizationContextUpdateUISource): void {
-  if (source === 'reorder' && value <= 1) {
-    slider3.value = value.toFixed(3);
-    readout3.textContent = `Step: ${(value * 9).toFixed(0)}`;
+function updateSlidersTorus(result: VisualizationContextUIDisplayResult, source: VisualizationContextUpdateUISource): void {
+  if (source === 'reorder' && result.normedStepValue <= 1) {
+    slider1.value = result.normedStepValue.toFixed(3);
+    readout1.textContent = `Step ${result.stepValue}: ${result.description}`;
   }
-  if (source === 'transform' && value >= 0 && value <= 1) {
-    const val = value.toFixed(3);
-    slider4.value = val;
-    readout4.textContent = `Step: ${val}`;
+  if (source === 'transform' && result.normedStepValue >= 0 && result.normedStepValue <= 1) {
+    slider2.value = result.normedStepValue.toFixed(3);
+    readout2.textContent = `Morph: ${(result.normedStepValue * 100 + 0.4).toFixed(0)}%`;
+  }
+}
+
+function updateSlidersMöbius(result: VisualizationContextUIDisplayResult, source: VisualizationContextUpdateUISource): void {
+  if (source === 'reorder' && result.normedStepValue <= 1) {
+    slider3.value = result.normedStepValue.toFixed(3);
+    readout3.textContent = `Step ${result.stepValue}: ${result.description}`;
+  }
+  if (source === 'transform' && result.normedStepValue >= 0 && result.normedStepValue <= 1) {
+    slider4.value = result.normedStepValue.toFixed(3);
+    readout4.textContent = `Morph: ${(result.normedStepValue * 100 + 0.4).toFixed(0)}%`;
   }
 }
 

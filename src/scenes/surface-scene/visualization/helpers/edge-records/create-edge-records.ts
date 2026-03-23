@@ -1,7 +1,7 @@
-import { GraphEdge } from '../../../../graph/types/graph-edge';
-import { createEdgeLine } from '../../../utils';
-import { EdgeRecord } from '../types/edge-record';
-import { VertexRecord } from '../types/vertex-record';
+import { GraphEdge } from '../../../../../graph/types/graph-edge';
+import { createEdgeLine } from '../../../../utils';
+import { EdgeRecord } from '../../types/edge-record';
+import { VertexRecord } from '../../types/vertex-record';
 
 export function createEdgeRecordsFromGraphEdges(vertices: Map<number, VertexRecord>, edges: GraphEdge[], edgeSegmentCount: number): EdgeRecord[] {
   return createEdgeRecordsFromEdgeIDs(

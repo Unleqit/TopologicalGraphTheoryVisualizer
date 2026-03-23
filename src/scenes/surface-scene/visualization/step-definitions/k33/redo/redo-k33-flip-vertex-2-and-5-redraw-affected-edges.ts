@@ -1,5 +1,5 @@
-import { createEdgeRecordsFromEdgeIDs } from '../../../helpers/create-edge-records';
-import { redrawEdgeRecords } from '../../../helpers/redraw-edge-records';
+import { createEdgeRecordsFromEdgeIDs } from '../../../helpers/edge-records/create-edge-records';
+import { redrawEdgeRecords } from '../../../helpers/edge-records/redraw-edge-records';
 import { VisualizationContext } from '../../../visualization-context';
 
 export function k33FlipVertex2And5_RedrawAffectedEdges(context: VisualizationContext): void {
