@@ -7,7 +7,9 @@ export function setupStepper(): { getStep: () => number; setStep: (s: number) =>
   const dialogSteps: HTMLElement[] = Array.from(document.querySelectorAll<HTMLElement>('[data-step]')).sort((a, b) => Number(a.dataset.step) - Number(b.dataset.step));
 
   const totalSteps: number = Math.max(1, dialogSteps.length);
-  let step: number = 0;
+
+  const prev = [3, 0, 0];
+  let step: number = Number(sessionStorage.getItem(getStorageKey()) ?? prev[getModuleIndex()]);
 
   function render(): void {
     dialogSteps.forEach((el, i) => {
@@ -23,6 +25,16 @@ export function setupStepper(): { getStep: () => number; setStep: (s: number) =>
     if (prevBtn) {
       prevBtn.disabled = step === 0 && getModuleIndex() === 0;
     }
+
+    const nextBtn = qs<HTMLButtonElement>('#nextBtn');
+    if (nextBtn) {
+      const isLastStep = step === totalSteps - 1;
+      const isLastModule = getModuleIndex() === MODULE_ORDER.length - 1;
+
+      nextBtn.disabled = isLastStep && isLastModule;
+    }
+
+    sessionStorage.setItem(getStorageKey(), String(step));
   }
 
   const prevBtn = qs<HTMLButtonElement>('#prevBtn');
@@ -61,4 +73,8 @@ export function setupStepper(): { getStep: () => number; setStep: (s: number) =>
     },
     totalSteps,
   };
+}
+
+function getStorageKey(): string {
+  return `stepper-step-${getModuleIndex()}`;
 }
