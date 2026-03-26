@@ -751,3 +751,7 @@ body {
 .cylinder-controls .gray {
   background: rgba(255, 255, 255, 0.4);
 }
+
+[data-step] {
+  display: none;
+}

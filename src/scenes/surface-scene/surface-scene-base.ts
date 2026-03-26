@@ -1,12 +1,12 @@
 import { Material, Mesh, Scene, Vector3 } from 'three';
-import { EmbeddingInstance } from './surface-scene/visualization/embedding-instance';
-import { _3DGraphVertex } from '../graph/types/graph-3d-vertex';
-import { GraphEdge } from '../graph/types/graph-edge';
-import { VisualizationStep } from './surface-scene/visualization/types/visualization-step';
+import { EmbeddingInstance } from './visualization/embedding-instance';
+import { _3DGraphVertex } from '../../graph/types/graph-3d-vertex';
+import { GraphEdge } from '../../graph/types/graph-edge';
+import { VisualizationStep } from './visualization/types/visualization-step';
 import { ParametricGeometry } from 'three/examples/jsm/geometries/ParametricGeometry.js';
-import { VisualizationContext } from './surface-scene/visualization/visualization-context';
-import { ISurfaceScene } from './surface-scene/isurface-scene';
-import { UpdateUIFunction } from './surface-scene/visualization/types/update-ui-function';
+import { VisualizationContext } from './visualization/visualization-context';
+import { ISurfaceScene } from './isurface-scene';
+import { UpdateUIFunction } from './visualization/types/update-ui-function';
 
 export abstract class SurfaceSceneBase implements ISurfaceScene {
   private embedding: EmbeddingInstance;

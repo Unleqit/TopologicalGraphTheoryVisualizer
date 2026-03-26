@@ -24,7 +24,7 @@
 
           <div class="dialog-body">
             <!-- Graph Card (always visible) -->
-            <div class="graphCard">
+            <div class="graphCard" id="graphInputStuff" style="display: none">
               <div class="graphCardHead">
                 <span class="badge">Graph Input</span>
 
@@ -206,12 +206,28 @@
             </div>
 
             <!-- Step-controlled content -->
-            <div data-step="0">
+            <div data-step="4">
               <h3>How it works</h3>
               <p>
                 First, the Boyer-Myrvold algorithm decides whether the graph can be embedded in the plane without crossings. If it is planar, the steps taken by the Chrobak-Payne
                 algorithm whilst computing a planar embedding are visualized in the panel on the right.
               </p>
+            </div>
+            <div data-step="0">
+              <h3>page0</h3>
+              <p>test0</p>
+            </div>
+            <div data-step="1">
+              <h3>page1</h3>
+              <p>test1</p>
+            </div>
+            <div data-step="2">
+              <h3>page2</h3>
+              <p>test2</p>
+            </div>
+            <div data-step="3">
+              <h3>page3</h3>
+              <p>test3</p>
             </div>
           </div>
         </section>

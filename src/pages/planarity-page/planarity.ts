@@ -1,18 +1,17 @@
 import '../../styles/base.css';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { loadDefaultGraph } from '../../graph/layout/load-default-graph';
-import { renderRawGraphStepWise } from '../../scenes/graph-scene/graph-scene';
+import { PlanarityScene } from '../../scenes/planarity-scene/planarity-scene';
 import { setupGraphUI, setupTabs } from '../../ui/graph-input-card';
 import { setupStepper } from '../../ui/setup-stepper';
 import { createRenderer, createCamera } from '../utils';
-import { AmbientLight, DirectionalLight, Group, Scene } from 'three';
 
 const stepper = setupStepper();
 const canvas = document.getElementById('viz') as HTMLCanvasElement;
 
 const renderer = createRenderer(canvas);
-const scene = new Scene();
 const camera = createCamera();
+const planarityScene = new PlanarityScene(camera);
 
 // --- Orbit Controls ---
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -24,24 +23,17 @@ controls.screenSpacePanning = false; // pan relative to camera
 controls.enableRotate = true; // allow rotation
 controls.enableZoom = true; // allow zooming
 
-scene.add(new AmbientLight(0xffffff, 0.6));
-const dir = new DirectionalLight(0xffffff, 0.9);
-dir.position.set(3, 4, 5);
-scene.add(dir);
-
-const graphGroup = new Group();
-scene.add(graphGroup);
-
 // ---------------- UI ----------------
 const ui = setupGraphUI({
   graphMatrixInput: document.getElementById('graphMatrix')! as HTMLTextAreaElement,
   graphListInput: document.getElementById('graphList')! as HTMLTextAreaElement,
   loadGraphBtn: document.getElementById('loadGraphBtn')! as HTMLButtonElement,
   statusEl: document.getElementById('graphStatus')!,
-  graphGroup,
-  camera,
+  planarityScene,
   stepper,
 });
+
+const graphInputStuff = document.getElementById('graphInputStuff')!;
 
 const tabs = document.querySelectorAll<HTMLButtonElement>('.tabBtn');
 const modes = document.querySelectorAll<HTMLElement>('.graphMode');
@@ -56,14 +48,11 @@ async function initDefaultGraph(): Promise<void> {
     return;
   }
 
-  graphGroup.visible = true;
-
-  renderRawGraphStepWise(graphGroup, camera, result, 250);
+  planarityScene.renderRawGraphStepWise(result, 250);
 }
 initDefaultGraph();
 
 // ---------------- Render Loop ----------------
-const sphereCamPos = camera.position.clone();
 let lastStep = stepper.getStep();
 
 function resize(): void {
@@ -81,8 +70,14 @@ function tick(t: number): void {
   if (cur !== lastStep) {
     lastStep = cur;
   }
+
+  //hide the graph input block when it is not needed
+  graphInputStuff.style.display = cur === 4 ? 'flex' : 'none';
+
+  planarityScene.applyStep(cur);
+
   controls.update();
-  renderer.render(scene, camera);
+  renderer.render(planarityScene.scene, camera);
   requestAnimationFrame(tick);
 }
 requestAnimationFrame(tick);

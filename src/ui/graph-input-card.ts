@@ -1,16 +1,14 @@
 import { matrixToEdgeList } from '../graph/graph-utils';
 import { graphLayoutService } from '../graph/layout/index';
-import { renderRawGraphStepWise } from '../scenes/graph-scene/graph-scene';
+import { PlanarityScene } from '../scenes/planarity-scene/planarity-scene';
 import { combinatorialEmbeddingToPosStepWise } from '../algorithms/chrobak-payne/chrobak-payne-step-wise';
-import { Group, PerspectiveCamera } from 'three';
 
 export interface GraphUIOptions {
   graphMatrixInput: HTMLTextAreaElement;
   graphListInput: HTMLTextAreaElement;
   loadGraphBtn: HTMLButtonElement;
   statusEl: HTMLElement;
-  graphGroup: Group;
-  camera: PerspectiveCamera;
+  planarityScene: PlanarityScene;
   stepper: ReturnType<typeof import('./setup-stepper').setupStepper>;
 }
 
@@ -100,10 +98,10 @@ export function setupGraphUI(opts: GraphUIOptions): { setMode: (mode: 'matrix' |
         return;
       }
 
-      opts.graphGroup.visible = true;
+      opts.planarityScene.setVisible(true);
 
       const result = combinatorialEmbeddingToPosStepWise(edges, embeddingResult.canonical_ordering);
-      renderRawGraphStepWise(opts.graphGroup, opts.camera, result, 250);
+      opts.planarityScene.renderRawGraphStepWise(result, 250);
 
       opts.stepper.setStep(1);
       opts.statusEl.textContent = 'Planar: ✓';
