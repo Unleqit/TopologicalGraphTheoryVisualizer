@@ -5,6 +5,7 @@ import { PlanarityScene } from '../../scenes/planarity-scene/planarity-scene';
 import { setupGraphUI, setupTabs } from '../../ui/graph-input-card';
 import { setupStepper } from '../../ui/setup-stepper';
 import { createRenderer, createCamera } from '../utils';
+import { GraphNode } from '../../graph/types/graph.node';
 
 const stepper = setupStepper();
 const canvas = document.getElementById('viz') as HTMLCanvasElement;

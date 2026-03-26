@@ -60,6 +60,12 @@ export class PlanarityScene {
     }
   }
 
+  async renderRawGraphToUI(nodes: GraphNode[], edges: GraphEdge[]): Promise<void> {
+    this.renderRawGraph(nodes, edges);
+    this.centerGroup();
+    return;
+  }
+
   applyStep(step: number): void {
     this.group.visible = step === 4;
   }
