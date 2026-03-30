@@ -14,15 +14,9 @@ const renderer = createRenderer(canvas);
 const scene = new Scene();
 const camera = createCamera();
 
-// --- Orbit Controls ---
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true; // smooth motion
-controls.dampingFactor = 0.05;
-controls.zoomSpeed = 1.2;
-controls.panSpeed = 1.0;
-controls.screenSpacePanning = false; // pan relative to camera
-controls.enableRotate = true; // allow rotation
-controls.enableZoom = true; // allow zooming
+controls.enableZoom = true;
+controls.enableRotate = false;
 
 scene.add(new AmbientLight(0xffffff, 0.6));
 const dir = new DirectionalLight(0xffffff, 0.9);
@@ -63,7 +57,6 @@ async function initDefaultGraph(): Promise<void> {
 initDefaultGraph();
 
 // ---------------- Render Loop ----------------
-const sphereCamPos = camera.position.clone();
 let lastStep = stepper.getStep();
 
 function resize(): void {
