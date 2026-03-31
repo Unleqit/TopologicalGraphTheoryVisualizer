@@ -23,30 +23,15 @@ export function combinatorialEmbeddingToPosStepWise(edges: GraphEdge[], nodeList
     return result;
   }
 
-  const leftTChild: Record<number, number | null> = {};
-  const rightTChild: Record<number, number | null> = {};
-  const deltaX: Record<number, number> = {};
-  const yCoordinate: Record<number, number> = {};
-
   const nodeList = nodeLists;
 
   // ---- Initialization ----
-  const [v1, v2, v3] = [nodeList[0][0], nodeList[1][0], nodeList[2][0]];
+  const [v1, v2, v3] = nodeLists.map(([node]) => node);
 
-  deltaX[v1] = 0;
-  yCoordinate[v1] = 0;
-  rightTChild[v1] = v3;
-  leftTChild[v1] = null;
-
-  deltaX[v2] = 1;
-  yCoordinate[v2] = 0;
-  rightTChild[v2] = null;
-  leftTChild[v2] = null;
-
-  deltaX[v3] = 1;
-  yCoordinate[v3] = 1;
-  rightTChild[v3] = v2;
-  leftTChild[v3] = null;
+  const leftTChild: Record<number, number | null> = { [v1]: null, [v2]: null, [v3]: null };
+  const rightTChild: Record<number, number | null> = { [v1]: v3, [v2]: null, [v3]: v2 };
+  const deltaX: Record<number, number> = { [v1]: 0, [v2]: 1, [v3]: 1 };
+  const yCoordinate: Record<number, number> = { [v1]: 0, [v2]: 0, [v3]: 1 };
 
   steps.push(computeAbsoluteSnapshot(v1, leftTChild, rightTChild, deltaX, yCoordinate));
 

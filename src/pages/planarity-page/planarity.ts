@@ -1,4 +1,4 @@
-import '../../styles/base.css';
+import '../../styles/themes/base.css';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { loadDefaultGraph } from '../../graph/layout/load-default-graph';
 import { renderRawGraphStepWise } from '../../scenes/graph-scene/graph-scene';
@@ -6,6 +6,9 @@ import { setupGraphUI, setupTabs } from '../../ui/graph-input-card';
 import { setupStepper } from '../../ui/setup-stepper';
 import { createRenderer, createCamera } from '../utils';
 import { AmbientLight, DirectionalLight, Group, Scene } from 'three';
+
+//use light mode
+document.body.classList.toggle('light', true);
 
 const stepper = setupStepper();
 const canvas = document.getElementById('viz') as HTMLCanvasElement;
