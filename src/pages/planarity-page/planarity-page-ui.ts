@@ -1,21 +1,12 @@
-import { matrixToEdgeList } from '../graph/graph-utils';
-import { graphLayoutService } from '../graph/layout/index';
-import { renderRawGraphStepWise } from '../scenes/graph-scene/graph-scene';
-import { combinatorialEmbeddingToPosStepWise } from '../algorithms/chrobak-payne/chrobak-payne-step-wise';
+import { matrixToEdgeList } from '../../graph/graph-utils';
+import { graphLayoutService } from '../../graph/layout/index';
+import { GraphRendering, renderRawGraphStepWise } from '../../scenes/planarity-scene/planarity-scene';
+import { combinatorialEmbeddingToPosStepWise } from '../../algorithms/chrobak-payne/chrobak-payne-step-wise';
 import { Group, PerspectiveCamera } from 'three';
-import { Stepper } from './stepper';
+import { Stepper } from '../../ui/stepper';
+import { PlanarityGraphUIOptions } from './planarity-page-ui-options';
 
-export interface GraphUIOptions {
-  graphMatrixInput: HTMLTextAreaElement;
-  graphListInput: HTMLTextAreaElement;
-  loadGraphBtn: HTMLButtonElement;
-  statusEl: HTMLElement;
-  graphGroup: Group;
-  camera: PerspectiveCamera;
-  stepper: Stepper;
-}
-
-export class GraphUI {
+export class PlanarityGraphUI {
   private currentMode: 'matrix' | 'list' | 'interactive' = 'matrix';
   private statusEl: HTMLElement;
   private graphMatrixInput: HTMLTextAreaElement;
@@ -24,8 +15,9 @@ export class GraphUI {
   private camera: PerspectiveCamera;
   private loadGraphBtn: HTMLButtonElement;
   private stepper: Stepper;
+  private onGraphRendered: (rendering: GraphRendering) => void;
 
-  constructor(opts: GraphUIOptions) {
+  constructor(opts: PlanarityGraphUIOptions) {
     this.statusEl = opts.statusEl;
     this.graphMatrixInput = opts.graphMatrixInput;
     this.graphListInput = opts.graphListInput;
@@ -34,6 +26,7 @@ export class GraphUI {
     this.loadGraphBtn = opts.loadGraphBtn;
     this.stepper = opts.stepper;
     this.loadGraphBtn.addEventListener('click', this.loadGraphFromInput.bind(this));
+    this.onGraphRendered = opts.onGraphRendered;
   }
 
   public async loadGraphFromInput(): Promise<void> {
@@ -65,7 +58,7 @@ export class GraphUI {
       this.graphGroup.visible = true;
 
       const result = combinatorialEmbeddingToPosStepWise(edges, embeddingResult.canonical_ordering);
-      const rendering = renderRawGraphStepWise(this.graphGroup, this.camera, result, 250);
+      const rendering = await renderRawGraphStepWise(this.graphGroup, this.camera, result, 250);
       this.onGraphRendered(rendering);
 
       this.stepper.setStep(1);
