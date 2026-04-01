@@ -1,5 +1,6 @@
 import { Group, PerspectiveCamera } from 'three';
 import { Stepper } from '../../ui/stepper';
+import { GraphRendering } from '../../scenes/graph-scene/graph-scene';
 
 export interface PlanarityGraphUIOptions {
   graphMatrixInput: HTMLTextAreaElement;
@@ -9,4 +10,5 @@ export interface PlanarityGraphUIOptions {
   graphGroup: Group;
   camera: PerspectiveCamera;
   stepper: Stepper;
+  onGraphRendered: (rendering: GraphRendering) => void;
 }

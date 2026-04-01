@@ -59,6 +59,9 @@ export class PlanarityPage {
       graphGroup: this.graphGroup,
       camera: this.camera,
       stepper: this.stepper,
+      onGraphRendered: (rendering) => {
+        this.rendering = rendering;
+      },
     };
 
     const graphUI = new PlanarityGraphUI(uiOptions);
@@ -224,8 +227,8 @@ export class PlanarityPage {
     const result = await loadDefaultGraph();
     this.lastEmbeddingStepResult = result!;
     this.graphGroup.visible = true;
-    const rendering = await renderRawGraphStepWise(this.graphGroup, this.camera, result!, 250);
-    return rendering;
+    this.rendering = await renderRawGraphStepWise(this.graphGroup, this.camera, result!, 250);
+    return this.rendering;
   }
 
   private updateRendering(): void {
@@ -267,13 +270,13 @@ export class PlanarityPage {
     this.rendering.edges.forEach((edge) => {
       const [aIndex, bIndex] = (edge.userData.id as string).split(',').map(Number);
 
-      // ✅ only update edges connected to dragged node
       if (aIndex !== selectedId && bIndex !== selectedId) {
         return;
       }
 
-      const nodeA = this.rendering.nodes.find((n) => Number(n.userData.id) === aIndex);
-      const nodeB = this.rendering.nodes.find((n) => Number(n.userData.id) === bIndex);
+      // ✅ use REAL scene nodes
+      const nodeA = this.getNodeById(aIndex);
+      const nodeB = this.getNodeById(bIndex);
 
       if (!nodeA || !nodeB) {
         return;
@@ -286,6 +289,10 @@ export class PlanarityPage {
       posAttr.needsUpdate = true;
     });
   }
+  private getNodeById(id: number): Mesh | undefined {
+    return this.graphGroup.children.find((obj) => (obj as Mesh).userData?.isNode && Number(obj.userData.id) === id) as Mesh | undefined;
+  }
+
   private resize(): void {
     const area = document.querySelector('.canvasArea')!;
     this.renderer.setSize(area.clientWidth, area.clientHeight, false);

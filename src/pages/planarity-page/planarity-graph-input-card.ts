@@ -1,6 +1,6 @@
 import { matrixToEdgeList } from '../../graph/graph-utils';
 import { graphLayoutService } from '../../graph/layout/index';
-import { renderRawGraphStepWise } from '../../scenes/graph-scene/graph-scene';
+import { GraphRendering, renderRawGraphStepWise } from '../../scenes/graph-scene/graph-scene';
 import { combinatorialEmbeddingToPosStepWise } from '../../algorithms/chrobak-payne/chrobak-payne-step-wise';
 import { Group, PerspectiveCamera } from 'three';
 import { Stepper } from '../../ui/stepper';
@@ -15,6 +15,7 @@ export class PlanarityGraphUI {
   private camera: PerspectiveCamera;
   private loadGraphBtn: HTMLButtonElement;
   private stepper: Stepper;
+  private onGraphRendered: (rendering: GraphRendering) => void;
 
   constructor(opts: PlanarityGraphUIOptions) {
     this.statusEl = opts.statusEl;
@@ -25,6 +26,7 @@ export class PlanarityGraphUI {
     this.loadGraphBtn = opts.loadGraphBtn;
     this.stepper = opts.stepper;
     this.loadGraphBtn.addEventListener('click', this.loadGraphFromInput.bind(this));
+    this.onGraphRendered = opts.onGraphRendered;
   }
 
   public async loadGraphFromInput(): Promise<void> {
@@ -56,7 +58,8 @@ export class PlanarityGraphUI {
       this.graphGroup.visible = true;
 
       const result = combinatorialEmbeddingToPosStepWise(edges, embeddingResult.canonical_ordering);
-      renderRawGraphStepWise(this.graphGroup, this.camera, result, 250);
+      const rendering = await renderRawGraphStepWise(this.graphGroup, this.camera, result, 250);
+      this.onGraphRendered(rendering);
 
       this.stepper.setStep(1);
       this.showStatus('Planar: ✓', 'okay');

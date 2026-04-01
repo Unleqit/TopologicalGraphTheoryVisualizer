@@ -65,7 +65,8 @@ export class GraphUI {
       this.graphGroup.visible = true;
 
       const result = combinatorialEmbeddingToPosStepWise(edges, embeddingResult.canonical_ordering);
-      renderRawGraphStepWise(this.graphGroup, this.camera, result, 250);
+      const rendering = renderRawGraphStepWise(this.graphGroup, this.camera, result, 250);
+      this.onGraphRendered(rendering);
 
       this.stepper.setStep(1);
       this.showStatus('Planar: ✓', 'okay');
