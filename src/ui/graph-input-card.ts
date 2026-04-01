@@ -16,7 +16,7 @@ export interface GraphUIOptions {
 }
 
 export class GraphUI {
-  private currentMode: 'matrix' | 'list' = 'matrix';
+  private currentMode: 'matrix' | 'list' | 'interactive' = 'matrix';
   private statusEl: HTMLElement;
   private graphMatrixInput: HTMLTextAreaElement;
   private graphListInput: HTMLTextAreaElement;
@@ -153,14 +153,14 @@ export class GraphUI {
     }
   }
 
-  public setMode(mode: 'matrix' | 'list'): void {
+  public setMode(mode: 'matrix' | 'list' | 'interactive'): void {
     this.currentMode = mode;
   }
 
   public setupTabs(tabButtons: NodeListOf<HTMLButtonElement>, modes: NodeListOf<HTMLElement>): void {
     tabButtons.forEach((btn) => {
       btn.addEventListener('click', () => {
-        const mode = btn.dataset.mode as 'matrix' | 'list';
+        const mode = btn.dataset.mode as 'matrix' | 'list' | 'interactive';
         if (!mode) {
           return;
         }

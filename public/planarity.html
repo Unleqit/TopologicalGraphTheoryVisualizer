@@ -31,6 +31,7 @@
                 <div class="graphTabs">
                   <button class="tabBtn active" data-mode="matrix">Matrix</button>
                   <button class="tabBtn" data-mode="list">Adjacency List</button>
+                  <button class="tabBtn" data-mode="interactive">Interactive Editor</button>
                 </div>
               </div>
 
@@ -197,6 +198,10 @@
                     highlight2.scrollLeft = textarea2.scrollLeft;
                   });
                 </script>
+
+                <div class="graphMode" data-mode="interactive" style="position: relative">
+                  <span>test</span>
+                </div>
 
                 <div class="graphActions">
                   <button id="loadGraphBtn" class="btn primary" type="button">▶ Test & Embed</button>
