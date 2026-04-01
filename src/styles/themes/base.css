@@ -751,3 +751,436 @@ body {
 .cylinder-controls .gray {
   background: rgba(255, 255, 255, 0.4);
 }
+
+#theme-toggle-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 50;
+  border-radius: var(--radius);
+  border: 0;
+  padding: 10px 18px;
+  background: var(--text);
+  color: var(--bg1);
+  cursor: pointer;
+}
+
+/* ===============================
+   LIGHT MODE WRAPPER
+   Toggle with JS by adding/removing `[theme='light']` on body
+================================ */
+
+html[theme='light'] {
+  /* ---------------- Backgrounds ---------------- */
+  --bg1: rgba(245, 247, 250, 1);
+  --bg2: rgba(230, 233, 238, 1);
+  --text: rgba(34, 34, 34, 1);
+  --panel: rgba(255, 255, 255, 0.95);
+  --panel2: rgba(255, 255, 255, 0.9);
+  --card: rgba(255, 255, 255, 0.95);
+  --card2: rgba(255, 255, 255, 0.9);
+  --border: rgba(34, 34, 34, 0.12);
+  --shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  --radius: 18px;
+  --gap: 16px;
+  --sidebarW: 33.3333vw;
+}
+
+/* ---------------- Base Body ---------------- */
+[theme='light'] html,
+[theme='light'] body {
+  height: 100%;
+  margin: 0;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Helvetica,
+    Arial;
+  color: var(--text);
+  background:
+    radial-gradient(1200px 700px at 30% 20%, rgba(108, 140, 255, 0.1), transparent 55%), radial-gradient(900px 600px at 80% 60%, rgba(140, 96, 255, 0.08), transparent 55%),
+    linear-gradient(180deg, var(--bg1), var(--bg2));
+  overflow-x: hidden;
+}
+
+/* ---------------- Layout ---------------- */
+[theme='light'] .shell {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+[theme='light'] .topbar {
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid rgba(34, 34, 34, 0.08);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+}
+
+[theme='light'] .brand {
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+  cursor: pointer;
+  color: var(--text);
+}
+
+[theme='light'] .crumb {
+  color: rgba(34, 34, 34, 0.78);
+  font-size: 13px;
+}
+
+[theme='light'] .main {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: var(--sidebarW) 1fr;
+  gap: var(--gap);
+  padding: var(--gap);
+  padding-bottom: 78px;
+}
+
+[theme='light'] .panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, var(--panel), rgba(255, 255, 255, 0.95));
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  min-height: 0;
+}
+
+[theme='light'] .dialog {
+  display: flex;
+  flex-direction: column;
+}
+
+[theme='light'] .dialog-head {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(34, 34, 34, 0.1);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+[theme='light'] .h-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+[theme='light'] .h-sub {
+  margin: 4px 0 0 0;
+  font-size: 13px;
+  color: rgba(34, 34, 34, 0.8);
+  line-height: 1.35;
+}
+
+[theme='light'] .dialog-body {
+  padding: 14px 16px 16px 16px;
+  overflow: auto;
+  min-height: 0;
+  line-height: 1.5;
+  color: rgba(34, 34, 34, 0.92);
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+[theme='light'] .dialog-body h3 {
+  margin: 14px 0 8px;
+  font-size: 14px;
+}
+
+[theme='light'] .dialog-body p {
+  margin: 10px 0;
+}
+
+[theme='light'] .dialog-body code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+  font-size: 12px;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 2px 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(34, 34, 34, 0.12);
+}
+
+/* ---------------- Canvas ---------------- */
+[theme='light'] .canvasWrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+[theme='light'] .canvasHead {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(34, 34, 34, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+[theme='light'] .badge {
+  font-size: 12px;
+  color: rgba(34, 34, 34, 0.85);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(34, 34, 34, 0.12);
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+
+[theme='light'] .canvasArea {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+[theme='light'] canvas#viz {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---------------- Bottom nav ---------------- */
+[theme='light'] .bottomNav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.95);
+  border-top: 1px solid rgba(34, 34, 34, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+[theme='light'] .navInner {
+  width: min(1100px, calc(100% - 16px));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+[theme='light'] .progress {
+  font-size: 13px;
+  color: rgba(34, 34, 34, 0.85);
+}
+
+[theme='light'] .btnRow {
+  display: flex;
+  gap: 10px;
+}
+
+[theme='light'] .btn {
+  appearance: none;
+  border: 1px solid rgba(34, 34, 34, 0.16);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+[theme='light'] .btn:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(34, 34, 34, 0.22);
+}
+
+[theme='light'] .btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ---------------- Hero Section ---------------- */
+[theme='light'] .page {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: clamp(24px, 4vw, 56px);
+  gap: 32px;
+}
+
+[theme='light'] .hero {
+  width: min(1100px, 100%);
+  text-align: center;
+}
+
+[theme='light'] .title {
+  color: var(--text);
+  opacity: 0;
+  transform: translateY(28px) scale(0.98);
+  filter: blur(0);
+}
+
+[theme='light'] .title-sub {
+  color: rgba(34, 34, 34, 0.92);
+}
+
+/* ---------------- Navigation Bars / Accordions ---------------- */
+[theme='light'] .bar {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+[theme='light'] .bar:hover {
+  background: var(--panel2);
+  border-color: rgba(34, 34, 34, 0.22);
+}
+
+[theme='light'] .bar-cta {
+  font-size: 13px;
+  color: rgba(102, 102, 102, 0.8);
+  border: 1px solid rgba(34, 34, 34, 0.18);
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  text-decoration: none;
+}
+
+/* Expanded descriptions */
+[theme='light'] .bar-desc {
+  color: rgba(34, 34, 34, 0.92);
+}
+
+/* ---------------- Graph Cards ---------------- */
+[theme='light'] .graphCard {
+  border: 1px solid rgba(34, 34, 34, 0.08);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+[theme='light'] .graphCardHead {
+  background: rgba(255, 255, 255, 0.9);
+  color: rgba(34, 34, 34, 0.85);
+}
+
+[theme='light'] .matrixInput {
+  border: 1px solid rgba(34, 34, 34, 0.1);
+  background: rgba(245, 247, 250, 0.75);
+  color: rgba(34, 34, 34, 0.95);
+}
+
+/* Buttons inside graph cards */
+[theme='light'] .graphActions .btn.primary {
+  background: linear-gradient(135deg, rgba(0, 255, 204, 1), rgba(0, 195, 255, 1));
+  color: rgba(0, 43, 51, 1);
+}
+
+/* Status texts */
+[theme='light'] .statusText.ok {
+  color: rgba(0, 255, 204, 1);
+}
+[theme='light'] .statusText.error {
+  color: rgba(255, 107, 107, 1);
+}
+
+/* Hints */
+[theme='light'] .hint {
+  color: rgba(102, 102, 102, 0.6);
+}
+
+/* Tabs */
+[theme='light'] .tabBtn {
+  background: transparent;
+  border: 1px solid rgba(34, 34, 34, 0.15);
+  color: rgba(34, 34, 34, 0.85);
+}
+
+[theme='light'] .tabBtn.active {
+  background: linear-gradient(135deg, rgba(0, 255, 204, 1), rgba(0, 195, 255, 1));
+  color: rgba(0, 43, 51, 1);
+  border: none;
+}
+
+/* ---------------- Cylinder Controls ---------------- */
+[theme='light'] .cylinder-controls {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(34, 34, 34, 0.12);
+  color: var(--text);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+[theme='light'] .cylinder-controls input[type='range'] {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+[theme='light'] .cylinder-controls input[type='range']::-webkit-slider-thumb {
+  background: rgba(0, 128, 255, 1);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+[theme='light'] .cylinder-controls button {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(34, 34, 34, 0.16);
+  color: var(--text);
+}
+
+[theme='light'] .cylinder-controls button:hover {
+  background: rgba(0, 255, 204, 0.12);
+  border-color: rgba(0, 255, 204, 0.24);
+}
+
+/* Cylinder legend swatches */
+[theme='light'] .cylinder-controls .swatch.red {
+  background: rgba(255, 100, 120, 1);
+}
+[theme='light'] .cylinder-controls .swatch.blue {
+  background: rgba(93, 169, 255, 1);
+}
+[theme='light'] .cylinder-controls .swatch.yellow {
+  background: rgba(255, 224, 130, 1);
+}
+[theme='light'] .cylinder-controls .swatch.gray {
+  background: rgba(34, 34, 34, 0.4);
+}
+
+/* ---------------- Responsive Adjustments ---------------- */
+@media (max-width: 920px) {
+  [theme='light'] .main {
+    grid-template-columns: 1fr;
+    padding-bottom: 86px;
+  }
+  [theme='light'] :root {
+    --sidebarW: 1fr;
+  }
+  [theme='light'] .canvasWrap {
+    min-height: 46vh;
+  }
+}
+
+@media (max-width: 520px) {
+  [theme='light'] .bar-2 {
+    margin-left: 10px;
+  }
+  [theme='light'] .bar-3 {
+    margin-left: 20px;
+  }
+  [theme='light'] .bar-main {
+    padding: 16px 14px;
+  }
+  [theme='light'] .bar.open .bar-desc {
+    padding: 0 14px 14px 14px;
+  }
+  [theme='light'] .bar-desc {
+    padding: 0 14px;
+  }
+}

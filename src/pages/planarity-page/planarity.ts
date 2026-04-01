@@ -1,4 +1,4 @@
-import '../../styles/base.css';
+import '../../styles/themes/base.css';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { loadDefaultGraph } from '../../graph/layout/load-default-graph';
 import { createRenderer, createCamera } from '../utils';

@@ -12,6 +12,7 @@ export default {
   mode: 'production',
 
   entry: {
+    shared: './src/styles/theme-loader/theme.ts',
     index: './src/pages/landing-page/index.ts',
     intro: './src/pages/intro-page/intro.ts',
     planarity: './src/pages/planarity-page/planarity.ts',
@@ -39,14 +40,10 @@ export default {
 
   plugins: [
     new MiniCssExtractPlugin({ filename: '[name].[contenthash].css' }),
-
-    new HtmlWebpackPlugin({ filename: 'index.html', template: './public/index.html', chunks: ['index'], inject: 'body' }),
-
-    new HtmlWebpackPlugin({ filename: 'intro.html', template: './public/intro.html', chunks: ['intro'], inject: 'body' }),
-
-    new HtmlWebpackPlugin({ filename: 'planarity.html', template: './public/planarity.html', chunks: ['planarity'], inject: 'body' }),
-
-    new HtmlWebpackPlugin({ filename: 'surfaces.html', template: './public/surfaces.html', chunks: ['surfaces'], inject: 'body' }),
+    new HtmlWebpackPlugin({ filename: 'index.html', template: './public/index.html', chunks: ['shared', 'index'], inject: 'body' }),
+    new HtmlWebpackPlugin({ filename: 'intro.html', template: './public/intro.html', chunks: ['shared', 'intro'], inject: 'body' }),
+    new HtmlWebpackPlugin({ filename: 'planarity.html', template: './public/planarity.html', chunks: ['shared', 'planarity'], inject: 'body' }),
+    new HtmlWebpackPlugin({ filename: 'surfaces.html', template: './public/surfaces.html', chunks: ['shared', 'surfaces'], inject: 'body' }),
   ],
 
   devtool: false,

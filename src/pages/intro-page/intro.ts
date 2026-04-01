@@ -1,8 +1,9 @@
-import '../../styles/base.css';
+import '../../styles/themes/base.css';
 import { IntroScene } from '../../scenes/intro-scene/intro-scene';
 import { setupStepper } from '../../ui/setup-stepper';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { addDefaultLights, createCamera, createRenderer } from '../utils';
+import { PerspectiveCamera, WebGLRenderer } from 'three';
 
 const stepper = setupStepper();
 
@@ -51,9 +52,9 @@ handleBtn.addEventListener('click', () => {
   }
 });
 
-const renderer = createRenderer(canvas);
-const camera = createCamera();
-const introScene = new IntroScene();
+const renderer: WebGLRenderer = createRenderer(canvas);
+const camera: PerspectiveCamera = createCamera();
+const introScene: IntroScene = new IntroScene();
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
