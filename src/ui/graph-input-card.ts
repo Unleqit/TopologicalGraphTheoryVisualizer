@@ -3,6 +3,7 @@ import { graphLayoutService } from '../graph/layout/index';
 import { renderRawGraphStepWise } from '../scenes/graph-scene/graph-scene';
 import { combinatorialEmbeddingToPosStepWise } from '../algorithms/chrobak-payne/chrobak-payne-step-wise';
 import { Group, PerspectiveCamera } from 'three';
+import { Stepper } from './stepper';
 
 export interface GraphUIOptions {
   graphMatrixInput: HTMLTextAreaElement;
@@ -11,125 +12,163 @@ export interface GraphUIOptions {
   statusEl: HTMLElement;
   graphGroup: Group;
   camera: PerspectiveCamera;
-  stepper: ReturnType<typeof import('./setup-stepper').setupStepper>;
+  stepper: Stepper;
 }
 
-export function setupGraphUI(opts: GraphUIOptions): { setMode: (mode: 'matrix' | 'list') => 'matrix' | 'list' } {
-  let currentMode: 'matrix' | 'list' = 'matrix';
+export class GraphUI {
+  private currentMode: 'matrix' | 'list' = 'matrix';
+  private statusEl: HTMLElement;
+  private graphMatrixInput: HTMLTextAreaElement;
+  private graphListInput: HTMLTextAreaElement;
+  private graphGroup: Group;
+  private camera: PerspectiveCamera;
+  private loadGraphBtn: HTMLButtonElement;
+  private stepper: Stepper;
 
-  async function loadGraphFromInput(): Promise<void> {
-    opts.statusEl.textContent = '';
-    opts.statusEl.className = 'statusText';
+  constructor(opts: GraphUIOptions) {
+    this.statusEl = opts.statusEl;
+    this.graphMatrixInput = opts.graphMatrixInput;
+    this.graphListInput = opts.graphListInput;
+    this.camera = opts.camera;
+    this.graphGroup = opts.graphGroup;
+    this.loadGraphBtn = opts.loadGraphBtn;
+    this.stepper = opts.stepper;
+    this.loadGraphBtn.addEventListener('click', this.loadGraphFromInput.bind(this));
+  }
+
+  public async loadGraphFromInput(): Promise<void> {
+    this.showStatus('', 'info');
 
     try {
-      let matrix: number[][];
+      let matrix: number[][] = [];
 
-      if (currentMode === 'matrix') {
-        const text = opts.graphMatrixInput.value.trim();
-        if (!text) {
-          throw new Error('Please enter a matrix.');
-        }
-        matrix = text.split('\n').map((line) =>
-          line
-            .trim()
-            .split(/\s+/)
-            .map((v) => {
-              const num = Number(v);
-              if (Number.isNaN(num)) {
-                throw new Error('Invalid number in matrix.');
-              }
-              return num;
-            })
-        );
-      } else {
-        const text = opts.graphListInput.value.trim();
-        if (!text) {
-          throw new Error('Please enter an adjacency list.');
-        }
-        const tempMap = new Map<number, number[]>();
-        const splitResult = text.split('\n');
-        for (let i = 0; i < splitResult.length; ++i) {
-          if (!splitResult[i]) {
-            throw new Error('Invalid list format.');
-          }
-          const neighbors = splitResult[i]
-            .trim()
-            .split(/\s+/)
-            .filter(Boolean)
-            .map((v) => {
-              const num = Number(v);
-              if (Number.isNaN(num)) {
-                throw new Error('Invalid neighbor index.');
-              }
-              return num;
-            });
-          tempMap.set(i, neighbors);
-        }
-        const n = Math.max(...tempMap.keys()) + 1;
-        matrix = Array.from({ length: n }, () => Array(n).fill(0));
-        for (const [u, neighbors] of tempMap) {
-          for (const v of neighbors) {
-            matrix[u][v] = 1;
-            matrix[v][u] = 1;
-          }
-        }
+      switch (this.currentMode) {
+        case 'matrix':
+          matrix = this.parseMatrix();
+          break;
+        case 'list':
+          matrix = this.parseAdjacencyList();
+          break;
       }
 
-      const n = matrix.length;
-      if (!matrix.every((row) => row.length === n)) {
-        throw new Error('Matrix must be square.');
-      }
-      for (let i = 0; i < n; i++) {
-        if (matrix[i][i] !== 0) {
-          throw new Error('Diagonal must be 0.');
-        }
-        for (let j = 0; j < n; j++) {
-          if (matrix[i][j] !== matrix[j][i]) {
-            throw new Error('Graph must be undirected.');
-          }
-        }
-      }
+      this.validateInput(matrix);
+      this.showStatus('Computing layout...', 'info');
 
-      opts.statusEl.textContent = 'Computing layout...';
       const { nodeCount, edges } = matrixToEdgeList(matrix);
       const embeddingResult = await graphLayoutService.compute(edges, nodeCount);
 
       if (!embeddingResult.planar) {
-        opts.statusEl.textContent = 'Planar: ✗';
-        opts.statusEl.className = 'statusText error';
+        this.showStatus('Planar: ✗', 'error');
         return;
       }
 
-      opts.graphGroup.visible = true;
+      this.graphGroup.visible = true;
 
       const result = combinatorialEmbeddingToPosStepWise(edges, embeddingResult.canonical_ordering);
-      renderRawGraphStepWise(opts.graphGroup, opts.camera, result, 250);
+      renderRawGraphStepWise(this.graphGroup, this.camera, result, 250);
 
-      opts.stepper.setStep(1);
-      opts.statusEl.textContent = 'Planar: ✓';
-      opts.statusEl.className = 'statusText ok';
+      this.stepper.setStep(1);
+      this.showStatus('Planar: ✓', 'okay');
     } catch (err) {
-      opts.statusEl.textContent = err instanceof Error ? err.message : 'Invalid input.';
-      opts.statusEl.className = 'statusText error';
+      this.showStatus(err instanceof Error ? err.message : 'Invalid input.', 'error');
     }
   }
 
-  opts.loadGraphBtn.addEventListener('click', loadGraphFromInput);
+  private showStatus(message: string, type: 'info' | 'okay' | 'error'): void {
+    this.statusEl.className = 'statusText' + (type === 'info' ? '' : type === 'okay' ? ' ok' : ' error');
+    this.statusEl.textContent = message;
+  }
 
-  return { setMode: (mode: 'matrix' | 'list') => (currentMode = mode) };
-}
+  private parseMatrix(): number[][] {
+    const text = this.graphMatrixInput.value.trim();
+    if (!text) {
+      throw new Error('Please enter a matrix.');
+    }
+    const matrix = text.split('\n').map((line) =>
+      line
+        .trim()
+        .split(/\s+/)
+        .map((v) => {
+          const num = Number(v);
+          if (Number.isNaN(num)) {
+            throw new Error('Invalid number in matrix.');
+          }
+          return num;
+        })
+    );
+    return matrix;
+  }
 
-export function setupTabs(tabButtons: NodeListOf<HTMLButtonElement>, modes: NodeListOf<HTMLElement>, setMode: (mode: 'matrix' | 'list') => void): void {
-  tabButtons.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const mode = btn.dataset.mode as 'matrix' | 'list';
-      if (!mode) {
-        return;
+  private parseAdjacencyList(): number[][] {
+    const text = this.graphListInput.value.trim();
+    if (!text) {
+      throw new Error('Please enter an adjacency list.');
+    }
+    const tempMap = new Map<number, number[]>();
+    const splitResult = text.split('\n');
+    for (let i = 0; i < splitResult.length; ++i) {
+      if (!splitResult[i]) {
+        throw new Error('Invalid list format.');
       }
-      setMode(mode);
-      tabButtons.forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-      modes.forEach((m) => m.classList.toggle('active', m.dataset.mode === mode));
+      const neighbors = splitResult[i]
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((v) => {
+          const num = Number(v);
+          if (Number.isNaN(num)) {
+            throw new Error('Invalid neighbor index.');
+          }
+          return num;
+        });
+      tempMap.set(i, neighbors);
+    }
+
+    const n = Math.max(...tempMap.keys()) + 1;
+    const matrix = Array.from({ length: n }, () => Array(n).fill(0));
+    for (const [u, neighbors] of tempMap) {
+      for (const v of neighbors) {
+        matrix[u][v] = 1;
+        matrix[v][u] = 1;
+      }
+    }
+
+    return matrix;
+  }
+
+  private validateInput(matrix: number[][]): void {
+    const n = matrix.length;
+    if (!matrix.every((row) => row.length === n)) {
+      throw new Error('Matrix must be square.');
+    }
+    for (let i = 0; i < n; i++) {
+      if (matrix[i][i] !== 0) {
+        throw new Error('Diagonal must be 0.');
+      }
+      for (let j = 0; j < n; j++) {
+        if (matrix[i][j] !== matrix[j][i]) {
+          throw new Error('Graph must be undirected.');
+        }
+      }
+    }
+  }
+
+  public setMode(mode: 'matrix' | 'list'): void {
+    this.currentMode = mode;
+  }
+
+  public setupTabs(tabButtons: NodeListOf<HTMLButtonElement>, modes: NodeListOf<HTMLElement>): void {
+    tabButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const mode = btn.dataset.mode as 'matrix' | 'list';
+        if (!mode) {
+          return;
+        }
+        this.setMode(mode);
+        tabButtons.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        modes.forEach((m) => m.classList.toggle('active', m.dataset.mode === mode));
+      });
     });
-  });
+  }
 }

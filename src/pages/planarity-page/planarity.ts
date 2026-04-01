@@ -2,12 +2,12 @@ import '../../styles/base.css';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { loadDefaultGraph } from '../../graph/layout/load-default-graph';
 import { renderRawGraphStepWise } from '../../scenes/graph-scene/graph-scene';
-import { setupGraphUI, setupTabs } from '../../ui/graph-input-card';
-import { setupStepper } from '../../ui/setup-stepper';
 import { createRenderer, createCamera } from '../utils';
 import { AmbientLight, DirectionalLight, Group, Scene } from 'three';
+import { GraphUI, GraphUIOptions } from '../../ui/graph-input-card';
+import { Stepper } from '../../ui/stepper';
 
-const stepper = setupStepper();
+const stepper = new Stepper();
 const canvas = document.getElementById('viz') as HTMLCanvasElement;
 
 const renderer = createRenderer(canvas);
@@ -27,7 +27,7 @@ const graphGroup = new Group();
 scene.add(graphGroup);
 
 // ---------------- UI ----------------
-const ui = setupGraphUI({
+const uiOptions: GraphUIOptions = {
   graphMatrixInput: document.getElementById('graphMatrix')! as HTMLTextAreaElement,
   graphListInput: document.getElementById('graphList')! as HTMLTextAreaElement,
   loadGraphBtn: document.getElementById('loadGraphBtn')! as HTMLButtonElement,
@@ -35,11 +35,13 @@ const ui = setupGraphUI({
   graphGroup,
   camera,
   stepper,
-});
+};
+
+const graphUI: GraphUI = new GraphUI(uiOptions);
 
 const tabs = document.querySelectorAll<HTMLButtonElement>('.tabBtn');
 const modes = document.querySelectorAll<HTMLElement>('.graphMode');
-setupTabs(tabs, modes, ui.setMode);
+graphUI.setupTabs(tabs, modes);
 
 // ---------------- Default Graph ----------------
 async function initDefaultGraph(): Promise<void> {
