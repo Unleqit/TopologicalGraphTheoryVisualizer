@@ -6,9 +6,13 @@ import { AmbientLight, CircleGeometry, DirectionalLight, Group, Mesh, MeshBasicM
 import { Stepper } from '../../ui/stepper';
 import { createLabelSprite } from '../../scenes/utils';
 import { GraphEmbeddingStepResult } from '../../graph/types/graph-embedding-step-result';
-import { GraphRendering, renderRawGraphStepWise } from '../../scenes/graph-scene/graph-scene';
-import { PlanarityGraphUIOptions } from './planarity-graph-ui-options';
-import { PlanarityGraphUI } from './planarity-graph-input-card';
+import { renderRawGraphStepWise } from '../../scenes/graph-scene/graph-scene';
+import { graphLayoutService } from '../../graph/layout/index';
+import { PlanarityScene } from '../../scenes/planarity-scene/planarity-scene';
+import { PlanarityPageInputMode } from './planarity-page-input-mode';
+import { matrixToEdgeList } from '../../graph/graph-utils';
+import { combinatorialEmbeddingToPosStepWise } from '../../algorithms/chrobak-payne/chrobak-payne-step-wise';
+import { PlanarityGraphRendering } from '../../scenes/planarity-scene/planarity-graph-rendering';
 
 export class PlanarityPage {
   private stepper: Stepper;
@@ -24,7 +28,14 @@ export class PlanarityPage {
   private lastStep: number;
   private lastEmbeddingStepResult: GraphEmbeddingStepResult;
   private isDragging: boolean = false;
-  private rendering!: GraphRendering;
+  private rendering!: PlanarityGraphRendering;
+  private planarityScene: PlanarityScene;
+  private currentMode: PlanarityPageInputMode;
+
+  private graphMatrixInput: HTMLTextAreaElement;
+  private graphListInput: HTMLTextAreaElement;
+  private loadGraphBtn: HTMLButtonElement;
+  private statusEl: HTMLElement;
 
   constructor() {
     this.stepper = new Stepper();
@@ -33,6 +44,14 @@ export class PlanarityPage {
     this.scene = new Scene();
     this.camera = createCamera();
     this.lastEmbeddingStepResult = { planar: true, edges: [], nodes: [] };
+    this.currentMode = 'matrix';
+
+    this.graphMatrixInput = document.getElementById('graphMatrix')! as HTMLTextAreaElement;
+    this.graphListInput = document.getElementById('graphList')! as HTMLTextAreaElement;
+    this.loadGraphBtn = document.getElementById('loadGraphBtn')! as HTMLButtonElement;
+    this.statusEl = document.getElementById('graphStatus')!;
+
+    this.loadGraphBtn.addEventListener('click', this.loadGraphFromInput.bind(this));
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableZoom = true;
@@ -45,36 +64,22 @@ export class PlanarityPage {
 
     this.graphGroup = new Group();
     this.scene.add(this.graphGroup);
+    this.planarityScene = new PlanarityScene(this.graphGroup, this.camera);
 
     this.raycaster = new Raycaster();
     this.mouse = new Vector2();
 
     this.canvas.addEventListener('click', (event) => this.handleClick(event));
 
-    const uiOptions: PlanarityGraphUIOptions = {
-      graphMatrixInput: document.getElementById('graphMatrix')! as HTMLTextAreaElement,
-      graphListInput: document.getElementById('graphList')! as HTMLTextAreaElement,
-      loadGraphBtn: document.getElementById('loadGraphBtn')! as HTMLButtonElement,
-      statusEl: document.getElementById('graphStatus')!,
-      graphGroup: this.graphGroup,
-      camera: this.camera,
-      stepper: this.stepper,
-      onGraphRendered: (rendering) => {
-        this.rendering = rendering;
-      },
-    };
-
-    const graphUI = new PlanarityGraphUI(uiOptions);
-
     const tabs = document.querySelectorAll<HTMLButtonElement>('.tabBtn');
     const modes = document.querySelectorAll<HTMLElement>('.graphMode');
-    graphUI.setupTabs(tabs, modes);
+    this.setupTabs(tabs, modes);
 
     this.canvas.addEventListener('mousedown', (e) => this.onMouseDown(e));
     this.canvas.addEventListener('mousemove', (e) => this.onMouseMove(e));
     this.canvas.addEventListener('mouseup', () => this.onMouseUp());
 
-    addEventListener('resize', this.resize);
+    addEventListener('resize', this.resize.bind(this));
     this.resize();
 
     this.lastStep = this.stepper.getStep();
@@ -223,7 +228,7 @@ export class PlanarityPage {
     this.selectedNode = undefined;
   }
 
-  public async initDefaultGraph(): Promise<GraphRendering> {
+  public async initDefaultGraph(): Promise<PlanarityGraphRendering> {
     const result = await loadDefaultGraph();
     this.lastEmbeddingStepResult = result!;
     this.graphGroup.visible = true;
@@ -267,7 +272,7 @@ export class PlanarityPage {
 
     const selectedId = Number(this.selectedNode.userData.id);
 
-    this.rendering.edges.forEach((edge) => {
+    this.rendering.edgeLines.forEach((edge) => {
       const [aIndex, bIndex] = (edge.userData.id as string).split(',').map(Number);
 
       if (aIndex !== selectedId && bIndex !== selectedId) {
@@ -304,6 +309,142 @@ export class PlanarityPage {
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
     requestAnimationFrame(this.tick.bind(this));
+  }
+
+  public async loadGraphFromInput(): Promise<void> {
+    this.showStatus('', 'info');
+
+    try {
+      let matrix: number[][] = [];
+
+      switch (this.currentMode) {
+        case 'matrix':
+          matrix = this.parseMatrix();
+          break;
+        case 'list':
+          matrix = this.parseAdjacencyList();
+          break;
+      }
+
+      this.validateInput(matrix);
+      this.showStatus('Computing layout...', 'info');
+
+      const { nodeCount, edges } = matrixToEdgeList(matrix);
+      const embeddingResult = await graphLayoutService.compute(edges, nodeCount);
+
+      if (!embeddingResult.planar) {
+        this.showStatus('Planar: ✗', 'error');
+        return;
+      }
+
+      this.graphGroup.visible = true;
+
+      const result = combinatorialEmbeddingToPosStepWise(edges, embeddingResult.canonical_ordering);
+      this.rendering = await this.planarityScene.renderRawGraphStepWise(result, 250);
+
+      this.stepper.setStep(1);
+      this.showStatus('Planar: ✓', 'okay');
+    } catch (err) {
+      this.showStatus(err instanceof Error ? err.message : 'Invalid input.', 'error');
+    }
+  }
+
+  private showStatus(message: string, type: 'info' | 'okay' | 'error'): void {
+    this.statusEl.className = 'statusText' + (type === 'info' ? '' : type === 'okay' ? ' ok' : ' error');
+    this.statusEl.textContent = message;
+  }
+
+  private parseMatrix(): number[][] {
+    const text = this.graphMatrixInput.value.trim();
+    if (!text) {
+      throw new Error('Please enter a matrix.');
+    }
+    const matrix = text.split('\n').map((line) =>
+      line
+        .trim()
+        .split(/\s+/)
+        .map((v) => {
+          const num = Number(v);
+          if (Number.isNaN(num)) {
+            throw new Error('Invalid number in matrix.');
+          }
+          return num;
+        })
+    );
+    return matrix;
+  }
+
+  private parseAdjacencyList(): number[][] {
+    const text = this.graphListInput.value.trim();
+    if (!text) {
+      throw new Error('Please enter an adjacency list.');
+    }
+    const tempMap = new Map<number, number[]>();
+    const splitResult = text.split('\n');
+    for (let i = 0; i < splitResult.length; ++i) {
+      if (!splitResult[i]) {
+        throw new Error('Invalid list format.');
+      }
+      const neighbors = splitResult[i]
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((v) => {
+          const num = Number(v);
+          if (Number.isNaN(num)) {
+            throw new Error('Invalid neighbor index.');
+          }
+          return num;
+        });
+      tempMap.set(i, neighbors);
+    }
+
+    const n = Math.max(...tempMap.keys()) + 1;
+    const matrix = Array.from({ length: n }, () => Array(n).fill(0));
+    for (const [u, neighbors] of tempMap) {
+      for (const v of neighbors) {
+        matrix[u][v] = 1;
+        matrix[v][u] = 1;
+      }
+    }
+
+    return matrix;
+  }
+
+  private validateInput(matrix: number[][]): void {
+    const n = matrix.length;
+    if (!matrix.every((row) => row.length === n)) {
+      throw new Error('Matrix must be square.');
+    }
+    for (let i = 0; i < n; i++) {
+      if (matrix[i][i] !== 0) {
+        throw new Error('Diagonal must be 0.');
+      }
+      for (let j = 0; j < n; j++) {
+        if (matrix[i][j] !== matrix[j][i]) {
+          throw new Error('Graph must be undirected.');
+        }
+      }
+    }
+  }
+
+  public setMode(mode: PlanarityPageInputMode): void {
+    this.currentMode = mode;
+  }
+
+  public setupTabs(tabButtons: NodeListOf<HTMLButtonElement>, modes: NodeListOf<HTMLElement>): void {
+    tabButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const mode = btn.dataset.mode as 'matrix' | 'list' | 'interactive';
+        if (!mode) {
+          return;
+        }
+        this.setMode(mode);
+        tabButtons.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        modes.forEach((m) => m.classList.toggle('active', m.dataset.mode === mode));
+      });
+    });
   }
 }
 new PlanarityPage();

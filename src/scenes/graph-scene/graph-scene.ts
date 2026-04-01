@@ -7,7 +7,6 @@ import {
   Vector3,
   BufferGeometry,
   BufferAttribute,
-  LineSegments,
   LineBasicMaterial,
   Mesh,
   CircleGeometry,
@@ -19,9 +18,15 @@ import {
   Sphere,
   Line,
 } from 'three';
+import { PlanarityGraphRendering } from '../planarity-scene/planarity-graph-rendering';
 
-export async function renderRawGraphStepWise(group: Group, camera: PerspectiveCamera, stepResult: GraphEmbeddingStepResult, stepMs: number = 250): Promise<GraphRendering> {
-  let result: GraphRendering;
+export async function renderRawGraphStepWise(
+  group: Group,
+  camera: PerspectiveCamera,
+  stepResult: GraphEmbeddingStepResult,
+  stepMs: number = 250
+): Promise<PlanarityGraphRendering> {
+  let result: PlanarityGraphRendering;
   for (let i = 0; i < stepResult.nodes.length; ++i) {
     result = renderRawGraph(group, stepResult.nodes[i], stepResult.edges[i]);
     centerGroup(group, camera);
@@ -32,7 +37,7 @@ export async function renderRawGraphStepWise(group: Group, camera: PerspectiveCa
 
 export type GraphRendering = { nodes: Mesh[]; edges: Line[] };
 
-export function renderRawGraph(group: Group, nodes: GraphNode[], edges: GraphEdge[]): GraphRendering {
+export function renderRawGraph(group: Group, nodes: GraphNode[], edges: GraphEdge[]): PlanarityGraphRendering {
   group.clear();
 
   const nodeMap = new Map<number, Vector3>();
@@ -74,7 +79,7 @@ export function renderRawGraph(group: Group, nodes: GraphNode[], edges: GraphEdg
     nodeMeshes.push(node);
   }
 
-  return { edges: edgeMeshes, nodes: nodeMeshes };
+  return { edgeLines: edgeMeshes, nodeMeshes: nodeMeshes };
 }
 
 function createTextLabel(text: string): Sprite {
