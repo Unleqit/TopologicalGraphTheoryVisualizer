@@ -188,11 +188,12 @@ export class PlanarityPage {
     const local = this.graphGroup.worldToLocal(worldPos.clone());
 
     const node = new Mesh(new CircleGeometry(0.15, 24), new MeshBasicMaterial({ color: 0x1976d2 }));
-    const label = createLabelSprite(node.userData.id);
 
     node.position.copy(local);
     node.userData.isNode = true;
     node.userData.id = this.getNextNodeId();
+
+    const label = createLabelSprite(node.userData.id);
     label.position.copy(local);
     label.position.z += 0.01;
     node.userData.label = label;
