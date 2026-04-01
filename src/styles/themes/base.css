@@ -752,12 +752,25 @@ body {
   background: rgba(255, 255, 255, 0.4);
 }
 
+#theme-toggle-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 50;
+  border-radius: var(--radius);
+  border: 0;
+  padding: 10px 18px;
+  background: var(--text);
+  color: var(--bg1);
+  cursor: pointer;
+}
+
 /* ===============================
    LIGHT MODE WRAPPER
-   Toggle with JS by adding/removing `.light` on body
+   Toggle with JS by adding/removing `[theme='light']` on body
 ================================ */
 
-.light {
+html[theme='light'] {
   /* ---------------- Backgrounds ---------------- */
   --bg1: rgba(245, 247, 250, 1);
   --bg2: rgba(230, 233, 238, 1);
@@ -774,8 +787,8 @@ body {
 }
 
 /* ---------------- Base Body ---------------- */
-.light html,
-.light body {
+[theme='light'] html,
+[theme='light'] body {
   height: 100%;
   margin: 0;
   font-family:
@@ -794,13 +807,13 @@ body {
 }
 
 /* ---------------- Layout ---------------- */
-.light .shell {
+[theme='light'] .shell {
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.light .topbar {
+[theme='light'] .topbar {
   padding: 14px 18px;
   display: flex;
   align-items: center;
@@ -810,7 +823,7 @@ body {
   backdrop-filter: blur(10px);
 }
 
-.light .brand {
+[theme='light'] .brand {
   font-weight: 900;
   letter-spacing: -0.02em;
   text-decoration: none;
@@ -818,12 +831,12 @@ body {
   color: var(--text);
 }
 
-.light .crumb {
+[theme='light'] .crumb {
   color: rgba(34, 34, 34, 0.78);
   font-size: 13px;
 }
 
-.light .main {
+[theme='light'] .main {
   flex: 1;
   min-height: 0;
   display: grid;
@@ -833,7 +846,7 @@ body {
   padding-bottom: 78px;
 }
 
-.light .panel {
+[theme='light'] .panel {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: linear-gradient(180deg, var(--panel), rgba(255, 255, 255, 0.95));
@@ -843,12 +856,12 @@ body {
   min-height: 0;
 }
 
-.light .dialog {
+[theme='light'] .dialog {
   display: flex;
   flex-direction: column;
 }
 
-.light .dialog-head {
+[theme='light'] .dialog-head {
   padding: 14px 16px;
   border-bottom: 1px solid rgba(34, 34, 34, 0.1);
   display: flex;
@@ -857,21 +870,21 @@ body {
   gap: 10px;
 }
 
-.light .h-title {
+[theme='light'] .h-title {
   margin: 0;
   font-size: 16px;
   font-weight: 900;
   letter-spacing: -0.01em;
 }
 
-.light .h-sub {
+[theme='light'] .h-sub {
   margin: 4px 0 0 0;
   font-size: 13px;
   color: rgba(34, 34, 34, 0.8);
   line-height: 1.35;
 }
 
-.light .dialog-body {
+[theme='light'] .dialog-body {
   padding: 14px 16px 16px 16px;
   overflow: auto;
   min-height: 0;
@@ -882,16 +895,16 @@ body {
   flex-direction: column;
 }
 
-.light .dialog-body h3 {
+[theme='light'] .dialog-body h3 {
   margin: 14px 0 8px;
   font-size: 14px;
 }
 
-.light .dialog-body p {
+[theme='light'] .dialog-body p {
   margin: 10px 0;
 }
 
-.light .dialog-body code {
+[theme='light'] .dialog-body code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
   font-size: 12px;
   background: rgba(0, 0, 0, 0.04);
@@ -901,13 +914,13 @@ body {
 }
 
 /* ---------------- Canvas ---------------- */
-.light .canvasWrap {
+[theme='light'] .canvasWrap {
   position: relative;
   display: flex;
   flex-direction: column;
 }
 
-.light .canvasHead {
+[theme='light'] .canvasHead {
   padding: 12px 14px;
   border-bottom: 1px solid rgba(34, 34, 34, 0.1);
   display: flex;
@@ -916,7 +929,7 @@ body {
   gap: 10px;
 }
 
-.light .badge {
+[theme='light'] .badge {
   font-size: 12px;
   color: rgba(34, 34, 34, 0.85);
   background: rgba(255, 255, 255, 0.95);
@@ -925,21 +938,21 @@ body {
   border-radius: 999px;
 }
 
-.light .canvasArea {
+[theme='light'] .canvasArea {
   position: relative;
   flex: 1;
   min-height: 0;
   overflow: hidden;
 }
 
-.light canvas#viz {
+[theme='light'] canvas#viz {
   display: block;
   width: 100%;
   height: 100%;
 }
 
 /* ---------------- Bottom nav ---------------- */
-.light .bottomNav {
+[theme='light'] .bottomNav {
   position: fixed;
   left: 0;
   right: 0;
@@ -952,7 +965,7 @@ body {
   backdrop-filter: blur(10px);
 }
 
-.light .navInner {
+[theme='light'] .navInner {
   width: min(1100px, calc(100% - 16px));
   display: flex;
   align-items: center;
@@ -960,17 +973,17 @@ body {
   gap: 12px;
 }
 
-.light .progress {
+[theme='light'] .progress {
   font-size: 13px;
   color: rgba(34, 34, 34, 0.85);
 }
 
-.light .btnRow {
+[theme='light'] .btnRow {
   display: flex;
   gap: 10px;
 }
 
-.light .btn {
+[theme='light'] .btn {
   appearance: none;
   border: 1px solid rgba(34, 34, 34, 0.16);
   background: rgba(255, 255, 255, 0.9);
@@ -985,18 +998,18 @@ body {
   gap: 8px;
 }
 
-.light .btn:hover {
+[theme='light'] .btn:hover {
   background: rgba(255, 255, 255, 0.95);
   border-color: rgba(34, 34, 34, 0.22);
 }
 
-.light .btn:disabled {
+[theme='light'] .btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
 
 /* ---------------- Hero Section ---------------- */
-.light .page {
+[theme='light'] .page {
   min-height: 100%;
   display: flex;
   flex-direction: column;
@@ -1006,35 +1019,35 @@ body {
   gap: 32px;
 }
 
-.light .hero {
+[theme='light'] .hero {
   width: min(1100px, 100%);
   text-align: center;
 }
 
-.light .title {
+[theme='light'] .title {
   color: var(--text);
   opacity: 0;
   transform: translateY(28px) scale(0.98);
   filter: blur(0);
 }
 
-.light .title-sub {
+[theme='light'] .title-sub {
   color: rgba(34, 34, 34, 0.92);
 }
 
 /* ---------------- Navigation Bars / Accordions ---------------- */
-.light .bar {
+[theme='light'] .bar {
   background: var(--panel);
   border: 1px solid var(--border);
   color: var(--text);
 }
 
-.light .bar:hover {
+[theme='light'] .bar:hover {
   background: var(--panel2);
   border-color: rgba(34, 34, 34, 0.22);
 }
 
-.light .bar-cta {
+[theme='light'] .bar-cta {
   font-size: 13px;
   color: rgba(102, 102, 102, 0.8);
   border: 1px solid rgba(34, 34, 34, 0.18);
@@ -1045,129 +1058,129 @@ body {
 }
 
 /* Expanded descriptions */
-.light .bar-desc {
+[theme='light'] .bar-desc {
   color: rgba(34, 34, 34, 0.92);
 }
 
 /* ---------------- Graph Cards ---------------- */
-.light .graphCard {
+[theme='light'] .graphCard {
   border: 1px solid rgba(34, 34, 34, 0.08);
   background: rgba(255, 255, 255, 0.95);
 }
 
-.light .graphCardHead {
+[theme='light'] .graphCardHead {
   background: rgba(255, 255, 255, 0.9);
   color: rgba(34, 34, 34, 0.85);
 }
 
-.light .matrixInput {
+[theme='light'] .matrixInput {
   border: 1px solid rgba(34, 34, 34, 0.1);
   background: rgba(245, 247, 250, 0.75);
   color: rgba(34, 34, 34, 0.95);
 }
 
 /* Buttons inside graph cards */
-.light .graphActions .btn.primary {
+[theme='light'] .graphActions .btn.primary {
   background: linear-gradient(135deg, rgba(0, 255, 204, 1), rgba(0, 195, 255, 1));
   color: rgba(0, 43, 51, 1);
 }
 
 /* Status texts */
-.light .statusText.ok {
+[theme='light'] .statusText.ok {
   color: rgba(0, 255, 204, 1);
 }
-.light .statusText.error {
+[theme='light'] .statusText.error {
   color: rgba(255, 107, 107, 1);
 }
 
 /* Hints */
-.light .hint {
+[theme='light'] .hint {
   color: rgba(102, 102, 102, 0.6);
 }
 
 /* Tabs */
-.light .tabBtn {
+[theme='light'] .tabBtn {
   background: transparent;
   border: 1px solid rgba(34, 34, 34, 0.15);
   color: rgba(34, 34, 34, 0.85);
 }
 
-.light .tabBtn.active {
+[theme='light'] .tabBtn.active {
   background: linear-gradient(135deg, rgba(0, 255, 204, 1), rgba(0, 195, 255, 1));
   color: rgba(0, 43, 51, 1);
   border: none;
 }
 
 /* ---------------- Cylinder Controls ---------------- */
-.light .cylinder-controls {
+[theme='light'] .cylinder-controls {
   background: rgba(255, 255, 255, 0.95);
   border: 1px solid rgba(34, 34, 34, 0.12);
   color: var(--text);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
 }
 
-.light .cylinder-controls input[type='range'] {
+[theme='light'] .cylinder-controls input[type='range'] {
   background: rgba(0, 0, 0, 0.1);
 }
 
-.light .cylinder-controls input[type='range']::-webkit-slider-thumb {
+[theme='light'] .cylinder-controls input[type='range']::-webkit-slider-thumb {
   background: rgba(0, 128, 255, 1);
   border: 1px solid rgba(0, 0, 0, 0.2);
 }
 
-.light .cylinder-controls button {
+[theme='light'] .cylinder-controls button {
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid rgba(34, 34, 34, 0.16);
   color: var(--text);
 }
 
-.light .cylinder-controls button:hover {
+[theme='light'] .cylinder-controls button:hover {
   background: rgba(0, 255, 204, 0.12);
   border-color: rgba(0, 255, 204, 0.24);
 }
 
 /* Cylinder legend swatches */
-.light .cylinder-controls .swatch.red {
+[theme='light'] .cylinder-controls .swatch.red {
   background: rgba(255, 100, 120, 1);
 }
-.light .cylinder-controls .swatch.blue {
+[theme='light'] .cylinder-controls .swatch.blue {
   background: rgba(93, 169, 255, 1);
 }
-.light .cylinder-controls .swatch.yellow {
+[theme='light'] .cylinder-controls .swatch.yellow {
   background: rgba(255, 224, 130, 1);
 }
-.light .cylinder-controls .swatch.gray {
+[theme='light'] .cylinder-controls .swatch.gray {
   background: rgba(34, 34, 34, 0.4);
 }
 
 /* ---------------- Responsive Adjustments ---------------- */
 @media (max-width: 920px) {
-  .light .main {
+  [theme='light'] .main {
     grid-template-columns: 1fr;
     padding-bottom: 86px;
   }
-  .light :root {
+  [theme='light'] :root {
     --sidebarW: 1fr;
   }
-  .light .canvasWrap {
+  [theme='light'] .canvasWrap {
     min-height: 46vh;
   }
 }
 
 @media (max-width: 520px) {
-  .light .bar-2 {
+  [theme='light'] .bar-2 {
     margin-left: 10px;
   }
-  .light .bar-3 {
+  [theme='light'] .bar-3 {
     margin-left: 20px;
   }
-  .light .bar-main {
+  [theme='light'] .bar-main {
     padding: 16px 14px;
   }
-  .light .bar.open .bar-desc {
+  [theme='light'] .bar.open .bar-desc {
     padding: 0 14px 14px 14px;
   }
-  .light .bar-desc {
+  [theme='light'] .bar-desc {
     padding: 0 14px;
   }
 }

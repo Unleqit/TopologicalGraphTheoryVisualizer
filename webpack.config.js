@@ -9,7 +9,6 @@ const __dirname = path.dirname(__filename);
 export default {
   mode: 'development',
   entry: {
-    preload: './src/theme/preload-theme.ts',
     shared: './src/styles/theme-loader/theme.ts',
     index: './src/pages/landing-page/index.ts',
     intro: './src/pages/intro-page/intro.ts',

@@ -1,69 +1,57 @@
 export type Theme = 'light' | 'dark';
 const THEME_KEY = 'theme';
 
-// ------------------- Storage -------------------
-function getSavedTheme(): Theme {
-  return (localStorage.getItem(THEME_KEY) as Theme) || 'light';
+function get(): Theme {
+  if (localStorage.theme !== undefined) {
+    document.documentElement.setAttribute('theme', localStorage.theme);
+    return localStorage.theme;
+  } else {
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.documentElement.setAttribute('theme', 'dark');
+      return 'dark';
+    } else {
+      document.documentElement.setAttribute('theme', 'light');
+      return 'light';
+    }
+  }
 }
 
-function saveTheme(theme: Theme) {
-  localStorage.setItem(THEME_KEY, theme);
+function toggle(): void {
+  if (document.documentElement.getAttribute('theme') === 'dark') {
+    document.documentElement.setAttribute('theme', 'light');
+    localStorage.setItem('theme', 'light');
+  } else {
+    document.documentElement.setAttribute('theme', 'dark');
+    localStorage.setItem('theme', 'dark');
+  }
+  updateButton(localStorage.theme);
 }
 
-// ------------------- Apply Theme -------------------
-export function applyTheme(theme: Theme) {
-  document.body.classList.remove('light', 'dark');
-  document.body.classList.add(theme);
-  saveTheme(theme);
-  updateButton(theme);
-}
-
-// ------------------- Toggle -------------------
-function toggleTheme() {
-  const next: Theme = getSavedTheme() === 'light' ? 'dark' : 'light';
-  applyTheme(next);
-}
-
-// ------------------- Update Button -------------------
-function updateButton(theme: Theme) {
+function updateButton(theme: Theme): void {
   const btn = document.getElementById('theme-toggle-btn') as HTMLButtonElement | null;
   if (btn) {
     btn.textContent = theme === 'light' ? 'Switch to Dark' : 'Switch to Light';
   }
 }
 
-// ------------------- Inject Toggle Button -------------------
-function injectThemeToggleButton() {
+function injectThemeToggleButton(): void {
   if (document.getElementById('theme-toggle-btn')) {
     return;
   }
 
   const button = document.createElement('button');
   button.id = 'theme-toggle-btn';
-  button.style.position = 'fixed';
-  button.style.top = '10px';
-  button.style.right = '10px';
-  button.style.zIndex = '1000';
-  button.style.padding = '6px 12px';
-  button.style.backgroundColor = 'rgba(0,0,0,0.2)';
-  button.style.color = '#fff';
-  button.style.border = 'none';
-  button.style.borderRadius = '4px';
-  button.style.cursor = 'pointer';
-  button.addEventListener('click', toggleTheme);
-
+  button.className = 'theme-toggle-btn';
+  button.addEventListener('click', toggle);
   document.body.appendChild(button);
-
-  // Set initial label
-  updateButton(getSavedTheme());
+  updateButton(get());
 }
 
-// ------------------- Init -------------------
-export function initTheme() {
+function initTheme(): void {
+  get();
   injectThemeToggleButton();
 }
 
-// DOM ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initTheme);
 } else {

@@ -6,9 +6,6 @@ import { addDefaultLights, createCamera, createRenderer } from '../utils';
 import { VisualizationContextUpdateUISource } from '../../scenes/surface-scene/visualization/types/visualization-context-ui-update-source';
 import { VisualizationContextUIDisplayResult } from '../../scenes/surface-scene/visualization/types/visualization-context-ui-display-result';
 
-//use light mode
-document.body.classList.toggle('light', true);
-
 //--- sphere ---
 const slider_1 = document.getElementById('slider-1') as HTMLInputElement;
 const slider0 = document.getElementById('slider0') as HTMLInputElement;

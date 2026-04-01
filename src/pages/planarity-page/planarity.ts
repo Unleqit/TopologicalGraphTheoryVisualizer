@@ -7,9 +7,6 @@ import { setupStepper } from '../../ui/setup-stepper';
 import { createRenderer, createCamera } from '../utils';
 import { AmbientLight, DirectionalLight, Group, Scene } from 'three';
 
-//use light mode
-document.body.classList.toggle('light', true);
-
 const stepper = setupStepper();
 const canvas = document.getElementById('viz') as HTMLCanvasElement;
 

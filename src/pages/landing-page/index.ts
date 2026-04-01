@@ -1,8 +1,5 @@
 import '../../styles/themes/base.css';
 
-//use light mode
-document.body.classList.toggle('light', true);
-
 // Title element
 const titleEl = document.getElementById('title') as HTMLElement | null;
 if (titleEl) {
