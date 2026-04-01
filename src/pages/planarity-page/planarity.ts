@@ -230,10 +230,11 @@ export class PlanarityPage {
   }
 
   public async initDefaultGraph(): Promise<PlanarityGraphRendering> {
-    const result = await loadDefaultGraph();
-    this.lastEmbeddingStepResult = result!;
+    this.showStatus('Computing layout...', 'info');
+    this.lastEmbeddingStepResult = (await loadDefaultGraph())!;
     this.graphGroup.visible = true;
-    this.rendering = await renderRawGraphStepWise(this.graphGroup, this.camera, result!, 250);
+    this.rendering = await renderRawGraphStepWise(this.graphGroup, this.camera, this.lastEmbeddingStepResult, 250);
+    this.showStatus('Planar: ✓', 'okay');
     return this.rendering;
   }
 
