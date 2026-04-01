@@ -2,32 +2,13 @@ import '../../styles/base.css';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { loadDefaultGraph } from '../../graph/layout/load-default-graph';
 import { createRenderer, createCamera } from '../utils';
-import {
-  AmbientLight,
-  BufferAttribute,
-  BufferGeometry,
-  CircleGeometry,
-  DirectionalLight,
-  Group,
-  Line,
-  LineSegments,
-  Mesh,
-  MeshBasicMaterial,
-  PerspectiveCamera,
-  Plane,
-  Raycaster,
-  Scene,
-  Vector2,
-  Vector3,
-  WebGLRenderer,
-} from 'three';
-import { GraphUI, GraphUIOptions } from '../../ui/graph-input-card';
+import { AmbientLight, CircleGeometry, DirectionalLight, Group, Mesh, MeshBasicMaterial, PerspectiveCamera, Plane, Raycaster, Scene, Vector2, Vector3, WebGLRenderer } from 'three';
 import { Stepper } from '../../ui/stepper';
 import { createLabelSprite } from '../../scenes/utils';
 import { GraphEmbeddingStepResult } from '../../graph/types/graph-embedding-step-result';
 import { GraphRendering, renderRawGraphStepWise } from '../../scenes/graph-scene/graph-scene';
-import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
-import { GraphEdge } from '../../graph/types/graph-edge';
+import { PlanarityGraphUIOptions } from './planarity-graph-ui-options';
+import { PlanarityGraphUI } from './planarity-graph-input-card';
 
 export class PlanarityPage {
   private stepper: Stepper;
@@ -39,7 +20,7 @@ export class PlanarityPage {
   private graphGroup: Group;
   private raycaster: Raycaster;
   private mouse: Vector2;
-  private selectedNode: any;
+  private selectedNode: Mesh | undefined;
   private lastStep: number;
   private lastEmbeddingStepResult: GraphEmbeddingStepResult;
   private isDragging: boolean = false;
@@ -70,7 +51,7 @@ export class PlanarityPage {
 
     this.canvas.addEventListener('click', (event) => this.handleClick(event));
 
-    const uiOptions: GraphUIOptions = {
+    const uiOptions: PlanarityGraphUIOptions = {
       graphMatrixInput: document.getElementById('graphMatrix')! as HTMLTextAreaElement,
       graphListInput: document.getElementById('graphList')! as HTMLTextAreaElement,
       loadGraphBtn: document.getElementById('loadGraphBtn')! as HTMLButtonElement,
@@ -80,7 +61,7 @@ export class PlanarityPage {
       stepper: this.stepper,
     };
 
-    const graphUI: GraphUI = new GraphUI(uiOptions);
+    const graphUI = new PlanarityGraphUI(uiOptions);
 
     const tabs = document.querySelectorAll<HTMLButtonElement>('.tabBtn');
     const modes = document.querySelectorAll<HTMLElement>('.graphMode');
@@ -109,9 +90,7 @@ export class PlanarityPage {
     const rect = this.canvas.getBoundingClientRect();
     this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
     this.raycaster.setFromCamera(this.mouse, this.camera);
-
     this.updateRendering();
   }
 
@@ -138,17 +117,12 @@ export class PlanarityPage {
       if (obj.userData.isNode) {
         this.selectNode(obj);
 
-        // compute plane
         const normal = new Vector3(0, 0, 1).applyQuaternion(this.graphGroup.quaternion);
         const point = this.graphGroup.getWorldPosition(new Vector3());
         const plane = new Plane().setFromNormalAndCoplanarPoint(normal, point);
 
         const hitPoint = new Vector3();
         this.raycaster.ray.intersectPlane(plane, hitPoint);
-
-        // store offset (prevents snapping)
-        const worldPos = obj.getWorldPosition(new Vector3());
-
         this.isDragging = true;
         return;
       }
@@ -180,16 +154,14 @@ export class PlanarityPage {
     const plane = new Plane().setFromNormalAndCoplanarPoint(normal, point);
 
     const hit = new Vector3();
-    const ok = this.raycaster.ray.intersectPlane(plane, hit);
-
-    if (!ok) {
+    if (!this.raycaster.ray.intersectPlane(plane, hit)) {
       return;
     }
 
     this.addVertex(hit);
   }
 
-  private checkIfNodeSelected() {
+  private checkIfNodeSelected(): void {
     const intersects = this.raycaster.intersectObjects(this.graphGroup.children, true);
 
     for (const hit of intersects) {
@@ -208,16 +180,14 @@ export class PlanarityPage {
     const local = this.graphGroup.worldToLocal(worldPos.clone());
 
     const node = new Mesh(new CircleGeometry(0.15, 24), new MeshBasicMaterial({ color: 0x1976d2 }));
+    const label = createLabelSprite(node.userData.id);
+
     node.position.copy(local);
     node.userData.isNode = true;
     node.userData.id = this.getNextNodeId();
-
-    // create label sprite
-    const label = createLabelSprite(node.userData.id);
     label.position.copy(local);
-    label.position.z += 0.01; // above the node
-
-    node.userData.label = label; // link sprite to node
+    label.position.z += 0.01;
+    node.userData.label = label;
 
     this.graphGroup.add(node);
     this.graphGroup.add(label);
@@ -233,14 +203,11 @@ export class PlanarityPage {
   }
 
   private selectNode(node: Mesh): void {
-    // reset previous
     if (this.selectedNode) {
       (this.selectedNode.material as MeshBasicMaterial).color.set(0x1976d2);
     }
 
     this.selectedNode = node;
-
-    // highlight new
     (node.material as MeshBasicMaterial).color.set(0xffff00);
   }
 
@@ -250,7 +217,7 @@ export class PlanarityPage {
     }
 
     (this.selectedNode.material as MeshBasicMaterial).color.set(0x1976d2);
-    this.selectedNode = null;
+    this.selectedNode = undefined;
   }
 
   public async initDefaultGraph(): Promise<GraphRendering> {
@@ -276,7 +243,9 @@ export class PlanarityPage {
       return;
     }
 
-    // convert to local space
+    if (!this.selectedNode) {
+      return;
+    }
     const local = this.graphGroup.worldToLocal(hit.clone());
     this.selectedNode.position.copy(local);
 
