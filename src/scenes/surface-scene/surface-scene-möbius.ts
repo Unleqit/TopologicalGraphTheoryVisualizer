@@ -21,7 +21,7 @@ import { _undoShowVerticesAtStart } from './visualization/step-definitions/commo
 import { showEdgesAtStart } from './visualization/step-definitions/common/redo/redo-show-edges-at-start';
 import { _undoShowEdgesAtStart } from './visualization/step-definitions/common/undo/undo-show-edges-at-start';
 import { DoubleSide, MeshStandardMaterial, Scene } from 'three';
-import { SurfaceSceneBase } from '../surface-scene-base';
+import { SurfaceSceneBase } from './surface-scene-base';
 import { UpdateUIFunction } from './visualization/types/update-ui-function';
 
 export class SurfaceSceneMöbius extends SurfaceSceneBase {

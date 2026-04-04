@@ -567,6 +567,7 @@ body {
 }
 
 .statusText {
+  white-space: pre-line;
   font-size: 0.8rem;
   opacity: 0.7;
 }

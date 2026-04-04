@@ -1,4 +1,4 @@
-export const DEFAULT_GRAPH: number[][] = [
+export const PLANARITY_PAGE_DEFAULT_GRAPH: number[][] = [
   [0, 1, 1, 1, 0],
   [1, 0, 1, 0, 0],
   [1, 1, 0, 1, 1],
