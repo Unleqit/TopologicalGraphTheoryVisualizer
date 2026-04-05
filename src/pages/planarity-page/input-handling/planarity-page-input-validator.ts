@@ -1,4 +1,6 @@
-export function validateMatrix(matrix: number[][]): boolean {
+import { PlanarityPageInputMatrix } from './planarity-page-input-matrix';
+
+export function validateMatrix(matrix: PlanarityPageInputMatrix): boolean {
   const n = matrix.length;
   if (!matrix.every((row) => row.length === n)) {
     throw new Error('Matrix must be square.');

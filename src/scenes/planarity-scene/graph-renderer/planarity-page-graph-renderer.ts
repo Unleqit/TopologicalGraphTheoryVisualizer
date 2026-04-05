@@ -3,43 +3,15 @@ import { GraphEdge } from '../../../graph/types/graph-edge';
 import { GraphNode } from '../../../graph/types/graph.node';
 import { PlanarityPageGraphRenderingResult } from './planarity-page-graph-rendering-result';
 import { createLabelSprite } from '../../utils';
-import { PlanarityPageGraphNode } from './planarity-page-graph-node';
-import { PlanarityPageGraphEdge } from './planarity-page-graph-edge';
+import { PlanarityPageGraphNode } from '../types/planarity-page-graph-node';
+import { PlanarityPageGraphEdge } from '../types/planarity-page-graph-edge';
+import { Graph } from '../../../graph/types/graph';
 
 export class PlanarityPageGraphRenderer {
-  private onGraphRecenter: (newPosition: Vector3) => void;
-
-  constructor(onGraphRecenter: (newPosition: Vector3) => void) {
-    this.onGraphRecenter = onGraphRecenter;
-  }
-
-  public render(nodes: GraphNode[], edges: GraphEdge[], recenter: boolean = true, groupPos: Vector3 | undefined = undefined): PlanarityPageGraphRenderingResult {
-    const group = new Group();
-    const nodeMeshes = this.renderNodes(group, nodes);
-    const nodeMap = this.buildNodeMap(nodeMeshes);
-    const edgeLines = this.renderEdges(group, edges, nodeMap);
-
-    if (recenter) {
-      this.centerGroup(group);
-    }
-
-    if (groupPos) {
-      group.position.set(groupPos.x, groupPos.y, groupPos.z);
-    }
-
-    return { graphGroup: group, edgeLines: edgeLines, nodeMeshes: nodeMeshes };
-  }
-
   private buildNodeMap(nodes: PlanarityPageGraphNode[]): Map<number, Vector3> {
     const nodeMap = new Map<number, Vector3>();
     nodes.forEach((node) => nodeMap.set(Number(node.id), new Vector3(node.label.position.x, node.label.position.y, 0)));
     return nodeMap;
-  }
-
-  public addToRendering(rendering: PlanarityPageGraphRenderingResult, nodes: GraphNode[], edges: GraphEdge[]): PlanarityPageGraphRenderingResult {
-    const allNodes: GraphNode[] = [...rendering.nodeMeshes.map((n) => ({ id: n.id, x: n.mesh.position.x, y: n.mesh.position.y })), ...nodes];
-    const allEdges: GraphEdge[] = [...rendering.edgeLines.map((e) => e.id.split(',').map(Number) as GraphEdge), ...edges];
-    return this.render(allNodes, allEdges, false, rendering.graphGroup.position);
   }
 
   private renderNodes(group: Group, nodes: GraphNode[]): PlanarityPageGraphNode[] {
@@ -80,10 +52,30 @@ export class PlanarityPageGraphRenderer {
     return edgeLines;
   }
 
-  protected centerGroup(group: Group): void {
-    const box = new Box3().setFromObject(group);
-    const sphere = box.getBoundingSphere(new Sphere());
-    group.position.sub(sphere.center);
-    this.onGraphRecenter(new Vector3(0, 0, sphere.radius * 3));
+  private renderInternal(graph: Graph, startTimestamp: number, groupPos: Vector3 | undefined = undefined): PlanarityPageGraphRenderingResult {
+    const group = new Group();
+    const nodeMeshes = this.renderNodes(group, graph.nodes);
+    const nodeMap = this.buildNodeMap(nodeMeshes);
+    const edgeLines = this.renderEdges(group, graph.edges, nodeMap);
+
+    if (groupPos) {
+      group.position.set(groupPos.x, groupPos.y, groupPos.z);
+    }
+
+    return { startTimestamp: startTimestamp, graph: graph, graphGroup: group, edgeLines: edgeLines, nodeMeshes: nodeMeshes };
+  }
+
+  public render(graphs: Graph[], position: Vector3 | undefined = undefined): PlanarityPageGraphRenderingResult[] {
+    if (graphs.length <= 0) {
+      return [];
+    }
+
+    const results = [];
+    const startTimestamp = Date.now();
+
+    for (let i = 0; i < graphs.length; ++i) {
+      results.push(this.renderInternal(graphs[i], startTimestamp, position));
+    }
+    return results;
   }
 }

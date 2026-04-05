@@ -1,3 +1,4 @@
+import { Graph } from '../../graph/types/graph';
 import { GraphCanonicalOrdering } from '../../graph/types/graph-canonical-ordering';
 import { GraphEdge } from '../../graph/types/graph-edge';
 import { GraphEmbeddingStepResult } from '../../graph/types/graph-embedding-step-result';
@@ -81,8 +82,9 @@ function steps2GraphEmbeddingStepResult(edges: GraphEdge[], steps: Record<number
     const idSet = new Set(nodes.map((n) => n.id));
     return edges.filter(([u, v]) => idSet.has(u) && idSet.has(v));
   });
-
-  return { planar: true, nodes: nodeSteps, edges: edgeSteps };
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const graphs = Array.from({ length: nodeSteps.length }, (_nodes, k: number): Graph => ({ nodes: nodeSteps[k], edges: edgeSteps[k] }));
+  return { planar: true, graphs: graphs };
 }
 
 function computeAbsoluteSnapshot(

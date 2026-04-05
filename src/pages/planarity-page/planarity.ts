@@ -2,36 +2,37 @@ import '../../styles/themes/base.css';
 import { Stepper } from '../../ui/stepper';
 import { PlanarityScene } from '../../scenes/planarity-scene/planarity-scene';
 import { PlanarityPageInputMode } from './planarity-page-input-mode';
-import { validateMatrix } from './input-handling/planarity-page-validate-matrix';
-import { parseAdjacencyList } from './input-handling/planarity-page-parse-adjacency-list';
-import { parseMatrix } from './input-handling/planarity-page-parse-matrix';
+import { validateMatrix } from './input-handling/planarity-page-input-validator';
 import { PlanarityPageStatusMode } from './planarity-page-status-mode';
+import { Graph } from '../../graph/types/graph';
+import { PlanarityPageInputConverter } from './input-handling/planarity-page-input-converter';
+import { PlanarityPageInputParser } from './input-handling/planarity-page-input-parser';
+import { PlanarityPageInputMatrix } from './input-handling/planarity-page-input-matrix';
 
 export class PlanarityPage {
   private stepper: Stepper;
   private canvas: HTMLCanvasElement;
-
   private planarityScene: PlanarityScene;
   private currentMode: PlanarityPageInputMode;
-
   private graphMatrixInput: HTMLTextAreaElement;
   private graphListInput: HTMLTextAreaElement;
   private loadGraphBtn: HTMLButtonElement;
   private statusEl: HTMLElement;
+  private inputConverter: PlanarityPageInputConverter;
+  private inputParser: PlanarityPageInputParser;
 
   constructor() {
     this.stepper = new Stepper();
     this.canvas = document.getElementById('viz') as HTMLCanvasElement;
     this.currentMode = 'matrix';
-
     this.graphMatrixInput = document.getElementById('graphMatrix')! as HTMLTextAreaElement;
     this.graphListInput = document.getElementById('graphList')! as HTMLTextAreaElement;
     this.loadGraphBtn = document.getElementById('loadGraphBtn')! as HTMLButtonElement;
     this.statusEl = document.getElementById('graphStatus')!;
-
     this.loadGraphBtn.addEventListener('click', this.loadGraphFromUserMatrix.bind(this));
-
-    this.planarityScene = new PlanarityScene(this.canvas, this.showStatus.bind(this));
+    this.inputConverter = new PlanarityPageInputConverter();
+    this.inputParser = new PlanarityPageInputParser();
+    this.planarityScene = new PlanarityScene(this.canvas, this.showStatus.bind(this), this.updateGraphRepresentation.bind(this));
 
     const tabs = document.querySelectorAll<HTMLButtonElement>('.tabBtn');
     const modes = document.querySelectorAll<HTMLElement>('.graphMode');
@@ -47,22 +48,23 @@ export class PlanarityPage {
     this.showStatus('', 'info');
 
     try {
-      let matrix: number[][] = [];
+      let inputMatrix: PlanarityPageInputMatrix = [];
 
       switch (this.currentMode) {
         case 'matrix':
-          matrix = parseMatrix(this.graphMatrixInput.value);
+          inputMatrix = this.inputParser.rawMatrixToInputMatrix(this.graphMatrixInput.value);
           break;
         case 'list':
-          matrix = parseAdjacencyList(this.graphListInput.value);
+          inputMatrix = this.inputParser.rawAdjacencyListToInputMatrix(this.graphListInput.value);
           break;
       }
 
-      if (!validateMatrix(matrix)) {
+      if (!validateMatrix(inputMatrix)) {
         return;
       }
 
-      this.planarityScene.loadGraphFromMatrix(matrix, true, 500);
+      const graph = this.inputConverter.inputMatrixToGraph(inputMatrix);
+      this.planarityScene.loadGraph(graph, true, 500);
     } catch (error: any) {
       this.showStatus(error.message, 'error');
     }
@@ -81,6 +83,17 @@ export class PlanarityPage {
   private showStatus(message: string, type: PlanarityPageStatusMode): void {
     this.statusEl.className = 'statusText' + (type === 'info' ? '' : type === 'okay' ? ' ok' : ' error');
     this.statusEl.textContent = message;
+  }
+
+  private updateGraphRepresentation(graph: Graph): void {
+    const inputMatrix = this.inputConverter.graphToInputMatrix(graph);
+    const rawMatrix = this.inputParser.inputMatrixToRawMatrix(inputMatrix);
+    const rawAdjacencyList = this.inputParser.inputMatrixToRawAdjacencyList(inputMatrix);
+    this.graphMatrixInput.value = rawMatrix;
+    this.graphListInput.value = rawAdjacencyList;
+    //update overlays
+    this.graphMatrixInput.dispatchEvent(new Event('input'));
+    this.graphListInput.dispatchEvent(new Event('input'));
   }
 
   public setMode(mode: PlanarityPageInputMode): void {

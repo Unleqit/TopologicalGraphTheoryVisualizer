@@ -1,5 +1,12 @@
 import { Group } from 'three/src/Three.js';
-import { PlanarityPageGraphNode } from './planarity-page-graph-node';
-import { PlanarityPageGraphEdge } from './planarity-page-graph-edge';
+import { PlanarityPageGraphNode } from '../types/planarity-page-graph-node';
+import { PlanarityPageGraphEdge } from '../types/planarity-page-graph-edge';
+import { Graph } from '../../../graph/types/graph';
 
-export type PlanarityPageGraphRenderingResult = { graphGroup: Group; nodeMeshes: PlanarityPageGraphNode[]; edgeLines: PlanarityPageGraphEdge[] };
+export type PlanarityPageGraphRenderingResult = {
+  startTimestamp: number;
+  graph: Graph;
+  graphGroup: Group;
+  nodeMeshes: PlanarityPageGraphNode[];
+  edgeLines: PlanarityPageGraphEdge[];
+};

@@ -1,1 +1,1 @@
-export type PlanarityPageInputMode = 'matrix' | 'list' | 'interactive';
+export type PlanarityPageInputMode = 'matrix' | 'list';

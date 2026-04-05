@@ -1,4 +1,4 @@
-import { Mesh, Raycaster, Vector2, PerspectiveCamera } from 'three';
+import { Raycaster, Vector2, PerspectiveCamera } from 'three';
 
 export class PlanaritySceneMouseHandler {
   private isDragging: boolean = false;

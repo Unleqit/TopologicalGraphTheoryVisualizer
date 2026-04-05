@@ -1,5 +1,3 @@
-import { LineSegments } from 'three';
-import { GraphEdge } from './graph-edge';
-import { GraphNode } from './graph.node';
+import { Graph } from './graph';
 
-export type GraphEmbeddingStepResult = { planar: boolean; nodes: GraphNode[][]; edges: GraphEdge[][] };
+export type GraphEmbeddingStepResult = { planar: boolean; graphs: Graph[] };
