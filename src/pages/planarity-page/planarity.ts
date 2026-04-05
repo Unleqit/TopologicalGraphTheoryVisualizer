@@ -1,4 +1,3 @@
-import '../../styles/themes/base.css';
 import { Stepper } from '../../ui/stepper';
 import { PlanarityScene } from '../../scenes/planarity-scene/planarity-scene';
 import { PlanarityPageInputMode } from './planarity-page-input-mode';
@@ -42,6 +41,16 @@ export class PlanarityPage {
     this.resize();
 
     requestAnimationFrame(this.tick.bind(this));
+
+    window.addEventListener('keydown', (e) => {
+      const isCmdOrCtrl = e.ctrlKey || e.metaKey;
+      if (isCmdOrCtrl && e.key === 'z') {
+        this.planarityScene.undo();
+      }
+      if ((isCmdOrCtrl && e.key === 'y') || (isCmdOrCtrl && e.key === 'z' && e.shiftKey)) {
+        this.planarityScene.redo();
+      }
+    });
   }
 
   public async loadGraphFromUserMatrix(): Promise<void> {

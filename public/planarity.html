@@ -218,6 +218,52 @@
         <section class="panel canvasWrap" aria-label="Visualization area">
           <div class="canvasHead">
             <span class="badge">Three.js Visualization</span>
+            <button id="infoBtn" class="canvasInfoBtn" aria-label="Info">
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2" />
+                <line x1="12" y1="10" x2="12" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                <circle cx="12" cy="7" r="1.2" fill="currentColor" />
+              </svg>
+            </button>
+            <div id="infoModal" class="canvasInfoModal">
+              <div class="canvasInfoContent">
+                <h3>Interacting with this visual</h3>
+                <table class="controlsTable">
+                  <tr>
+                    <td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td>
+                    <td>Undo last action</td>
+                  </tr>
+                  <tr>
+                    <td><kbd>Ctrl</kbd> + <kbd>Y</kbd></td>
+                    <td>Redo action</td>
+                  </tr>
+                  <tr>
+                    <td><kbd>Click</kbd></td>
+                    <td>Select vertex</td>
+                  </tr>
+                  <tr>
+                    <td><kbd>Ctrl + Click</kbd></td>
+                    <td>- On empty space: Create new vertex<br>
+                        - On another vertex: Create new edge between vertices</nav></td>
+                  </tr>
+                  <tr>
+                    <td><kbd>Scroll</kbd></td>
+                    <td>Zoom in / out</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+
+            <script>
+              const infoBtn = document.getElementById('infoBtn');
+              const modal = document.getElementById('infoModal');
+
+              infoBtn.onclick = () => {
+                modal.classList.toggle('active');
+              };
+
+             
+            </script>
           </div>
           <div class="canvasArea">
             <canvas id="viz"></canvas>

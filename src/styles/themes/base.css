@@ -755,7 +755,7 @@ body {
 
 #theme-toggle-btn {
   position: absolute;
-  top: 15px;
+  top: 6px;
   right: 15px;
   z-index: 50;
   border-radius: var(--radius);
@@ -765,11 +765,6 @@ body {
   color: var(--bg1);
   cursor: pointer;
 }
-
-/* ===============================
-   LIGHT MODE WRAPPER
-   Toggle with JS by adding/removing `[theme='light']` on body
-================================ */
 
 html[theme='light'] {
   /* ---------------- Backgrounds ---------------- */
@@ -1184,4 +1179,139 @@ html[theme='light'] {
   [theme='light'] .bar-desc {
     padding: 0 14px;
   }
+}
+
+/* --- floating button ON TOP of canvas --- */
+.canvasInfoBtn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: 900;
+  font-size: 14px;
+
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(0, 0, 0, 0.35); /* slightly darker for contrast on canvas */
+  color: var(--text);
+
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.canvasInfoBtn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+/* --- popup overlay --- */
+.canvasInfoModal {
+  position: absolute;
+  top: 52px;
+  right: 12px;
+  pointer-events: none;
+  width: min(360px, 90%);
+  max-height: 70%;
+
+  display: none;
+  z-index: 10;
+}
+
+.canvasInfoModal.active {
+  display: block;
+}
+
+/* panel styling (reuses your design system) */
+.canvasInfoContent {
+  padding: 14px 16px;
+  pointer-events: none;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+
+  background: linear-gradient(180deg, var(--panel), rgba(255, 255, 255, 0.04));
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+
+  color: rgba(234, 240, 255, 0.92);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.canvasInfoContent h3 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+/* --- light mode --- */
+[theme='light'] .canvasInfoBtn {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(34, 34, 34, 0.16);
+  color: var(--text);
+}
+
+[theme='light'] .canvasInfoBtn:hover {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+[theme='light'] .canvasInfoContent {
+  background: linear-gradient(180deg, var(--panel), rgba(255, 255, 255, 0.04));
+  color: rgba(34, 34, 34, 0.92);
+}
+
+.controlsTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.controlsTable td {
+  padding: 6px 8px;
+  vertical-align: middle;
+}
+
+.controlsTable tr + tr {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* key styling */
+kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  margin: 0 2px;
+
+  font-size: 12px;
+  font-family: ui-monospace, monospace;
+
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+
+  color: var(--text);
+}
+
+/* light mode */
+[theme='light'] .controlsTable tr + tr {
+  border-top: 1px solid rgba(34, 34, 34, 0.08);
+}
+
+[theme='light'] kbd {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(34, 34, 34, 0.18);
+}
+
+.controlsTable td:first-child {
+  white-space: nowrap;
+  width: 1%; /* shrink to fit content */
+  padding-right: 12px;
 }

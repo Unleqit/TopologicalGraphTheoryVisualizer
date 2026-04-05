@@ -1,4 +1,3 @@
-import '../../styles/themes/base.css';
 import { SurfaceScene } from '../../scenes/surface-scene/surface-scene';
 import { setupStepper } from '../../ui/setup-stepper';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';

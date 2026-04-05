@@ -1,5 +1,6 @@
+import '../../styles/themes/base.css';
+
 export type Theme = 'light' | 'dark';
-const THEME_KEY = 'theme';
 
 function get(): Theme {
   if (localStorage.theme !== undefined) {

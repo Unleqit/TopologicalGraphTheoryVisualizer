@@ -3,7 +3,6 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { createCamera, createRenderer } from '../../pages/utils';
 import { PlanaritySceneMouseHandler } from './interaction/planarity-scene-mouse-handler';
 import { combinatorialEmbeddingToPosStepWise } from '../../algorithms/chrobak-payne/chrobak-payne-step-wise';
-import { PlanarityPageInputConverter } from '../../pages/planarity-page/input-handling/planarity-page-input-converter';
 import { PlanarityPageStatusMode } from '../../pages/planarity-page/planarity-page-status-mode';
 import { graphLayoutService } from './layout/index';
 import { PlanarityPageGraphRenderer } from './graph-renderer/planarity-page-graph-renderer';
@@ -12,6 +11,7 @@ import { PlanarityPageGraphNode } from './types/planarity-page-graph-node';
 import { Graph } from '../../graph/types/graph';
 import { PlanarityPageGraphBuilder } from './planarity-page-graph-builder';
 import { PLANARITY_PAGE_DEFAULT_GRAPH_RESULT } from './planarity-page-default-graph';
+import { GraphNode } from '../../graph/types/graph.node';
 
 export class PlanarityScene {
   private scene: Scene;
@@ -21,13 +21,15 @@ export class PlanarityScene {
   private mouseHandler: PlanaritySceneMouseHandler;
   private raycaster: Raycaster;
   private currentlySelectedVertex: PlanarityPageGraphNode | undefined;
-  private lastRenderingResult: PlanarityPageGraphRenderingResult[];
+  private history: Graph[];
+  private historyIndex: number = -1;
   private updateUIStatus: (text: string, mode: PlanarityPageStatusMode) => void;
   private graphRenderer: PlanarityPageGraphRenderer;
   private vertexMeshMap: Map<Mesh, PlanarityPageGraphNode>;
   private vertexIdMap: Map<number, PlanarityPageGraphNode>;
   private updateUIGraphRepresentation: (graph: Graph) => void;
   private graphBuilder: PlanarityPageGraphBuilder;
+  private currentRendering: PlanarityPageGraphRenderingResult;
 
   constructor(canvasElement: HTMLCanvasElement, updateUIStatus: (text: string, mode: PlanarityPageStatusMode) => void, updateUIGraphRepresentation: (graph: Graph) => void) {
     this.webglRenderer = createRenderer(canvasElement);
@@ -40,11 +42,11 @@ export class PlanarityScene {
     this.updateUIStatus = updateUIStatus;
     this.updateUIGraphRepresentation = updateUIGraphRepresentation;
     this.graphRenderer = new PlanarityPageGraphRenderer();
-    this.lastRenderingResult = [{ startTimestamp: 0, graph: { nodes: [], edges: [] }, graphGroup: new Group(), nodeMeshes: [], edgeLines: [] }];
-    this.scene.add(this.getLastRenderingResult().graphGroup);
+    this.currentRendering = { startTimestamp: 0, graph: { nodes: [], edges: [] }, graphGroup: new Group(), nodeMeshes: [], edgeLines: [] };
     this.vertexMeshMap = new Map();
     this.vertexIdMap = new Map();
     this.graphBuilder = new PlanarityPageGraphBuilder();
+    this.history = [];
 
     this.mouseHandler = new PlanaritySceneMouseHandler(
       this.camera,
@@ -62,91 +64,145 @@ export class PlanarityScene {
 
     //render default graph at start
     const renderingResult = this.graphRenderer.render([PLANARITY_PAGE_DEFAULT_GRAPH_RESULT]);
+    this.commitToHistory(renderingResult[renderingResult.length - 1].graph);
     this.applyRenderingResult(renderingResult, true, 250);
   }
 
-  private getLastRenderingResult(): PlanarityPageGraphRenderingResult {
-    return this.lastRenderingResult[this.lastRenderingResult.length - 1];
+  private commitToHistory(...graphs: Graph[]): void {
+    this.history = this.history.slice(0, this.historyIndex + 1);
+    this.history.push(...graphs);
+    this.historyIndex += graphs.length;
+  }
+
+  public undo(): void {
+    if (this.historyIndex <= 0) {
+      return;
+    }
+
+    this.historyIndex--;
+
+    const graph = this.history[this.historyIndex];
+    const rendering = this.graphRenderer.render([graph]);
+
+    rendering.forEach((r) => r.graphGroup.position.copy(this.currentRendering.graphGroup.position));
+
+    this.applyRenderingResult(rendering, false);
+  }
+
+  public redo(): void {
+    if (this.historyIndex >= this.history.length - 1) {
+      return;
+    }
+
+    this.historyIndex++;
+
+    const graph = this.history[this.historyIndex];
+    const rendering = this.graphRenderer.render([graph]);
+
+    rendering.forEach((r) => r.graphGroup.position.copy(this.currentRendering.graphGroup.position));
+
+    this.applyRenderingResult(rendering, false);
+  }
+
+  private getLastGraph(): Graph {
+    return this.history[this.history.length - 1];
   }
 
   private handleCtrlClick(mouseX: number, mouseY: number): void {
-    const lastRenderingResult = this.getLastRenderingResult();
     this.raycaster.setFromCamera(new Vector2(mouseX, mouseY), this.camera);
-    const intersects = this.raycaster.intersectObjects(lastRenderingResult.graphGroup.children, true);
+    const intersects = this.raycaster.intersectObjects(this.currentRendering.graphGroup.children, true);
 
     if (this.currentlySelectedVertex) {
       for (const hit of intersects) {
         const hitVertex = hit.object as Mesh;
         const result = this.vertexMeshMap.get(hitVertex);
         if (result) {
-          const newGraph = this.graphBuilder.addEdges(lastRenderingResult, [this.currentlySelectedVertex, result]);
-          const newRenderingResult = this.graphRenderer.render([newGraph]);
-          this.applyRenderingResult(newRenderingResult, false);
-          this.deselectVertex(this.currentlySelectedVertex);
-          return;
+          if (result !== this.currentlySelectedVertex) {
+            return this.createNewEdge([result, this.currentlySelectedVertex]);
+          } else {
+            //do nothing, as creating an edge from and to the same vertex is illegal
+          }
         }
       }
     }
-
     this.createNewVertexInGraph(mouseX, mouseY);
   }
 
-  private async applyRenderingResult(renderingResult: PlanarityPageGraphRenderingResult[], stepwise: boolean = true, millisecondsPerStep: number = 250): Promise<void> {
-    let lastRenderingResult = this.getLastRenderingResult();
+  private createNewEdge(vertexPair: [PlanarityPageGraphNode, PlanarityPageGraphNode]): void {
+    const newGraph = this.graphBuilder.addEdges(this.currentRendering, vertexPair);
+    this.commitToHistory(newGraph);
+    const rendering = this.graphRenderer.render([newGraph]);
+    rendering.forEach((result) => result.graphGroup.position.copy(this.currentRendering.graphGroup.position));
+    this.applyRenderingResult(rendering, false);
+    this.deselectVertex(this.currentlySelectedVertex);
+    return;
+  }
 
-    for (let i = stepwise ? 0 : renderingResult.length - 1; i < renderingResult.length; ++i) {
-      const rendering = renderingResult[i];
-      this.vertexMeshMap = new Map(rendering.nodeMeshes.map((node) => [node.mesh, node]));
-      this.vertexIdMap = new Map(rendering.nodeMeshes.map((node) => [node.id, node]));
+  private async applyRenderingResult(renderingResults: PlanarityPageGraphRenderingResult[], stepwise: boolean = true, millisecondsPerStep: number = 250): Promise<void> {
+    if (renderingResults.length === 0) {
+      return;
+    }
+
+    for (let i = stepwise ? 0 : renderingResults.length - 1; i < renderingResults.length; ++i) {
+      const rendering = renderingResults[i];
+
+      this.vertexMeshMap = new Map(rendering.nodeMeshes.map((n) => [n.mesh, n]));
+      this.vertexIdMap = new Map(rendering.nodeMeshes.map((n) => [n.id, n]));
+
+      if (this.currentRendering) {
+        this.scene.remove(this.currentRendering.graphGroup);
+      }
+
       rendering.graphGroup.visible = true;
-      this.scene.remove(lastRenderingResult.graphGroup);
+
       if (stepwise) {
         this.camera.position.copy(this.centerGroup(rendering.graphGroup));
-      } else {
-        rendering.graphGroup.position.copy(lastRenderingResult.graphGroup.position);
       }
+
       this.scene.add(rendering.graphGroup);
-      lastRenderingResult = rendering;
-      this.lastRenderingResult.push(rendering);
+      this.currentRendering = rendering;
+
       await new Promise((resolve) => setTimeout(resolve, millisecondsPerStep));
     }
 
-    //push any changes back to UI
-    this.updateUIGraphRepresentation(renderingResult[renderingResult.length - 1].graph);
+    this.updateUIGraphRepresentation(renderingResults[renderingResults.length - 1].graph);
   }
 
-  private updateRendering(): void {
-    this.updateVertices();
-    this.updateEdges();
-  }
-
-  private updateVertices(): void {
-    const lastRenderingResult = this.getLastRenderingResult();
-    const normal = new Vector3(0, 0, 1).applyQuaternion(lastRenderingResult.graphGroup.quaternion);
-    const point = lastRenderingResult.graphGroup.getWorldPosition(new Vector3());
+  private updateVertices(rendering: PlanarityPageGraphRenderingResult): Graph {
+    const normal = new Vector3(0, 0, 1).applyQuaternion(rendering.graphGroup.quaternion);
+    const point = rendering.graphGroup.getWorldPosition(new Vector3());
     const plane = new Plane().setFromNormalAndCoplanarPoint(normal, point);
 
     const hit = new Vector3();
     if (!this.raycaster.ray.intersectPlane(plane, hit)) {
-      return;
+      return rendering.graph;
     }
 
     if (!this.currentlySelectedVertex) {
-      return;
+      return rendering.graph;
     }
-    const local = lastRenderingResult.graphGroup.worldToLocal(hit.clone());
+    const local = rendering.graphGroup.worldToLocal(hit.clone());
     this.currentlySelectedVertex.mesh.position.copy(local);
     this.currentlySelectedVertex.label.position.copy(local);
+
+    const clone = { nodes: rendering.graph.nodes.map((node): GraphNode => ({ id: node.id, x: node.x, y: node.y })), edges: rendering.graph.edges };
+    const selectedVertex = clone.nodes.find((v) => v.id === this.currentlySelectedVertex?.id);
+    if (selectedVertex) {
+      selectedVertex.x = local.x;
+      selectedVertex.y = local.y;
+    }
+
+    return clone;
   }
 
-  private updateEdges(): void {
-    if (!this.lastRenderingResult || !this.currentlySelectedVertex) {
+  private updateEdges(rendering: PlanarityPageGraphRenderingResult): void {
+    if (!this.history || !this.currentlySelectedVertex) {
       return;
     }
 
     const selectedId = Number(this.currentlySelectedVertex.id);
 
-    this.getLastRenderingResult().edgeLines.forEach((edge) => {
+    rendering.edgeLines.forEach((edge) => {
       const [aIndex, bIndex] = (edge.id as string).split(',').map(Number);
 
       if (aIndex !== selectedId && bIndex !== selectedId) {
@@ -190,6 +246,7 @@ export class PlanarityScene {
       this.updateUIStatus('Checking planarity... ✓ \n Computing planar drawing... ✓', 'okay');
 
       const renderingResult = this.graphRenderer.render(result.graphs);
+      this.commitToHistory(...result.graphs);
       this.applyRenderingResult(renderingResult, stepwise, millisecondsPerStep);
     } catch (err) {
       this.updateUIStatus(err instanceof Error ? err.message : 'Invalid input.', 'error');
@@ -201,11 +258,19 @@ export class PlanarityScene {
     this.webglRenderer.render(this.scene, this.camera);
   }
 
-  private releaseVertex(): void {}
+  private clone: Graph | undefined;
+
+  private releaseVertex(): void {
+    if (this.clone) {
+      this.commitToHistory(this.clone);
+      this.applyRenderingResult([this.currentRendering], false);
+    }
+  }
 
   private dragVertex(mouseX: number, mouseY: number): void {
     this.raycaster.setFromCamera(new Vector2(mouseX, mouseY), this.camera);
-    this.updateRendering();
+    this.clone = this.updateVertices(this.currentRendering);
+    this.updateEdges(this.currentRendering);
   }
 
   protected centerGroup(group: Group): Vector3 {
@@ -216,11 +281,9 @@ export class PlanarityScene {
   }
 
   private createNewVertexInGraph(x: number, y: number): void {
-    const lastRenderingResult = this.getLastRenderingResult();
-
     this.raycaster.setFromCamera(new Vector2(x, y), this.camera);
-    const normal = new Vector3(0, 0, 1).applyQuaternion(lastRenderingResult.graphGroup.quaternion);
-    const point = lastRenderingResult.graphGroup.getWorldPosition(new Vector3());
+    const normal = new Vector3(0, 0, 1).applyQuaternion(this.currentRendering.graphGroup.quaternion);
+    const point = this.currentRendering.graphGroup.getWorldPosition(new Vector3());
     const plane = new Plane().setFromNormalAndCoplanarPoint(normal, point);
 
     const vertex = new Vector3();
@@ -228,16 +291,17 @@ export class PlanarityScene {
       return;
     }
 
-    const newGraph = this.graphBuilder.addVertices(lastRenderingResult, vertex);
+    const newGraph = this.graphBuilder.addVertices(this.currentRendering, vertex);
+    this.commitToHistory(newGraph);
     const newRenderingResult = this.graphRenderer.render([newGraph]);
+    newRenderingResult.forEach((result) => result.graphGroup.position.copy(this.currentRendering.graphGroup.position));
     this.applyRenderingResult(newRenderingResult, false);
   }
 
   private checkIfAnyVertexSelected(mouseX: number, mouseY: number): boolean {
-    const lastRenderingResult = this.getLastRenderingResult();
     this.raycaster.setFromCamera(new Vector2(mouseX, mouseY), this.camera);
 
-    const intersects = this.raycaster.intersectObjects(lastRenderingResult.graphGroup.children, true);
+    const intersects = this.raycaster.intersectObjects(this.currentRendering.graphGroup.children, true);
 
     for (const hit of intersects) {
       const hitVertex = hit.object as Mesh;

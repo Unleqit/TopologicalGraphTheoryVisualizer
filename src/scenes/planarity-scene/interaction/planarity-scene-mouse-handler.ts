@@ -1,6 +1,7 @@
 import { Raycaster, Vector2, PerspectiveCamera } from 'three';
 
 export class PlanaritySceneMouseHandler {
+  private isSelected: boolean = false;
   private isDragging: boolean = false;
   private raycaster: Raycaster;
   private mouse: Vector2;
@@ -50,10 +51,11 @@ export class PlanaritySceneMouseHandler {
   }
 
   private handleMouseMove(event: MouseEvent): void {
-    if (!this.isDragging) {
+    if (!this.isSelected) {
       return;
     }
 
+    this.isDragging = true;
     const rect = this.canvas.getBoundingClientRect();
     this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
@@ -61,11 +63,14 @@ export class PlanaritySceneMouseHandler {
   }
 
   private handleMouseUp(event: MouseEvent): void {
-    const rect = this.canvas.getBoundingClientRect();
-    this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-    this.onMouseUp(this.mouse.x, this.mouse.y);
-    this.isDragging = false;
+    if (this.isDragging) {
+      const rect = this.canvas.getBoundingClientRect();
+      this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+      this.onMouseUp(this.mouse.x, this.mouse.y);
+      this.isDragging = false;
+    }
+    this.isSelected = false;
   }
 
   private handleMouseDown(event: MouseEvent): void {
@@ -76,6 +81,6 @@ export class PlanaritySceneMouseHandler {
     const rect = this.canvas.getBoundingClientRect();
     this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-    this.isDragging = this.onMouseDown(this.mouse.x, this.mouse.y);
+    this.isSelected = this.onMouseDown(this.mouse.x, this.mouse.y);
   }
 }
