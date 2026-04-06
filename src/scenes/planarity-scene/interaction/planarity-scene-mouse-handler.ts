@@ -11,6 +11,7 @@ export class PlanaritySceneMouseHandler {
   private onMouseDown: (clientX: number, clientY: number) => boolean;
   private onMouseMove: (clientX: number, clientY: number) => void;
   private onMouseUp: (clientX: number, clientY: number) => void;
+  private onRightClick: (clientX: number, clientY: number) => void;
 
   constructor(
     camera: PerspectiveCamera,
@@ -18,7 +19,8 @@ export class PlanaritySceneMouseHandler {
     onCtrlLeftClick: (clientX: number, clientY: number) => void,
     onMouseDown: (clientX: number, clientY: number) => boolean,
     onMouseMove: (clientX: number, clientY: number) => void,
-    onMouseUp: (clientX: number, clientY: number) => void
+    onMouseUp: (clientX: number, clientY: number) => void,
+    onRightClick: (clientX: number, clientY: number) => void
   ) {
     this.camera = camera;
     this.raycaster = new Raycaster();
@@ -28,11 +30,13 @@ export class PlanaritySceneMouseHandler {
     this.onMouseDown = onMouseDown;
     this.onMouseMove = onMouseMove;
     this.onMouseUp = onMouseUp;
+    this.onRightClick = onRightClick;
 
     this.canvas.addEventListener('click', (e) => this.handleClick(e));
     this.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
     this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
     this.canvas.addEventListener('mouseup', (e) => this.handleMouseUp(e));
+    this.canvas.addEventListener('contextmenu', (e) => this.handleRightClick(e));
   }
 
   private handleClick(event: MouseEvent): void {
@@ -48,6 +52,15 @@ export class PlanaritySceneMouseHandler {
     if (event.ctrlKey) {
       this.onCtrlLeftClick(this.mouse.x, this.mouse.y);
     }
+  }
+
+  private handleRightClick(event: MouseEvent): void {
+    event.preventDefault();
+    const rect = this.canvas.getBoundingClientRect();
+    this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    this.onMouseMove(this.mouse.x, this.mouse.y);
+    this.onRightClick(this.mouse.x, this.mouse.y);
   }
 
   private handleMouseMove(event: MouseEvent): void {

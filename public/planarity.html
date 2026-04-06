@@ -235,16 +235,23 @@
                   </tr>
                   <tr>
                     <td><kbd>Ctrl</kbd> + <kbd>Y</kbd></td>
-                    <td>Redo action</td>
+                    <td>Redo last action</td>
                   </tr>
                   <tr>
-                    <td><kbd>Click</kbd></td>
-                    <td>Select vertex</td>
+                    <td><kbd>Left Click</kbd></td>
+                    <td>Select vertices/edges</td>
                   </tr>
                   <tr>
-                    <td><kbd>Ctrl</kbd> + <kbd>Click</kbd></td>
-                    <td>- On empty space: Create new vertex<br>
-                        - On another vertex: Create new edge between vertices</nav></td>
+                    <td><kbd>Ctrl</kbd> + <kbd>Left Click</kbd></td>
+                    <td>Create new vertex/new edge between two vertices</td>
+                  </tr>
+                  <tr>
+                    <td><kbd>Right Click</kbd></td>
+                    <td>Delete vertices/edges</td>
+                  </tr>
+                  <tr>
+                    <td><kbd>Mouse Move</kbd></td>
+                    <td>Drags currently selected vertex around</td>
                   </tr>
                   <tr>
                     <td><kbd>Scroll</kbd></td>
@@ -261,8 +268,6 @@
               infoBtn.onclick = () => {
                 modal.classList.toggle('active');
               };
-
-             
             </script>
           </div>
           <div class="canvasArea">
