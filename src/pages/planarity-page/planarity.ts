@@ -54,6 +54,9 @@ export class PlanarityPage {
         this.planarityScene.redo();
       }
     });
+
+    //change this if default graph is not planar
+    this.showStatus('Checking planarity... ✓', 'okay');
   }
 
   public async loadGraphFromUserMatrix(): Promise<void> {
@@ -95,6 +98,7 @@ export class PlanarityPage {
   private showStatus(message: string, type: PlanarityPageStatusMode): void {
     this.statusEl.className = 'statusText' + (type === 'info' ? '' : type === 'okay' ? ' ok' : ' error');
     this.statusEl.textContent = message;
+    this.loadGraphBtn.disabled = type !== 'okay';
   }
 
   private updateGraphRepresentation(graph: Graph): void {

@@ -246,7 +246,23 @@ export class PlanarityScene {
       await new Promise((resolve) => setTimeout(resolve, millisecondsPerStep));
     }
 
-    this.updateUIGraphRepresentation(renderingResults[renderingResults.length - 1].graph);
+    const lastGraph = renderingResults[renderingResults.length - 1].graph;
+    this.updateUIGraphRepresentation(lastGraph);
+
+    if (lastGraph.nodes.length > 0) {
+      const embeddingResult = await graphLayoutService.compute(
+        lastGraph.edges.map((edge): [number, number] => edge.value),
+        lastGraph.nodes.length
+      );
+
+      if (!embeddingResult.planar) {
+        this.updateUIStatus('Checking planarity... ✗', 'error');
+      } else {
+        this.updateUIStatus('Checking planarity... ✓', 'okay');
+      }
+    } else {
+      this.updateUIStatus('', 'info');
+    }
   }
 
   private updateVertices(graph: Graph, rendering: PlanarityPageGraphRenderingResult): void {

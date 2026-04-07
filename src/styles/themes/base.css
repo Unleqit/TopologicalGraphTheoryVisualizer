@@ -215,20 +215,64 @@ canvas#viz {
   color: var(--text);
   padding: 10px 14px;
   border-radius: 14px;
-  font-weight: 800;
+  font-weight: 700;
   cursor: pointer;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   gap: 8px;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.08s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
 }
+
 .btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.28);
 }
-.btn:disabled {
+
+.btn:active {
+  transform: translateY(0);
+}
+
+/* PRIMARY BUTTON */
+.btn.primary {
+  background: linear-gradient(135deg, #00ffcc, #00c3ff);
+  color: #002b33;
+  border: none;
+
+  box-shadow:
+    0 4px 14px rgba(0, 195, 255, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+/* Hover: brighter + glow */
+.btn.primary:hover {
+  background: linear-gradient(135deg, #1affd5, #33ccff);
+  box-shadow:
+    0 0px 20px rgba(0, 195, 255, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* Active: pressed */
+.btn.primary:active {
+  box-shadow:
+    0 2px 8px rgba(0, 195, 255, 0.25),
+    inset 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* DISABLED (important: override hover too) */
+.btn:disabled,
+.btn.primary:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  filter: grayscale(0.3);
 }
 
 @media (max-width: 920px) {
@@ -553,17 +597,6 @@ body {
   display: flex;
   align-items: center;
   gap: 0.8rem;
-}
-
-.btn.primary {
-  background: linear-gradient(135deg, #00ffcc, #00c3ff);
-  color: #002b33;
-  font-weight: 600;
-  border: none;
-}
-
-.btn.primary:hover {
-  opacity: 0.9;
 }
 
 .statusText {

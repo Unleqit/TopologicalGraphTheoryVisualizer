@@ -8,9 +8,7 @@ let compute_layout: any = null;
 const readyPromise = (async () => {
   importScripts('https://cdn.jsdelivr.net/pyodide/v0.20.0/full/pyodide.js');
 
-  pyodide = await (self as any).loadPyodide({
-    indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.20.0/full/',
-  });
+  pyodide = await (self as any).loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.20.0/full/' });
 
   await pyodide.loadPackage(['networkx', 'numpy']);
   pyodide.runPython(pythonCode);
