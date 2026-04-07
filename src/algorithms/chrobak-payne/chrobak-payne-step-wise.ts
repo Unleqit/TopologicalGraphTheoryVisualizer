@@ -80,7 +80,7 @@ function steps2GraphEmbeddingStepResult(edges: GraphEdge[], steps: Record<number
   const nodeSteps = steps.map((step) => Object.entries(step).map(([id, [x, y]]): GraphNode => ({ id: parseInt(id), x, y })));
   const edgeSteps = nodeSteps.map((nodes) => {
     const idSet = new Set(nodes.map((n) => n.id));
-    return edges.filter(([u, v]) => idSet.has(u) && idSet.has(v));
+    return edges.filter((edge) => idSet.has(edge.value[0]) && idSet.has(edge.value[1]));
   });
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const graphs = Array.from({ length: nodeSteps.length }, (_nodes, k: number): Graph => ({ nodes: nodeSteps[k], edges: edgeSteps[k] }));

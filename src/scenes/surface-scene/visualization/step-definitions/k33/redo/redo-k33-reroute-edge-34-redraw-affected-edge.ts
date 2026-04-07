@@ -12,8 +12,8 @@ export function k33RerouteEdge34_RedrawAffectedEdge(context: VisualizationContex
     { position: new Vector3(), mesh: new Mesh(), vertex: { id: 8, x: 0, y: 0.85 } },
   ];
   const shadowEdges: GraphEdge[] = [
-    [3, 7],
-    [4, 8],
+    { id: '3,7', value: [3, 7] },
+    { id: '4,8', value: [4, 8] },
   ];
   addShadowElements(context, shadowVertices, shadowEdges, new MeshBasicMaterial(), false, true);
   redrawVertexRecords(context, context.coordinateTransformFunction);

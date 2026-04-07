@@ -16,15 +16,15 @@ export const k33Vertices: _3DGraphVertex[] = [
 ];
 
 export const k33Edges: GraphEdge[] = [
-  [1, 4],
-  [1, 5],
-  [1, 6],
-  [2, 4],
-  [2, 5],
-  [2, 6],
-  [3, 4],
-  [3, 5],
-  [3, 6],
+  { id: '1,4', value: [1, 4] },
+  { id: '1,5', value: [1, 5] },
+  { id: '1,6', value: [1, 6] },
+  { id: '2,4', value: [2, 4] },
+  { id: '2,5', value: [2, 5] },
+  { id: '2,6', value: [2, 6] },
+  { id: '3,4', value: [3, 4] },
+  { id: '3,5', value: [3, 5] },
+  { id: '3,6', value: [3, 6] },
 ];
 
 export const K33_EDGE_SEGMENTS = 140;

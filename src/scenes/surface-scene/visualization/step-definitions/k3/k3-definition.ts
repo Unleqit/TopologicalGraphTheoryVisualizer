@@ -12,9 +12,9 @@ export const k3Vertices: _3DGraphVertex[] = [
 ];
 
 export const k3Edges: GraphEdge[] = [
-  [0, 1],
-  [1, 2],
-  [2, 0],
+  { id: '0,1', value: [0, 1] },
+  { id: '1,2', value: [1, 2] },
+  { id: '0,2', value: [2, 0] },
 ];
 
 export const K3_EDGE_SEGMENTS = 140;

@@ -102,22 +102,21 @@ export class PlanarityScene {
   }
 
   private handleSelection(x: number, y: number): boolean {
+    this.clone = this.graphBuilder.cloneGraph(this.currentRendering.graph);
     return this.checkIfAnyVertexSelected(x, y) || this.checkIfAnyEdgeSelected(x, y);
   }
 
   private handleDelete(): void {
-    const newGraph: Graph = { nodes: [], edges: [] };
+    const last = this.getLastGraph();
+    let newGraph: Graph;
 
     if (this.currentlySelectedVertex) {
-      const clone = this.cloneGraph(this.getLastGraph());
-      const vId = this.currentlySelectedVertex?.id ?? -1;
-      newGraph.nodes = clone.nodes.filter((node) => node.id !== vId);
-      newGraph.edges = clone.edges.filter((edge) => edge[0] !== vId && edge[1] !== vId);
+      newGraph = this.graphBuilder.removeVertices(last, { id: this.currentlySelectedVertex.id, x: 0, y: 0 });
     } else if (this.currentlySelectedEdge) {
-      const clone = this.cloneGraph(this.getLastGraph());
-      const eId = this.currentlySelectedEdge?.id ?? '-1,-1';
-      newGraph.nodes = clone.nodes;
-      newGraph.edges = clone.edges.filter((edge) => `${Math.min(edge[0], edge[1])},${Math.max(edge[0], edge[1])}` !== eId);
+      newGraph = this.graphBuilder.removeEdges(last, {
+        id: this.currentlySelectedEdge.id,
+        value: this.currentlySelectedEdge.id.split(',').map((a) => Number(a)) as [number, number],
+      });
     } else {
       return;
     }
@@ -188,12 +187,29 @@ export class PlanarityScene {
           }
         }
       }
+    } else {
+      for (const hit of intersects) {
+        const result = this.vertexMeshMap.get(hit.object as Mesh);
+        if (result) {
+          this.deselectVertex(this.currentlySelectedVertex);
+          return this.selectVertex(result);
+        }
+      }
+
+      for (const hit of intersects) {
+        const result2 = this.edgeMeshMap.get(hit.object as Line);
+        if (result2) {
+          this.deselectEdge(this.currentlySelectedEdge);
+          return this.selectEdge(result2);
+        }
+      }
     }
     this.createNewVertexInGraph(mouseX, mouseY);
   }
 
   private createNewEdge(vertexPair: [PlanarityPageGraphNode, PlanarityPageGraphNode]): void {
-    const newGraph = this.graphBuilder.addEdges(this.currentRendering, vertexPair);
+    const [v0, v1] = [vertexPair[0].id, vertexPair[1].id];
+    const newGraph = this.graphBuilder.addEdges(this.currentRendering.graph, [v0, v1]);
     this.commitToHistory(newGraph);
     const rendering = this.graphRenderer.render([newGraph]);
     rendering.forEach((result) => result.graphGroup.position.copy(this.currentRendering.graphGroup.position));
@@ -233,36 +249,28 @@ export class PlanarityScene {
     this.updateUIGraphRepresentation(renderingResults[renderingResults.length - 1].graph);
   }
 
-  private updateVertices(rendering: PlanarityPageGraphRenderingResult): Graph {
+  private updateVertices(graph: Graph, rendering: PlanarityPageGraphRenderingResult): void {
     const normal = new Vector3(0, 0, 1).applyQuaternion(rendering.graphGroup.quaternion);
     const point = rendering.graphGroup.getWorldPosition(new Vector3());
     const plane = new Plane().setFromNormalAndCoplanarPoint(normal, point);
 
-    const clone = this.cloneGraph(rendering.graph);
-
     const hit = new Vector3();
     if (!this.raycaster.ray.intersectPlane(plane, hit)) {
-      return rendering.graph;
+      return;
     }
 
     if (!this.currentlySelectedVertex) {
-      return rendering.graph;
+      return;
     }
     const local = rendering.graphGroup.worldToLocal(hit.clone());
     this.currentlySelectedVertex.mesh.position.copy(local);
     this.currentlySelectedVertex.label.position.copy(local);
 
-    const selectedVertex = clone.nodes.find((v) => v.id === this.currentlySelectedVertex?.id);
+    const selectedVertex = graph.nodes.find((v) => v.id === this.currentlySelectedVertex?.id);
     if (selectedVertex) {
       selectedVertex.x = local.x;
       selectedVertex.y = local.y;
     }
-
-    return clone;
-  }
-
-  private cloneGraph(graph: Graph): Graph {
-    return { nodes: graph.nodes.map((node): GraphNode => ({ id: node.id, x: node.x, y: node.y })), edges: graph.edges.map((edge): GraphEdge => [edge[0], edge[1]]) };
   }
 
   private updateEdges(rendering: PlanarityPageGraphRenderingResult): void {
@@ -304,7 +312,10 @@ export class PlanarityScene {
     this.updateUIStatus('Checking planarity...', 'info');
 
     try {
-      const embeddingResult = await graphLayoutService.compute(graph.edges, graph.nodes.length);
+      const embeddingResult = await graphLayoutService.compute(
+        graph.edges.map((edge): [number, number] => edge.value),
+        graph.nodes.length
+      );
 
       if (!embeddingResult.planar) {
         return this.updateUIStatus('Checking planarity... ✗', 'error');
@@ -341,7 +352,7 @@ export class PlanarityScene {
 
   private dragVertex(mouseX: number, mouseY: number): void {
     this.raycaster.setFromCamera(new Vector2(mouseX, mouseY), this.camera);
-    this.clone = this.updateVertices(this.currentRendering);
+    this.updateVertices(this.clone!, this.currentRendering);
     this.updateEdges(this.currentRendering);
   }
 
@@ -362,8 +373,8 @@ export class PlanarityScene {
     if (!this.raycaster.ray.intersectPlane(plane, vertex)) {
       return;
     }
-
-    const newGraph = this.graphBuilder.addVertices(this.currentRendering, vertex);
+    const localVertex = this.currentRendering.graphGroup.worldToLocal(vertex.clone());
+    const newGraph = this.graphBuilder.addVertices(this.currentRendering.graph, localVertex);
     this.commitToHistory(newGraph);
     const newRenderingResult = this.graphRenderer.render([newGraph]);
     newRenderingResult.forEach((result) => result.graphGroup.position.copy(this.currentRendering.graphGroup.position));

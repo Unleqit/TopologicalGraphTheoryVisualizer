@@ -11,7 +11,7 @@ export class PlanarityPageInputConverter {
     for (let i = 0; i < n; ++i) {
       for (let j = i + 1; j < n; ++j) {
         if (matrix[i][j] !== 0) {
-          edges.push([i, j]);
+          edges.push({ id: `${Math.min(i, j)},${Math.max(i, j)}`, value: [i, j] });
         }
       }
     }
@@ -21,7 +21,7 @@ export class PlanarityPageInputConverter {
 
   public graphToInputMatrix(graph: Graph): PlanarityPageInputMatrix {
     const matrix = Array.from({ length: graph.nodes.length }, () => Array(graph.nodes.length).fill(0));
-    graph.edges.forEach((edge) => (matrix[edge[0]][edge[1]] = matrix[edge[1]][edge[0]] = 1));
+    graph.edges.forEach((edge) => (matrix[edge.value[0]][edge.value[1]] = matrix[edge.value[1]][edge.value[0]] = 1));
     return matrix;
   }
 }

@@ -37,17 +37,18 @@ export class PlanarityPageGraphRenderer {
   private renderEdges(group: Group, edges: GraphEdge[], nodeMap: Map<number, Vector3>): PlanarityPageGraphEdge[] {
     const edgeLines: PlanarityPageGraphEdge[] = [];
 
-    for (const [u, v] of edges) {
-      const a = nodeMap.get(Number(u))!;
-      const b = nodeMap.get(Number(v))!;
+    for (const edge of edges) {
+      const u = edge.value[0];
+      const v = edge.value[1];
+      const a = nodeMap.get(u)!;
+      const b = nodeMap.get(v)!;
 
       const geom = new BufferGeometry();
       geom.setAttribute('position', new BufferAttribute(new Float32Array([a.x, a.y, 0, b.x, b.y, 0]), 3));
 
       const line = new Line(geom, new LineBasicMaterial({ color: 0x00ffcc }));
-      const lineId = `${Math.min(u, v) + 0},${Math.max(u, v) + 0}`;
       group.add(line);
-      edgeLines.push({ id: lineId, line: line });
+      edgeLines.push({ id: edge.id, line: line });
     }
     return edgeLines;
   }

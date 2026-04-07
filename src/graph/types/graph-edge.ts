@@ -1,1 +1,1 @@
-export type GraphEdge = [number, number];
+export type GraphEdge = { id: string; value: [number, number] };

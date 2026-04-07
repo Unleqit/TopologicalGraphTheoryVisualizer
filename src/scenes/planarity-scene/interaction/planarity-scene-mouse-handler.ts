@@ -39,6 +39,8 @@ export class PlanaritySceneMouseHandler {
     this.canvas.addEventListener('contextmenu', (e) => this.handleRightClick(e));
   }
 
+  private event!: MouseEvent;
+
   private handleClick(event: MouseEvent): void {
     if (event.button !== 0) {
       return;
@@ -49,7 +51,7 @@ export class PlanaritySceneMouseHandler {
     this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
     this.raycaster.setFromCamera(this.mouse, this.camera);
 
-    if (event.ctrlKey) {
+    if (this.event.ctrlKey) {
       this.onCtrlLeftClick(this.mouse.x, this.mouse.y);
     }
   }
@@ -87,6 +89,8 @@ export class PlanaritySceneMouseHandler {
   }
 
   private handleMouseDown(event: MouseEvent): void {
+    this.event = event;
+
     if (event.button !== 0 || event.ctrlKey) {
       return;
     }

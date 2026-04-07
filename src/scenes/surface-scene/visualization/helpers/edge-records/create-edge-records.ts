@@ -6,7 +6,7 @@ import { VertexRecord } from '../../types/vertex-record';
 export function createEdgeRecordsFromGraphEdges(vertices: Map<number, VertexRecord>, edges: GraphEdge[], edgeSegmentCount: number): EdgeRecord[] {
   return createEdgeRecordsFromEdgeIDs(
     vertices,
-    edges.map((edge) => `${edge[0]},${edge[1]}`),
+    edges.map((edge) => edge.id), //CHECK!!
     edgeSegmentCount
   );
 }

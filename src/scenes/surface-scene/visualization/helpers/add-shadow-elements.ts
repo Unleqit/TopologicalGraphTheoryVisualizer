@@ -27,8 +27,8 @@ export function addShadowElements(
 
   for (let i = 0; i < shadowEdges.length; i++) {
     const line = shadowEdgeLines[i];
-    const a = context.vertices.get(shadowEdges[i][0]);
-    const b = context.vertices.get(shadowEdges[i][1]);
+    const a = context.vertices.get(shadowEdges[i].value[0]);
+    const b = context.vertices.get(shadowEdges[i].value[1]);
     if (a && b) {
       const min = a.id < b.id ? a.id : b.id;
       const max = a.id > b.id ? a.id : b.id;
