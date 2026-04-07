@@ -16,6 +16,7 @@ export class PlanarityPage {
   private graphMatrixInput: HTMLTextAreaElement;
   private graphListInput: HTMLTextAreaElement;
   private loadGraphBtn: HTMLButtonElement;
+  private clearBtn: HTMLButtonElement;
   private statusEl: HTMLElement;
   private inputConverter: PlanarityPageInputConverter;
   private inputParser: PlanarityPageInputParser;
@@ -26,12 +27,14 @@ export class PlanarityPage {
     this.currentMode = 'matrix';
     this.graphMatrixInput = document.getElementById('graphMatrix')! as HTMLTextAreaElement;
     this.graphListInput = document.getElementById('graphList')! as HTMLTextAreaElement;
+    this.clearBtn = document.getElementById('clearBtn')! as HTMLButtonElement;
     this.loadGraphBtn = document.getElementById('loadGraphBtn')! as HTMLButtonElement;
     this.statusEl = document.getElementById('graphStatus')!;
     this.loadGraphBtn.addEventListener('click', this.loadGraphFromUserMatrix.bind(this));
     this.inputConverter = new PlanarityPageInputConverter();
     this.inputParser = new PlanarityPageInputParser();
     this.planarityScene = new PlanarityScene(this.canvas, this.showStatus.bind(this), this.updateGraphRepresentation.bind(this));
+    this.clearBtn.addEventListener('click', this.planarityScene.clear.bind(this.planarityScene));
 
     const tabs = document.querySelectorAll<HTMLButtonElement>('.tabBtn');
     const modes = document.querySelectorAll<HTMLElement>('.graphMode');

@@ -93,6 +93,14 @@ export class PlanarityScene {
     this.applyRenderingResult(renderingResult, true, 250);
   }
 
+  public clear(): void {
+    const emptyGraph: Graph = { edges: [], nodes: [] };
+    this.commitToHistory(emptyGraph);
+    const renderingResult = this.graphRenderer.render([emptyGraph]);
+    renderingResult.forEach((result) => result.graphGroup.position.copy(this.currentRendering.graphGroup.position));
+    this.applyRenderingResult(renderingResult, false);
+  }
+
   private handleSelection(x: number, y: number): boolean {
     return this.checkIfAnyVertexSelected(x, y) || this.checkIfAnyEdgeSelected(x, y);
   }

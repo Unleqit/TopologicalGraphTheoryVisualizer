@@ -1180,6 +1180,37 @@ html[theme='light'] {
     padding: 0 14px;
   }
 }
+.clearBtn {
+  position: absolute;
+  top: 12px;
+  right: 60px;
+  z-index: 500;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 6px 14px; /* keeps text fully visible */
+  border-radius: 9999px; /* максимально rounded (pill shape) */
+
+  font-weight: 900;
+  font-size: 14px;
+  line-height: 1;
+  white-space: nowrap;
+
+  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(0, 0, 0, 0.35);
+
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clearBtn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.22);
+}
 
 /* --- floating button ON TOP of canvas --- */
 .canvasInfoBtn {
