@@ -4,14 +4,17 @@ A web-based interactive module for **topological graph theory**
 
 - Check it out live at https://unleqit.github.io/TopologicalGraphTheoryVisualizer
 
+Note: This project is built with **Three.js**, and **Pyodide**, therefore your browser needs to:
+a) allow JavaScript
+b) support WebGL
+c) support WebAssembly
+
 Core features of the project include:
 
 - Test whether a graph is **planar** (Boyer–Myrvold algorithm).
 - Compute a **planar embedding/layout** if possible (Chrobak–Payne algorithm).
 - Visualize graphs, graph embeddings and surfaces using **Three.js**.
 - Input graphs via **adjacency matrices** or **adjacency lists**.
-
-This project is built with **TypeScript**, **Three.js**, and **Pyodide**.
 
 ---
 
