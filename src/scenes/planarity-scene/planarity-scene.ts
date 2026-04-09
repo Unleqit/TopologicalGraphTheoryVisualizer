@@ -14,8 +14,6 @@ import {
   Box3,
   Sphere,
   Line,
-  Color,
-  LineBasicMaterial,
   SpriteMaterial,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
@@ -33,6 +31,7 @@ import { PLANARITY_SCENE_DEFAULT_GRAPH_RESULT } from './planarity-scene-default-
 import { PlanaritySceneGraphRenderer } from './graph-renderer/planarity-scene-graph-renderer';
 import { PlanaritySceneGraphBuilder } from './planarity-scene-graph-builder';
 import { PlanaritySceneHistoryManager } from './planarity-scene-history-manager';
+import { PlanaritySceneSelectionManager } from './planarity-scene-selection-manager';
 
 export class PlanarityScene {
   private scene: Scene;
@@ -41,20 +40,20 @@ export class PlanarityScene {
   private webglRenderer: WebGLRenderer;
   private mouseHandler: PlanaritySceneMouseHandler;
   private raycaster: Raycaster;
-  private currentlySelectedVertex: PlanaritySceneGraphNode | undefined;
-  private currentlySelectedEdge: PlanaritySceneGraphEdge | undefined;
 
-  private updateUIStatus: (text: string, mode: PlanarityPageStatusMode) => void;
   private graphRenderer: PlanaritySceneGraphRenderer;
   private vertexMeshMap: Map<Mesh, PlanaritySceneGraphNode>;
   private edgeMeshMap: Map<Line, PlanaritySceneGraphEdge>;
-  private vertexIdMap: Map<number, PlanaritySceneGraphNode>;
-  private updateUIGraphRepresentation: (graph: Graph) => void;
   private graphBuilder: PlanaritySceneGraphBuilder;
   private currentRendering: PlanarityPageGraphRenderingResult;
   private historyManager: PlanaritySceneHistoryManager;
+  private selectionManager: PlanaritySceneSelectionManager;
 
-  constructor(canvasElement: HTMLCanvasElement, updateUIStatus: (text: string, mode: PlanarityPageStatusMode) => void, updateUIGraphRepresentation: (graph: Graph) => void) {
+  constructor(
+    private readonly canvasElement: HTMLCanvasElement,
+    private readonly updateUIStatus: (text: string, mode: PlanarityPageStatusMode) => void,
+    private readonly updateUIGraphRepresentation: (graph: Graph) => void
+  ) {
     this.webglRenderer = createRenderer(canvasElement);
     this.scene = new Scene();
     this.camera = createCamera();
@@ -63,15 +62,13 @@ export class PlanarityScene {
     this.controls.enableRotate = false;
     this.raycaster = new Raycaster();
     this.raycaster.params.Line.threshold = 0.3;
-    this.updateUIStatus = updateUIStatus;
-    this.updateUIGraphRepresentation = updateUIGraphRepresentation;
     this.graphRenderer = new PlanaritySceneGraphRenderer();
     this.currentRendering = { startTimestamp: 0, graph: { nodes: [], edges: [] }, graphGroup: new Group(), nodeMeshes: [], edgeLines: [] };
     this.vertexMeshMap = new Map();
     this.edgeMeshMap = new Map();
-    this.vertexIdMap = new Map();
     this.graphBuilder = new PlanaritySceneGraphBuilder();
     this.historyManager = new PlanaritySceneHistoryManager(this._undoAction.bind(this), this._redoAction.bind(this));
+    this.selectionManager = new PlanaritySceneSelectionManager();
 
     this.mouseHandler = new PlanaritySceneMouseHandler(
       this.camera,
@@ -102,22 +99,47 @@ export class PlanarityScene {
     this.applyRenderingResult(renderingResult, false);
   }
 
+  private handleCtrlClick(mouseX: number, mouseY: number): void {
+    const vertexSelection = this.selectionManager.getVertexSelection();
+    const [newVertexSelection, newEdgeSelection] = [this.checkIfAnyVertexSelected(mouseX, mouseY), this.checkIfAnyEdgeSelected(mouseX, mouseY)];
+
+    if (vertexSelection && newVertexSelection && vertexSelection.id !== newVertexSelection.id) {
+      this.selectionManager.selectVertex(newVertexSelection);
+      return this.createNewEdge([vertexSelection, newVertexSelection]);
+    } else if (newVertexSelection) {
+      return this.selectionManager.selectVertex(newVertexSelection);
+    } else if (newEdgeSelection) {
+      return this.selectionManager.selectEdge(newEdgeSelection);
+    } else {
+      this.createNewVertexInGraph(mouseX, mouseY);
+    }
+  }
+
   private handleSelection(x: number, y: number): boolean {
     this.clone = this.graphBuilder.cloneGraph(this.currentRendering.graph);
-    return this.checkIfAnyVertexSelected(x, y) || this.checkIfAnyEdgeSelected(x, y);
+    const newVertexSelection = this.checkIfAnyVertexSelected(x, y);
+    const newEdgeSelection = this.checkIfAnyEdgeSelected(x, y);
+
+    if (newVertexSelection) {
+      this.selectionManager.selectVertex(newVertexSelection);
+    } else if (newEdgeSelection) {
+      this.selectionManager.selectEdge(newEdgeSelection);
+    } else {
+      this.selectionManager.deselectSelection();
+    }
+
+    return newVertexSelection !== undefined || newEdgeSelection !== undefined;
   }
 
   private handleDelete(): void {
     const last = this.historyManager.getLast();
     let newGraph: Graph;
+    const [vertexSelection, edgeSelection] = this.selectionManager.getSelection();
 
-    if (this.currentlySelectedVertex) {
-      newGraph = this.graphBuilder.removeVertices(last, { id: this.currentlySelectedVertex.id, x: 0, y: 0 });
-    } else if (this.currentlySelectedEdge) {
-      newGraph = this.graphBuilder.removeEdges(last, {
-        id: this.currentlySelectedEdge.id,
-        value: this.currentlySelectedEdge.id.split(',').map((a) => Number(a)) as [number, number],
-      });
+    if (vertexSelection) {
+      newGraph = this.graphBuilder.removeVertices(last, { id: vertexSelection.id, x: 0, y: 0 });
+    } else if (edgeSelection) {
+      newGraph = this.graphBuilder.removeEdges(last, { id: edgeSelection.id, value: edgeSelection.id.split(',').map((a) => Number(a)) as [number, number] });
     } else {
       return;
     }
@@ -129,8 +151,7 @@ export class PlanarityScene {
   }
 
   private _undoAction(): void {
-    this.currentlySelectedVertex = undefined;
-    this.currentlySelectedEdge = undefined;
+    this.selectionManager.deselectSelection();
     const graph = this.historyManager.getLast();
     const rendering = this.graphRenderer.render([graph]);
     rendering.forEach((r) => r.graphGroup.position.copy(this.currentRendering.graphGroup.position));
@@ -138,8 +159,7 @@ export class PlanarityScene {
   }
 
   private _redoAction(): void {
-    this.currentlySelectedVertex = undefined;
-    this.currentlySelectedEdge = undefined;
+    this.selectionManager.deselectSelection();
     const graph = this.historyManager.getLast();
     const rendering = this.graphRenderer.render([graph]);
     rendering.forEach((r) => r.graphGroup.position.copy(this.currentRendering.graphGroup.position));
@@ -154,42 +174,6 @@ export class PlanarityScene {
     this.historyManager.redo();
   }
 
-  private handleCtrlClick(mouseX: number, mouseY: number): void {
-    this.raycaster.setFromCamera(new Vector2(mouseX, mouseY), this.camera);
-    const intersects = this.raycaster.intersectObjects(this.currentRendering.graphGroup.children, true);
-
-    if (this.currentlySelectedVertex) {
-      for (const hit of intersects) {
-        const hitVertex = hit.object as Mesh;
-        const result = this.vertexMeshMap.get(hitVertex);
-        if (result) {
-          if (result !== this.currentlySelectedVertex) {
-            return this.createNewEdge([result, this.currentlySelectedVertex]);
-          } else {
-            return;
-          }
-        }
-      }
-    } else {
-      for (const hit of intersects) {
-        const result = this.vertexMeshMap.get(hit.object as Mesh);
-        if (result) {
-          this.deselectVertex(this.currentlySelectedVertex);
-          return this.selectVertex(result);
-        }
-      }
-
-      for (const hit of intersects) {
-        const result2 = this.edgeMeshMap.get(hit.object as Line);
-        if (result2) {
-          this.deselectEdge(this.currentlySelectedEdge);
-          return this.selectEdge(result2);
-        }
-      }
-    }
-    this.createNewVertexInGraph(mouseX, mouseY);
-  }
-
   private createNewEdge(vertexPair: [PlanaritySceneGraphNode, PlanaritySceneGraphNode]): void {
     const [v0, v1] = [vertexPair[0].id, vertexPair[1].id];
     const newGraph = this.graphBuilder.addEdges(this.currentRendering.graph, [v0, v1]);
@@ -197,7 +181,6 @@ export class PlanarityScene {
     const rendering = this.graphRenderer.render([newGraph]);
     rendering.forEach((result) => result.graphGroup.position.copy(this.currentRendering.graphGroup.position));
     this.applyRenderingResult(rendering, false);
-    this.deselectVertex(this.currentlySelectedVertex);
     return;
   }
 
@@ -219,7 +202,6 @@ export class PlanarityScene {
       const rendering = renderingResults[i];
 
       this.vertexMeshMap = new Map(rendering.nodeMeshes.map((n) => [n.mesh, n]));
-      this.vertexIdMap = new Map(rendering.nodeMeshes.map((n) => [n.id, n]));
       this.edgeMeshMap = new Map(rendering.edgeLines.map((n) => [n.line, n]));
 
       if (animate) {
@@ -395,10 +377,22 @@ export class PlanarityScene {
       this.camera.position.copy(this.centerGroup(_new.graphGroup));
     }
 
+    this.reapplySelection(_new);
     _new.graphGroup.visible = true;
 
     this.scene.add(_new.graphGroup);
     this.currentRendering = _new;
+  }
+
+  private reapplySelection(_new: PlanarityPageGraphRenderingResult): void {
+    const [vertexSelectionId, edgeSelectionId] = this.selectionManager.getSelection().map((a) => a?.id ?? -1);
+    const selectedVertex = _new.nodeMeshes.find((mesh) => mesh.id === vertexSelectionId);
+    const selectedEdge = _new.edgeLines.find((line) => line.id === edgeSelectionId);
+    if (selectedVertex) {
+      this.selectionManager.selectVertex(selectedVertex);
+    } else if (selectedEdge) {
+      this.selectionManager.selectEdge(selectedEdge);
+    }
   }
 
   private updateVertices(graph: Graph, rendering: PlanarityPageGraphRenderingResult): void {
@@ -411,14 +405,15 @@ export class PlanarityScene {
       return;
     }
 
-    if (!this.currentlySelectedVertex) {
+    const vertexSelection = this.selectionManager.getVertexSelection();
+    if (!vertexSelection) {
       return;
     }
     const local = rendering.graphGroup.worldToLocal(hit.clone());
-    this.currentlySelectedVertex.mesh.position.copy(local);
-    this.currentlySelectedVertex.label.position.copy(local);
+    vertexSelection.mesh.position.copy(local);
+    vertexSelection.label.position.copy(local);
 
-    const selectedVertex = graph.nodes.find((v) => v.id === this.currentlySelectedVertex?.id);
+    const selectedVertex = graph.nodes.find((v) => v.id === vertexSelection?.id);
     if (selectedVertex) {
       selectedVertex.x = local.x;
       selectedVertex.y = local.y;
@@ -426,11 +421,12 @@ export class PlanarityScene {
   }
 
   private updateEdges(rendering: PlanarityPageGraphRenderingResult): void {
-    if (!this.currentlySelectedVertex) {
+    const vertexSelection = this.selectionManager.getVertexSelection();
+    if (!vertexSelection) {
       return;
     }
 
-    const selectedId = Number(this.currentlySelectedVertex.id);
+    const selectedId = Number(vertexSelection.id);
     const nodeIdMap = new Map(rendering.nodeMeshes.map((nodeMesh) => [nodeMesh.id, nodeMesh]));
 
     rendering.edgeLines.forEach((edge) => {
@@ -535,9 +531,8 @@ export class PlanarityScene {
     this.applyRenderingResult(newRenderingResult, false);
   }
 
-  private checkIfAnyVertexSelected(mouseX: number, mouseY: number): boolean {
+  private checkIfAnyVertexSelected(mouseX: number, mouseY: number): PlanaritySceneGraphNode | undefined {
     this.raycaster.setFromCamera(new Vector2(mouseX, mouseY), this.camera);
-
     const intersects = this.raycaster.intersectObjects(this.currentRendering.graphGroup.children, true);
 
     for (const hit of intersects) {
@@ -545,19 +540,14 @@ export class PlanarityScene {
       const result = this.vertexMeshMap.get(hitVertex);
 
       if (result) {
-        this.deselectVertex(this.currentlySelectedVertex);
-        this.deselectEdge(this.currentlySelectedEdge);
-        this.selectVertex(result);
-        return true;
+        return result;
       }
     }
 
-    //user clicked in the void
-    this.deselectVertex(this.currentlySelectedVertex);
-    return false;
+    return undefined;
   }
 
-  private checkIfAnyEdgeSelected(mouseX: number, mouseY: number): boolean {
+  private checkIfAnyEdgeSelected(mouseX: number, mouseY: number): PlanaritySceneGraphEdge | undefined {
     this.raycaster.setFromCamera(new Vector2(mouseX, mouseY), this.camera);
 
     const intersects = this.raycaster.intersectObjects(this.currentRendering.graphGroup.children, true);
@@ -567,48 +557,10 @@ export class PlanarityScene {
       const result = this.edgeMeshMap.get(hitEdge);
 
       if (result) {
-        this.deselectVertex(this.currentlySelectedVertex);
-        this.deselectEdge(this.currentlySelectedEdge);
-        this.selectEdge(result);
-        return true;
+        return result;
       }
     }
 
-    //user clicked in the void
-    this.deselectEdge(this.currentlySelectedEdge);
-    return false;
-  }
-
-  private selectVertex(node: PlanaritySceneGraphNode): void {
-    this.currentlySelectedVertex = node;
-    (node.mesh.material as MeshBasicMaterial).color.set(0xffff00);
-  }
-
-  private deselectVertex(node: PlanaritySceneGraphNode | undefined): void {
-    if (node) {
-      (node.mesh.material as MeshBasicMaterial).color.set(0x1976d2);
-      this.currentlySelectedVertex = undefined;
-    }
-  }
-
-  private selectEdge(edge: PlanaritySceneGraphEdge): void {
-    this.currentlySelectedEdge = edge;
-    const material = edge.line.material as LineBasicMaterial;
-    if (!edge.line.userData.originalColor) {
-      edge.line.userData.originalColor = material.color.clone();
-    }
-
-    material.color.set(0xffff00);
-  }
-
-  private deselectEdge(edge: PlanaritySceneGraphEdge | undefined): void {
-    if (edge) {
-      const material = edge.line.material as LineBasicMaterial;
-      const originalColor = edge.line.userData.originalColor as Color;
-      if (originalColor) {
-        material.color.copy(originalColor);
-      }
-      this.currentlySelectedEdge = undefined;
-    }
+    return undefined;
   }
 }
