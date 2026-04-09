@@ -16,6 +16,7 @@ import {
   Line,
   Color,
   LineBasicMaterial,
+  SpriteMaterial,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { createCamera, createRenderer } from '../../pages/utils';
@@ -89,8 +90,9 @@ export class PlanarityScene {
 
     //render default graph at start
     const renderingResult = this.graphRenderer.render([PLANARITY_PAGE_DEFAULT_GRAPH_RESULT]);
-    this.commitToHistory(renderingResult[renderingResult.length - 1].graph);
-    this.applyRenderingResult(renderingResult, true, 250);
+    const latest = renderingResult[renderingResult.length - 1];
+    this.commitToHistory();
+    this.applyRenderingResult(renderingResult, false, 250, true, false);
   }
 
   public clear(): void {
@@ -147,7 +149,7 @@ export class PlanarityScene {
 
     rendering.forEach((r) => r.graphGroup.position.copy(this.currentRendering.graphGroup.position));
 
-    this.applyRenderingResult(rendering, false);
+    this.applyRenderingResult(rendering, false, 0, true, true);
   }
 
   public redo(): void {
@@ -164,7 +166,7 @@ export class PlanarityScene {
 
     rendering.forEach((r) => r.graphGroup.position.copy(this.currentRendering.graphGroup.position));
 
-    this.applyRenderingResult(rendering, false);
+    this.applyRenderingResult(rendering, false, 0, true, true);
   }
 
   private getLastGraph(): Graph {
@@ -218,10 +220,19 @@ export class PlanarityScene {
     return;
   }
 
-  private async applyRenderingResult(renderingResults: PlanarityPageGraphRenderingResult[], stepwise: boolean = true, millisecondsPerStep: number = 250): Promise<void> {
+  private async applyRenderingResult(
+    renderingResults: PlanarityPageGraphRenderingResult[],
+    stepwise: boolean = false,
+    millisecondsPerStep: number = 250,
+    recenter: boolean = false,
+    animate: boolean = false
+  ): Promise<void> {
     if (renderingResults.length === 0) {
       return;
     }
+
+    //todo: idk what to do about this, disable it for now?
+    stepwise = false;
 
     for (let i = stepwise ? 0 : renderingResults.length - 1; i < renderingResults.length; ++i) {
       const rendering = renderingResults[i];
@@ -230,20 +241,15 @@ export class PlanarityScene {
       this.vertexIdMap = new Map(rendering.nodeMeshes.map((n) => [n.id, n]));
       this.edgeMeshMap = new Map(rendering.edgeLines.map((n) => [n.line, n]));
 
-      if (this.currentRendering) {
-        this.scene.remove(this.currentRendering.graphGroup);
+      if (animate) {
+        this.animateTransition(this.currentRendering, rendering, 500, recenter);
+      } else {
+        this.replaceRendering(rendering, recenter);
       }
-
-      rendering.graphGroup.visible = true;
 
       if (stepwise) {
-        this.camera.position.copy(this.centerGroup(rendering.graphGroup));
+        await new Promise((resolve) => setTimeout(resolve, millisecondsPerStep));
       }
-
-      this.scene.add(rendering.graphGroup);
-      this.currentRendering = rendering;
-
-      await new Promise((resolve) => setTimeout(resolve, millisecondsPerStep));
     }
 
     const lastGraph = renderingResults[renderingResults.length - 1].graph;
@@ -263,6 +269,155 @@ export class PlanarityScene {
     } else {
       this.updateUIStatus('', 'info');
     }
+  }
+
+  private animateTransition(old: PlanarityPageGraphRenderingResult | undefined, _new: PlanarityPageGraphRenderingResult, msTotal: number, recenter: boolean = false): void {
+    // Create a map of nodes with their old positions
+    const newMap = new Map(_new.graph.nodes.map((node) => [node.id, node]));
+    if (!old) {
+      old = _new;
+    }
+
+    const oldMap = old.graph.nodes.length > 0 ? new Map(old.graph.nodes.map((node) => [node.id, node])) : newMap;
+    const startTime = performance.now();
+    const oldMeshMap = new Map(old.nodeMeshes.map((nodeMesh) => [nodeMesh.id, nodeMesh]));
+
+    const animate = () => {
+      const now = performance.now();
+      const elapsedTime = now - startTime;
+      const progress = Math.min(elapsedTime / msTotal, 1);
+      const oldGraphGroup = old.graph.nodes.length === 0 && old.graph.edges.length === 0 ? _new.graphGroup : old.graphGroup;
+
+      old.graph.nodes.forEach((node) => {
+        const nodeInOldRendering = oldMap.get(node.id);
+        const nodeInNewRendering = newMap.get(node.id);
+        const nodeMeshInOldRendering = oldMeshMap.get(node.id)!;
+
+        if (nodeInOldRendering && nodeInNewRendering) {
+          this.animateTransitionBetweenExistingVertices(
+            old,
+            oldMap,
+            oldMeshMap,
+            nodeMeshInOldRendering,
+            [nodeInOldRendering.x - nodeInNewRendering.x, nodeInOldRendering.y - nodeInNewRendering.y],
+            progress
+          );
+        } else if (nodeInOldRendering) {
+          this.animateTransitionRemoveOldVertex(old, oldMap, oldMeshMap, nodeMeshInOldRendering, progress);
+        } else if (nodeInNewRendering) {
+          this.animateTransitionCreateNewVertex(old, oldMap, oldMeshMap, nodeMeshInOldRendering, progress);
+        }
+      });
+
+      if (recenter) {
+        this.camera.position.copy(this.centerGroup(oldGraphGroup));
+      }
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        this.replaceRendering(_new, recenter);
+        _new.graphGroup.position.copy(old.graphGroup.position);
+      }
+    };
+
+    animate();
+  }
+
+  private animateTransitionBetweenExistingVertices(
+    rendering: PlanarityPageGraphRenderingResult,
+    oldMap: Map<number, GraphNode>,
+    nodeIdMap: Map<number, PlanarityPageGraphNode>,
+    node: PlanarityPageGraphNode,
+    offset: [number, number],
+    progress: number
+  ): void {
+    node.mesh.position.x = node.label.position.x = oldMap.get(node.id)!.x - offset[0] * progress;
+    node.mesh.position.y = node.label.position.y = oldMap.get(node.id)!.y - offset[1] * progress;
+
+    rendering.edgeLines.forEach((edge) => {
+      const [aIndex, bIndex] = (edge.id as string).split(',').map(Number);
+
+      if (aIndex !== node.id && bIndex !== node.id) {
+        return;
+      }
+
+      const nodeA = nodeIdMap.get(aIndex)!.mesh;
+      const nodeB = nodeIdMap.get(bIndex)!.mesh;
+
+      if (!nodeA || !nodeB) {
+        return;
+      }
+
+      const posAttr = edge.line.geometry.getAttribute('position');
+
+      posAttr.setXYZ(0, nodeA.position.x, nodeA.position.y, nodeA.position.z);
+      posAttr.setXYZ(1, nodeB.position.x, nodeB.position.y, nodeB.position.z);
+      posAttr.needsUpdate = true;
+    });
+  }
+
+  private animateTransitionRemoveOldVertex(
+    rendering: PlanarityPageGraphRenderingResult,
+    oldMap: Map<number, GraphNode>,
+    nodeIdMap: Map<number, PlanarityPageGraphNode>,
+    node: PlanarityPageGraphNode,
+    progress: number
+  ): void {
+    // Use the progress to scale down the old vertex size (for fade out effect)
+    const tmp = oldMap.get(node.id)!;
+    const initialPosition = new Vector3(tmp.x, tmp.y, 0);
+    node.mesh.position.lerp(initialPosition, 1 - progress);
+    node.label.position.lerp(initialPosition, 1 - progress);
+
+    // Gradually fade out the vertex
+    (node.mesh.material as MeshBasicMaterial).opacity = 1 - progress;
+    (node.label.material as SpriteMaterial).opacity = 1 - progress;
+
+    // If progress reaches 100%, remove the vertex from the scene
+    if (progress === 1) {
+      node.mesh.visible = false;
+      node.label.visible = false;
+    }
+  }
+
+  private animateTransitionCreateNewVertex(
+    rendering: PlanarityPageGraphRenderingResult,
+    oldMap: Map<number, GraphNode>,
+    nodeIdMap: Map<number, PlanarityPageGraphNode>,
+    node: PlanarityPageGraphNode,
+    progress: number
+  ): void {
+    // Interpolate the new vertex position from the origin (or any other starting point) to the final position
+    const initialPosition = new Vector3(0, 0, 0); // Assuming the new vertex starts at the origin
+    const targetPosition = nodeIdMap.get(node.id)!.mesh.position;
+
+    node.mesh.position.lerpVectors(initialPosition, targetPosition, progress);
+    node.label.position.lerpVectors(initialPosition, targetPosition, progress);
+
+    // Gradually fade in the new vertex and its label
+    (node.mesh.material as MeshBasicMaterial).opacity = progress;
+    (node.label.material as SpriteMaterial).opacity = progress;
+
+    // If progress reaches 100%, make the vertex fully visible
+    if (progress === 1) {
+      node.mesh.visible = true;
+      node.label.visible = true;
+    }
+  }
+
+  private replaceRendering(_new: PlanarityPageGraphRenderingResult, recenter: boolean): void {
+    if (this.currentRendering) {
+      this.scene.remove(this.currentRendering.graphGroup);
+    }
+    if (recenter) {
+      this.camera.position.copy(this.centerGroup(_new.graphGroup));
+    }
+
+    _new.graphGroup.visible = true;
+
+    this.scene.add(_new.graphGroup);
+    this.currentRendering = _new;
   }
 
   private updateVertices(graph: Graph, rendering: PlanarityPageGraphRenderingResult): void {
@@ -295,6 +450,7 @@ export class PlanarityScene {
     }
 
     const selectedId = Number(this.currentlySelectedVertex.id);
+    const nodeIdMap = new Map(rendering.nodeMeshes.map((nodeMesh) => [nodeMesh.id, nodeMesh]));
 
     rendering.edgeLines.forEach((edge) => {
       const [aIndex, bIndex] = (edge.id as string).split(',').map(Number);
@@ -303,8 +459,8 @@ export class PlanarityScene {
         return;
       }
 
-      const nodeA = this.vertexIdMap.get(aIndex)!.mesh;
-      const nodeB = this.vertexIdMap.get(bIndex)!.mesh;
+      const nodeA = nodeIdMap.get(aIndex)!.mesh;
+      const nodeB = nodeIdMap.get(bIndex)!.mesh;
 
       if (!nodeA || !nodeB) {
         return;
@@ -343,8 +499,9 @@ export class PlanarityScene {
       this.updateUIStatus('Checking planarity... ✓ \n Computing planar drawing... ✓', 'okay');
 
       const renderingResult = this.graphRenderer.render(result.graphs);
-      this.commitToHistory(...result.graphs);
-      this.applyRenderingResult(renderingResult, stepwise, millisecondsPerStep);
+      const commitGraphs = stepwise ? (result.graphs.length > 0 ? [result.graphs[result.graphs.length - 1]] : []) : result.graphs;
+      this.commitToHistory(...commitGraphs);
+      this.applyRenderingResult(renderingResult, stepwise, millisecondsPerStep, true, true);
     } catch (err) {
       this.updateUIStatus(err instanceof Error ? err.message : 'Invalid input.', 'error');
     }
@@ -362,7 +519,7 @@ export class PlanarityScene {
       this.commitToHistory(this.clone);
       const renderingResult = this.graphRenderer.render([this.clone]);
       renderingResult[0].graphGroup.position.copy(this.currentRendering.graphGroup.position);
-      this.applyRenderingResult(renderingResult, false);
+      this.applyRenderingResult(renderingResult, false, 0, false, false);
     }
   }
 
