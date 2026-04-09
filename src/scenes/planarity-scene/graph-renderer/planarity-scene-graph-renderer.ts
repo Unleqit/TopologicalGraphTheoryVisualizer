@@ -1,21 +1,21 @@
 import { Vector3, Mesh, CircleGeometry, MeshBasicMaterial, Line, BufferGeometry, BufferAttribute, LineBasicMaterial, Box3, Sphere, Group, Sprite } from 'three';
 import { GraphEdge } from '../../../graph/types/graph-edge';
 import { GraphNode } from '../../../graph/types/graph.node';
-import { PlanarityPageGraphRenderingResult } from './planarity-page-graph-rendering-result';
+import { PlanarityPageGraphRenderingResult } from './planarity-scene-graph-rendering-result';
 import { createLabelSprite } from '../../utils';
-import { PlanarityPageGraphNode } from '../types/planarity-page-graph-node';
-import { PlanarityPageGraphEdge } from '../types/planarity-page-graph-edge';
 import { Graph } from '../../../graph/types/graph';
+import { PlanaritySceneGraphNode } from '../types/planarity-scene-graph-node';
+import { PlanaritySceneGraphEdge } from '../types/planarity-scene-graph-edge';
 
-export class PlanarityPageGraphRenderer {
-  private buildNodeMap(nodes: PlanarityPageGraphNode[]): Map<number, Vector3> {
+export class PlanaritySceneGraphRenderer {
+  private buildNodeMap(nodes: PlanaritySceneGraphNode[]): Map<number, Vector3> {
     const nodeMap = new Map<number, Vector3>();
     nodes.forEach((node) => nodeMap.set(Number(node.id), new Vector3(node.label.position.x, node.label.position.y, 0)));
     return nodeMap;
   }
 
-  private renderNodes(group: Group, nodes: GraphNode[]): PlanarityPageGraphNode[] {
-    const nodeMeshes: PlanarityPageGraphNode[] = [];
+  private renderNodes(group: Group, nodes: GraphNode[]): PlanaritySceneGraphNode[] {
+    const nodeMeshes: PlanaritySceneGraphNode[] = [];
 
     for (const n of nodes) {
       const pos = new Vector3(n.x, n.y, 0);
@@ -34,8 +34,8 @@ export class PlanarityPageGraphRenderer {
     return nodeMeshes;
   }
 
-  private renderEdges(group: Group, edges: GraphEdge[], nodeMap: Map<number, Vector3>): PlanarityPageGraphEdge[] {
-    const edgeLines: PlanarityPageGraphEdge[] = [];
+  private renderEdges(group: Group, edges: GraphEdge[], nodeMap: Map<number, Vector3>): PlanaritySceneGraphEdge[] {
+    const edgeLines: PlanaritySceneGraphEdge[] = [];
 
     for (const edge of edges) {
       const u = edge.value[0];

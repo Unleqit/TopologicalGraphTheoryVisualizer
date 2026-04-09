@@ -1,9 +1,9 @@
 import { Vector3 } from 'three';
+import { Graph } from '../../graph/types/graph';
 import { GraphEdge } from '../../graph/types/graph-edge';
 import { GraphNode } from '../../graph/types/graph.node';
-import { Graph } from '../../graph/types/graph';
 
-export class PlanarityPageGraphBuilder {
+export class PlanaritySceneGraphBuilder {
   public addVertices(graph: Graph, ...vertices: Vector3[]): Graph {
     const nextNodeId = this.getNextNodeId(graph);
     const newNodes = vertices.map((vertex, index): GraphNode => {

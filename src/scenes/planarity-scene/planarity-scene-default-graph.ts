@@ -1,6 +1,6 @@
 import { Graph } from '../../graph/types/graph';
 
-export const PLANARITY_PAGE_DEFAULT_GRAPH_INPUT: number[][] = [
+export const PLANARITY_SCENE_DEFAULT_GRAPH_INPUT: number[][] = [
   [0, 1, 1, 1, 0],
   [1, 0, 1, 0, 0],
   [1, 1, 0, 1, 1],
@@ -8,7 +8,7 @@ export const PLANARITY_PAGE_DEFAULT_GRAPH_INPUT: number[][] = [
   [0, 0, 1, 1, 0],
 ];
 
-export const PLANARITY_PAGE_DEFAULT_GRAPH_RESULT: Graph = JSON.parse(
+export const PLANARITY_SCENE_DEFAULT_GRAPH_RESULT: Graph = JSON.parse(
   `{
     "nodes": [
       { "id": 0, "x": 0, "y": 0 },
