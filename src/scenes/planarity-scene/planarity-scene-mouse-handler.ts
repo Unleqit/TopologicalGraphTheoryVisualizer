@@ -1,36 +1,26 @@
 import { Raycaster, Vector2, PerspectiveCamera } from 'three';
+import { PlanaritySceneBase } from './planarity-scene-base';
 
 export class PlanaritySceneMouseHandler {
   private isSelected: boolean = false;
   private isDragging: boolean = false;
   private raycaster: Raycaster;
   private mouse: Vector2;
-  private canvas: HTMLCanvasElement;
-  private camera: PerspectiveCamera;
-  private onCtrlLeftClick: (clientX: number, clientY: number) => void;
-  private onMouseDown: (clientX: number, clientY: number) => boolean;
-  private onMouseMove: (clientX: number, clientY: number) => void;
-  private onMouseUp: (clientX: number, clientY: number) => void;
-  private onRightClick: (clientX: number, clientY: number) => void;
+  private readonly camera: PerspectiveCamera;
+  private readonly canvas: HTMLCanvasElement;
 
   constructor(
-    camera: PerspectiveCamera,
-    canvas: HTMLCanvasElement,
-    onCtrlLeftClick: (clientX: number, clientY: number) => void,
-    onMouseDown: (clientX: number, clientY: number) => boolean,
-    onMouseMove: (clientX: number, clientY: number) => void,
-    onMouseUp: (clientX: number, clientY: number) => void,
-    onRightClick: (clientX: number, clientY: number) => void
+    private readonly sceneBase: PlanaritySceneBase,
+    private readonly onCtrlLeftClick: (clientX: number, clientY: number) => void,
+    private readonly onMouseDown: (clientX: number, clientY: number) => boolean,
+    private readonly onMouseMove: (clientX: number, clientY: number) => void,
+    private readonly onMouseUp: (clientX: number, clientY: number) => void,
+    private readonly onRightClick: (clientX: number, clientY: number) => void
   ) {
-    this.camera = camera;
     this.raycaster = new Raycaster();
     this.mouse = new Vector2();
-    this.canvas = canvas;
-    this.onCtrlLeftClick = onCtrlLeftClick;
-    this.onMouseDown = onMouseDown;
-    this.onMouseMove = onMouseMove;
-    this.onMouseUp = onMouseUp;
-    this.onRightClick = onRightClick;
+    this.camera = this.sceneBase.getCamera();
+    this.canvas = this.sceneBase.getWebGLRenderer().domElement;
 
     this.canvas.addEventListener('click', (e) => this.handleClick(e));
     this.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
