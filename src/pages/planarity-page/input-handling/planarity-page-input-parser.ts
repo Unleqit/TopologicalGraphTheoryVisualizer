@@ -6,12 +6,13 @@ export class PlanarityPageInputParser {
       throw new Error('Please enter an adjacency list.');
     }
     const tempMap = new Map<number, number[]>();
-    const splitResult = text.split('\n');
+    const splitResult = text.split('\n').filter((splitted) => splitted !== '');
     for (let i = 0; i < splitResult.length; ++i) {
       if (!splitResult[i]) {
         throw new Error('Invalid list format.');
       }
       const neighbors = splitResult[i]
+        .replace(/\d+:/, '')
         .trim()
         .split(/\s+/)
         .filter(Boolean)
@@ -21,7 +22,9 @@ export class PlanarityPageInputParser {
             throw new Error('Invalid neighbor index.');
           }
           return num;
-        });
+        })
+        .filter((item) => item >= 0);
+
       tempMap.set(i, neighbors);
     }
 
