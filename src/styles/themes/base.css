@@ -689,37 +689,64 @@ body {
   font-weight: 600;
 }
 
+/* --- DARK MODE CYLINDER SLIDER with fill --- */
 .cylinder-controls input[type='range'] {
-  width: 100%;
+  --track-height: 6px;
+  --thumb-size: 16px;
+  --track-color: rgba(255, 255, 255, 0.12);
+  --track-fill: linear-gradient(135deg, #00c3ff, #00ffcc);
+  --thumb-color: #00ffcc;
   appearance: none;
-  height: 6px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.12);
-  cursor: pointer;
+  width: 100%;
+  background: transparent;
   margin-bottom: 6px;
+  cursor: pointer;
+}
+
+/* Chrome / Edge / Safari */
+.cylinder-controls input[type='range']::-webkit-slider-runnable-track {
+  height: var(--track-height);
+  border-radius: 999px;
+  background: linear-gradient(to right, #00c3ff 0%, #00ffcc var(--progress, 50%), rgba(255, 255, 255, 0.12) var(--progress, 50%), rgba(255, 255, 255, 0.12) 100%);
 }
 
 .cylinder-controls input[type='range']::-webkit-slider-thumb {
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: var(--thumb-size);
+  height: var(--thumb-size);
   border-radius: 50%;
-  background: #00ffcc;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  cursor: pointer;
+  background: var(--thumb-color);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  margin-top: calc((var(--track-height) - var(--thumb-size)) / 2);
   transition: all 0.2s ease;
 }
+
 .cylinder-controls input[type='range']::-webkit-slider-thumb:hover {
   background: #00c3ff;
 }
 
+/* Firefox */
+.cylinder-controls input[type='range']::-moz-range-track {
+  height: var(--track-height);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.cylinder-controls input[type='range']::-moz-range-progress {
+  height: var(--track-height);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #00c3ff, #00ffcc);
+}
+
 .cylinder-controls input[type='range']::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
+  width: var(--thumb-size);
+  height: var(--thumb-size);
   border-radius: 50%;
-  background: #00ffcc;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  cursor: pointer;
+  background: var(--thumb-color);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s ease;
 }
 
 .cylinder-controls .readout {
@@ -1142,44 +1169,88 @@ html[theme='light'] {
 
 /* ---------------- Cylinder Controls ---------------- */
 [theme='light'] .cylinder-controls {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.96);
   border: 1px solid rgba(34, 34, 34, 0.12);
-  color: var(--text);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  color: rgba(34, 34, 34, 0.95);
 }
 
-[theme='light'] .cylinder-controls input[type='range'] {
-  background: rgba(0, 0, 0, 0.1);
+[theme='light'] .cylinder-controls h3 {
+  color: rgba(34, 34, 34, 0.98);
 }
 
-[theme='light'] .cylinder-controls input[type='range']::-webkit-slider-thumb {
-  background: rgba(0, 128, 255, 1);
-  border: 1px solid rgba(0, 0, 0, 0.2);
+[theme='light'] .cylinder-controls p {
+  color: rgba(34, 34, 34, 0.88);
+}
+
+[theme='light'] .cylinder-controls .readout {
+  color: rgba(34, 34, 34, 0.78);
+}
+
+[theme='light'] .cylinder-controls .legend {
+  color: rgba(34, 34, 34, 0.72);
 }
 
 [theme='light'] .cylinder-controls button {
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid rgba(34, 34, 34, 0.16);
-  color: var(--text);
+  color: rgba(34, 34, 34, 0.95);
 }
 
-[theme='light'] .cylinder-controls button:hover {
-  background: rgba(0, 255, 204, 0.12);
-  border-color: rgba(0, 255, 204, 0.24);
+[theme='light'] .cylinder-controls .legend-item {
+  color: rgba(34, 34, 34, 0.78);
 }
 
-/* Cylinder legend swatches */
-[theme='light'] .cylinder-controls .swatch.red {
-  background: rgba(255, 100, 120, 1);
+[theme='light'] .cylinder-controls input[type='range'] {
+  --track-height: 6px;
+  --track-color: rgba(34, 34, 34, 0.18);
+  --track-fill: linear-gradient(135deg, #00c3ff, #00ffcc);
+  --thumb-color: #0080ff;
+  appearance: none;
+  width: 100%;
+  background: transparent;
+  margin-bottom: 6px;
 }
-[theme='light'] .cylinder-controls .swatch.blue {
-  background: rgba(93, 169, 255, 1);
+
+/* WebKit / Chromium */
+[theme='light'] .cylinder-controls input[type='range']::-webkit-slider-runnable-track {
+  height: var(--track-height);
+  border-radius: 999px;
+  background: linear-gradient(to right, #00c3ff 0%, #00ffcc var(--progress, 50%), rgba(34, 34, 34, 0.14) var(--progress, 50%), rgba(34, 34, 34, 0.14) 100%);
 }
-[theme='light'] .cylinder-controls .swatch.yellow {
-  background: rgba(255, 224, 130, 1);
+
+[theme='light'] .cylinder-controls input[type='range']::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #00ffcc;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  margin-top: -5px;
+  cursor: pointer;
 }
-[theme='light'] .cylinder-controls .swatch.gray {
-  background: rgba(34, 34, 34, 0.4);
+
+/* Firefox */
+[theme='light'] .cylinder-controls input[type='range']::-moz-range-track {
+  height: var(--track-height);
+  border-radius: 999px;
+  background: rgba(34, 34, 34, 0.14);
+}
+
+[theme='light'] .cylinder-controls input[type='range']::-moz-range-progress {
+  height: var(--track-height);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #00c3ff, #00ffcc);
+}
+
+[theme='light'] .cylinder-controls input[type='range']::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #00ffcc;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
 }
 
 /* ---------------- Responsive Adjustments ---------------- */
