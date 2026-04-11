@@ -8,7 +8,6 @@ export function createCamera(): PerspectiveCamera {
 
 export function addDefaultLights(scene: Scene): void {
   scene.add(new AmbientLight(0xffffff, 0.6));
-
   const dir = new DirectionalLight(0xffffff, 0.9);
   dir.position.set(3, 4, 5);
   scene.add(dir);
