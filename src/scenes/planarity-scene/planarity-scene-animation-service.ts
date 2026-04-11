@@ -1,9 +1,10 @@
-import { Vector3, MeshBasicMaterial, SpriteMaterial, Box3, Group, Sphere } from 'three/src/Three.Core.js';
+import { Vector3, MeshBasicMaterial, SpriteMaterial, Box3, Group, Sphere } from 'three';
 import { PlanaritySceneGraphNode } from './types/planarity-scene-graph-node';
 import { PlanarityPageGraphRenderingResult } from './graph-renderer/planarity-scene-graph-rendering-result';
 import { GraphNode } from '../../graph/types/graph.node';
 import { PlanaritySceneBase } from './planarity-scene-base';
 import { PlanaritySceneRenderController } from './planarity-scene-render-controller';
+import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 
 export class PlanaritySceneAnimationService {
   constructor(
@@ -16,20 +17,24 @@ export class PlanaritySceneAnimationService {
     if (!old) {
       old = _new;
     }
+    let renderingReplaced = false;
 
     const oldMap = old.graph.nodes.length > 0 ? new Map(old.graph.nodes.map((node) => [node.id, node])) : newMap;
     const startTime = performance.now();
     const oldMeshMap = new Map(old.nodeMeshes.map((nodeMesh) => [nodeMesh.id, nodeMesh]));
+    const newMeshMap = new Map(_new.nodeMeshes.map((nodeMesh) => [nodeMesh.id, nodeMesh]));
 
     const animate = () => {
       const now = performance.now();
       const elapsedTime = now - startTime;
       const progress = Math.min(elapsedTime / msTotal, 1);
+      const allNodeIds = new Set([...old.graph.nodes.map((node) => node.id), ..._new.graph.nodes.map((node) => node.id)]);
 
-      old.graph.nodes.forEach((node) => {
-        const nodeInOldRendering = oldMap.get(node.id);
-        const nodeInNewRendering = newMap.get(node.id);
-        const nodeMeshInOldRendering = oldMeshMap.get(node.id)!;
+      allNodeIds.forEach((id) => {
+        const nodeInOldRendering = oldMap.get(id);
+        const nodeInNewRendering = newMap.get(id);
+        const nodeMeshInOldRendering = oldMeshMap.get(id)!;
+        const nodeMeshInNewRendering = newMeshMap.get(id)!;
 
         if (nodeInOldRendering && nodeInNewRendering) {
           this.animateTransitionBetweenExistingVertices(
@@ -41,9 +46,10 @@ export class PlanaritySceneAnimationService {
             progress
           );
         } else if (nodeInOldRendering) {
-          this.animateTransitionRemoveOldVertex(oldMap, nodeMeshInOldRendering, progress);
+          this.animateTransitionRemoveOldVertex(old, oldMeshMap, nodeMeshInOldRendering, progress);
         } else if (nodeInNewRendering) {
-          this.animateTransitionCreateNewVertex(oldMeshMap, nodeMeshInOldRendering, progress);
+          renderingReplaced = true;
+          this.animateTransitionCreateNewVertex(_new, recenter, newMeshMap, nodeMeshInNewRendering, progress);
         }
       });
 
@@ -56,7 +62,9 @@ export class PlanaritySceneAnimationService {
       if (progress < 1) {
         requestAnimationFrame(animate);
       } else {
-        this.renderController.replaceRendering(_new, recenter);
+        if (!renderingReplaced) {
+          this.renderController.replaceRendering(_new, recenter);
+        }
       }
     };
 
@@ -96,41 +104,70 @@ export class PlanaritySceneAnimationService {
     });
   }
 
-  private animateTransitionRemoveOldVertex(oldMap: Map<number, GraphNode>, node: PlanaritySceneGraphNode, progress: number): void {
-    // Use the progress to scale down the old vertex size (for fade out effect)
-    const tmp = oldMap.get(node.id)!;
-    const initialPosition = new Vector3(tmp.x, tmp.y, 0);
-    node.mesh.position.lerp(initialPosition, 1 - progress);
-    node.label.position.lerp(initialPosition, 1 - progress);
-
-    // Gradually fade out the vertex
+  private animateTransitionRemoveOldVertex(
+    rendering: PlanarityPageGraphRenderingResult,
+    nodeIdMap: Map<number, PlanaritySceneGraphNode>,
+    node: PlanaritySceneGraphNode,
+    progress: number
+  ): void {
     (node.mesh.material as MeshBasicMaterial).opacity = 1 - progress;
     (node.label.material as SpriteMaterial).opacity = 1 - progress;
 
-    // If progress reaches 100%, remove the vertex from the scene
     if (progress === 1) {
       node.mesh.visible = false;
       node.label.visible = false;
     }
+
+    rendering.edgeLines.forEach((edge) => {
+      const [aIndex, bIndex] = (edge.id as string).split(',').map(Number);
+      if (aIndex !== node.id && bIndex !== node.id) {
+        return;
+      }
+      const nodeA = nodeIdMap.get(aIndex)!.mesh;
+      const nodeB = nodeIdMap.get(bIndex)!.mesh;
+      if (!nodeA || !nodeB) {
+        return;
+      }
+      (edge.line.material as LineMaterial).opacity = 1 - progress;
+    });
   }
 
-  private animateTransitionCreateNewVertex(nodeIdMap: Map<number, PlanaritySceneGraphNode>, node: PlanaritySceneGraphNode, progress: number): void {
-    // Interpolate the new vertex position from the origin (or any other starting point) to the final position
-    const initialPosition = new Vector3(0, 0, 0); // Assuming the new vertex starts at the origin
-    const targetPosition = nodeIdMap.get(node.id)!.mesh.position;
+  private animateTransitionCreateNewVertex(
+    _new: PlanarityPageGraphRenderingResult,
+    recenter: boolean,
+    nodeIdMap: Map<number, PlanaritySceneGraphNode>,
+    node: PlanaritySceneGraphNode,
+    progress: number
+  ): void {
+    const meshMaterial = node.mesh.material as MeshBasicMaterial;
+    const labelMaterial = node.label.material as SpriteMaterial;
 
-    node.mesh.position.lerpVectors(initialPosition, targetPosition, progress);
-    node.label.position.lerpVectors(initialPosition, targetPosition, progress);
-
-    // Gradually fade in the new vertex and its label
-    (node.mesh.material as MeshBasicMaterial).opacity = progress;
-    (node.label.material as SpriteMaterial).opacity = progress;
-
-    // If progress reaches 100%, make the vertex fully visible
-    if (progress === 1) {
+    if (!node.mesh.userData.beganRendering) {
+      node.mesh.visible = false;
+      node.label.visible = false;
+      meshMaterial.opacity = 0;
+      labelMaterial.opacity = 0;
+      this.renderController.replaceRendering(_new, recenter);
       node.mesh.visible = true;
       node.label.visible = true;
+      node.mesh.userData.beganRendering = true;
     }
+
+    meshMaterial.opacity = progress;
+    labelMaterial.opacity = progress;
+
+    _new.edgeLines.forEach((edge) => {
+      const [aIndex, bIndex] = (edge.id as string).split(',').map(Number);
+      if (aIndex !== node.id && bIndex !== node.id) {
+        return;
+      }
+      const nodeA = nodeIdMap.get(aIndex)!.mesh;
+      const nodeB = nodeIdMap.get(bIndex)!.mesh;
+      if (!nodeA || !nodeB) {
+        return;
+      }
+      (edge.line.material as LineMaterial).opacity = 1 - progress;
+    });
   }
 
   private centerGroup(group: Group): { position: Vector3; target: Vector3 } {

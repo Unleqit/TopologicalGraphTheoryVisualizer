@@ -9,6 +9,7 @@ import { PlanaritySceneBase } from './planarity-scene-base';
 import { PlanaritySceneRenderController } from './planarity-scene-render-controller';
 import { PlanaritySceneInteractionController } from './planarity-scene-interaction-controller';
 import { PlanaritySceneUIController } from './planarity-scene-ui-controller';
+import { GraphEmbeddingPythonResult } from '../../graph/types/graph-embedding-python-result';
 
 export class PlanarityScene {
   private sceneBase: PlanaritySceneBase;
@@ -26,24 +27,24 @@ export class PlanarityScene {
     this.uiController = new PlanaritySceneUIController(updateUIStatus, updateUIGraphRepresentation);
     this.interactionController = new PlanaritySceneInteractionController(this.sceneBase, this.selectionManager, this.renderController, this.historyManager, this.uiController);
 
-    this.interactionController.renderGraphToUI([PLANARITY_SCENE_DEFAULT_GRAPH_RESULT], false, 250, true, false, true);
+    this.interactionController.renderGraphToUI([PLANARITY_SCENE_DEFAULT_GRAPH_RESULT], false, 250, true, false, 0, true);
   }
 
   public clear(): void {
     const emptyGraph: Graph = { edges: [], nodes: [] };
-    this.interactionController.renderGraphToUI([emptyGraph], false, 0, true, false, true);
+    this.interactionController.renderGraphToUI([emptyGraph], false, 0, true, false, 0, true);
   }
 
   private _undoAction(): void {
     this.selectionManager.deselectSelection();
     const graph = this.historyManager.getLast();
-    this.interactionController.renderGraphToUI([graph], false, 0, false, true, false);
+    this.interactionController.renderGraphToUI([graph], false, 0, false, true, 500, false);
   }
 
   private _redoAction(): void {
     this.selectionManager.deselectSelection();
     const graph = this.historyManager.getLast();
-    this.interactionController.renderGraphToUI([graph], false, 0, false, true, false);
+    this.interactionController.renderGraphToUI([graph], false, 0, false, true, 500, false);
   }
 
   public undo(): void {
@@ -66,7 +67,7 @@ export class PlanarityScene {
     return this.uiController;
   }
 
-  public async loadGraph(graph: Graph, stepwise: boolean = true, millisecondsPerStep: number = 500): Promise<void> {
+  public async checkPlanarityOfGraph(graph: Graph): Promise<GraphEmbeddingPythonResult | undefined> {
     this.uiController.updateStatus('Checking planarity...', 'info');
 
     try {
@@ -76,6 +77,20 @@ export class PlanarityScene {
       );
 
       if (!embeddingResult.planar) {
+        this.uiController.updateStatus('Checking planarity... ✗', 'error');
+      } else {
+        this.uiController.updateStatus('Checking planarity... ✓', 'okay');
+      }
+
+      return embeddingResult;
+    } catch (err) {
+      this.uiController.updateStatus(err instanceof Error ? err.message : 'Invalid input.', 'error');
+    }
+  }
+
+  public async loadGraph(embeddingResult: GraphEmbeddingPythonResult, graph: Graph, stepwise: boolean = true, millisecondsPerStep: number = 500): Promise<void> {
+    try {
+      if (!embeddingResult.planar) {
         return this.uiController.updateStatus('Checking planarity... ✗', 'error');
       }
 
@@ -84,7 +99,7 @@ export class PlanarityScene {
       const result = combinatorialEmbeddingToPosStepWise(graph.edges, embeddingResult.canonical_ordering);
       this.uiController.updateStatus('Checking planarity... ✓ \n Computing planar drawing... ✓', 'okay');
 
-      this.interactionController.renderGraphToUI([...result.graphs], stepwise, millisecondsPerStep, true, true, true);
+      this.interactionController.renderGraphToUI([...result.graphs], stepwise, millisecondsPerStep, true, true, 500, true);
     } catch (err) {
       this.uiController.updateStatus(err instanceof Error ? err.message : 'Invalid input.', 'error');
     }

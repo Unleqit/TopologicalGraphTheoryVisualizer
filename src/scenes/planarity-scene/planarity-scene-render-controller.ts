@@ -83,9 +83,10 @@ export class PlanaritySceneRenderController {
   public async applyRenderingResult(
     renderingResults: PlanarityPageGraphRenderingResult[],
     stepwise: boolean = false,
-    millisecondsPerStep: number = 250,
+    stepDurationMs: number = 250,
     recenter: boolean = false,
-    animate: boolean = false
+    animate: boolean = false,
+    animationDurationMs: number = 500
   ): Promise<void> {
     if (renderingResults.length === 0) {
       return;
@@ -101,19 +102,19 @@ export class PlanaritySceneRenderController {
       this.edgeLineMap = new Map(rendering.edgeLines.map((n) => [n.line, n]));
 
       if (animate) {
-        this.animationService.animateTransition(this.currentRendering, rendering, 500, recenter);
+        this.animationService.animateTransition(this.currentRendering, rendering, animationDurationMs, recenter);
       } else {
         this.replaceRendering(rendering, recenter);
       }
 
       if (stepwise) {
-        await new Promise((resolve) => setTimeout(resolve, millisecondsPerStep));
+        await new Promise((resolve) => setTimeout(resolve, stepDurationMs));
       }
     }
   }
 
-  public async renderGraph(graphs: Graph[], stepwise: boolean, millisecondsPerStep: number, recenter: boolean, animate: boolean): Promise<void> {
+  public async renderGraph(graphs: Graph[], stepwise: boolean, millisecondsPerStep: number, recenter: boolean, animate: boolean, animationDurationMs: number): Promise<void> {
     const renderingResult = this.render(...graphs);
-    await this.applyRenderingResult(renderingResult, stepwise, millisecondsPerStep, recenter, animate);
+    await this.applyRenderingResult(renderingResult, stepwise, millisecondsPerStep, recenter, animate, animationDurationMs);
   }
 }

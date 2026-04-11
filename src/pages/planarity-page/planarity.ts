@@ -7,6 +7,7 @@ import { Graph } from '../../graph/types/graph';
 import { PlanarityPageInputConverter } from './input-handling/planarity-page-input-converter';
 import { PlanarityPageInputParser } from './input-handling/planarity-page-input-parser';
 import { PlanarityPageInputMatrix } from './input-handling/planarity-page-input-matrix';
+import { GraphEmbeddingPythonResult } from '../../graph/types/graph-embedding-python-result';
 
 export class PlanarityPage {
   private stepper: Stepper;
@@ -20,6 +21,8 @@ export class PlanarityPage {
   private statusEl: HTMLElement;
   private inputConverter: PlanarityPageInputConverter;
   private inputParser: PlanarityPageInputParser;
+  private currentGraph: Graph | undefined;
+  private currentEmbeddingResult: GraphEmbeddingPythonResult | undefined;
 
   constructor() {
     this.stepper = new Stepper();
@@ -30,7 +33,11 @@ export class PlanarityPage {
     this.clearBtn = document.getElementById('clearBtn')! as HTMLButtonElement;
     this.loadGraphBtn = document.getElementById('loadGraphBtn')! as HTMLButtonElement;
     this.statusEl = document.getElementById('graphStatus')!;
-    this.loadGraphBtn.addEventListener('click', this.loadGraphFromUserMatrix.bind(this));
+
+    this.graphMatrixInput.addEventListener('input', this.checkPlanarityOfUserInputGraph.bind(this));
+    this.graphListInput.addEventListener('input', this.checkPlanarityOfUserInputGraph.bind(this));
+    this.loadGraphBtn.addEventListener('click', this.computePlanarDrawingForInputGraph.bind(this));
+
     this.inputConverter = new PlanarityPageInputConverter();
     this.inputParser = new PlanarityPageInputParser();
     this.planarityScene = new PlanarityScene(this.canvas, this.showStatus.bind(this), this.updateGraphRepresentation.bind(this));
@@ -59,7 +66,7 @@ export class PlanarityPage {
     this.showStatus('Checking planarity... ✓', 'okay');
   }
 
-  public async loadGraphFromUserMatrix(): Promise<void> {
+  public async checkPlanarityOfUserInputGraph(): Promise<void> {
     this.showStatus('', 'info');
 
     try {
@@ -79,9 +86,16 @@ export class PlanarityPage {
       }
 
       const graph = this.inputConverter.inputMatrixToGraph(inputMatrix);
-      this.planarityScene.loadGraph(graph, true, 500);
+      this.currentGraph = graph;
+      this.currentEmbeddingResult = await this.planarityScene.checkPlanarityOfGraph(graph);
     } catch (error: any) {
       this.showStatus(error.message, 'error');
+    }
+  }
+
+  public async computePlanarDrawingForInputGraph(): Promise<void> {
+    if (this.currentGraph && this.currentEmbeddingResult && this.currentEmbeddingResult.planar) {
+      this.planarityScene.loadGraph(this.currentEmbeddingResult, this.currentGraph, true, 500);
     }
   }
 

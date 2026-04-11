@@ -8,14 +8,8 @@
       "url": "http://localhost:3000/index.html",
       "webRoot": "${workspaceFolder}/src",
       "pathMappings": [
-        {
-          "url": "webpack://planarity/src",
-          "path": "${workspaceFolder}/src"
-        },
-        {
-          "url": "webpack:///",
-          "path": "${workspaceFolder}"
-        }
+        { "url": "webpack://planarity/src", "path": "${workspaceFolder}/src" },
+        { "url": "webpack:///", "path": "${workspaceFolder}" }
       ],
       "reloadOnAttach": true
     },
@@ -26,9 +20,7 @@
       "url": "http://localhost:3000/index.html",
       "webRoot": "${workspaceFolder}",
       "sourceMaps": true,
-      "sourceMapPathOverrides": {
-        "webpack:///./*": "${workspaceFolder}/*"
-      }
+      "sourceMapPathOverrides": { "webpack:///./*": "${workspaceFolder}/*" }
     }
   ]
 }

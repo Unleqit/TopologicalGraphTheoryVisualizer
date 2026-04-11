@@ -72,7 +72,7 @@ export class PlanaritySceneInteractionController {
   private createNewEdge(vertexPair: [PlanaritySceneGraphNode, PlanaritySceneGraphNode]): void {
     const [v0, v1] = [vertexPair[0].id, vertexPair[1].id];
     const newGraph = this.graphBuilder.addEdges(this.renderController.getCurrentRendering().graph, [v0, v1]);
-    this.renderGraphToUI([newGraph], false, 0, false, false, true);
+    this.renderGraphToUI([newGraph], false, 0, false, false, 0, true);
     return;
   }
 
@@ -104,7 +104,7 @@ export class PlanaritySceneInteractionController {
 
     const localVertex = this.renderController.getCurrentRendering().graphGroup.worldToLocal(vertex.clone());
     const newGraph = this.graphBuilder.addVertices(this.renderController.getCurrentRendering().graph, localVertex);
-    this.renderGraphToUI([newGraph], false, 0, false, false, true);
+    this.renderGraphToUI([newGraph], false, 0, false, true, 300, true);
   }
 
   private handleDelete(): void {
@@ -121,18 +121,25 @@ export class PlanaritySceneInteractionController {
     }
 
     this.historyManager.commitToHistory(newGraph);
-    const renderingResult = this.renderController.render(newGraph);
-    this.renderController.applyRenderingResult(renderingResult, false);
+    this.renderGraphToUI([newGraph], false, 0, false, true, 200, true);
   }
 
-  public async renderGraphToUI(graphs: Graph[], stepwise: boolean, millisecondsPerStep: number, recenter: boolean, animate: boolean, commitToHistory: boolean): Promise<void> {
+  public async renderGraphToUI(
+    graphs: Graph[],
+    stepwise: boolean,
+    millisecondsPerStep: number,
+    recenter: boolean,
+    animate: boolean,
+    animationDurationMs: number,
+    commitToHistory: boolean
+  ): Promise<void> {
     const lastGraph = graphs[graphs.length - 1];
 
     if (commitToHistory) {
       this.historyManager.commitToHistory(lastGraph);
     }
 
-    this.renderController.renderGraph(graphs, stepwise, millisecondsPerStep, recenter, animate);
+    this.renderController.renderGraph(graphs, stepwise, millisecondsPerStep, recenter, animate, animationDurationMs);
     this.uiController.updateGraphRepresentation(lastGraph);
 
     if (lastGraph.nodes.length > 0) {
