@@ -1,9 +1,9 @@
 import { SurfaceScene } from '../../scenes/surface-scene/surface-scene';
-import { setupStepper } from '../../ui/setup-stepper';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { addDefaultLights, createCamera, createRenderer } from '../utils';
 import { VisualizationContextUpdateUISource } from '../../scenes/surface-scene/visualization/types/visualization-context-ui-update-source';
 import { VisualizationContextUIDisplayResult } from '../../scenes/surface-scene/visualization/types/visualization-context-ui-display-result';
+import { Stepper } from '../../ui/setup-stepper';
 
 //--- sphere ---
 const slider_1 = document.getElementById('slider-1') as HTMLInputElement;
@@ -91,7 +91,7 @@ function updateSlidersMöbius(result: VisualizationContextUIDisplayResult, sourc
 
 //--- scene ---
 
-const stepper = setupStepper();
+const stepper = new Stepper();
 
 const canvas = document.getElementById('viz') as HTMLCanvasElement;
 const renderer = createRenderer(canvas);

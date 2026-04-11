@@ -1,4 +1,3 @@
-import { setupStepper } from '../../ui/setup-stepper';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { PerspectiveCamera, Vector3, WebGLRenderer } from 'three';
 import { IntroSphereHandleScene } from '../../scenes/intro-scene/intro-sphere-handle-scene';
@@ -7,8 +6,9 @@ import { IntroMorphSphereScene } from '../../scenes/intro-scene/intro-morph-sphe
 import { IntroMöbiusArrowScene } from '../../scenes/intro-scene/intro-möbius-arrow-scene';
 import { IntroSceneBase } from '../../scenes/intro-scene/intro-scene-base';
 import { createCamera, createRenderer } from '../utils';
+import { Stepper } from '../../ui/setup-stepper';
 
-const stepper = setupStepper();
+const stepper = new Stepper();
 
 const canvas = document.getElementById('viz') as HTMLCanvasElement;
 const slider = document.getElementById('uSlider') as HTMLInputElement;

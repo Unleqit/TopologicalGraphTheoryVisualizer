@@ -1,4 +1,3 @@
-import { Stepper } from '../../ui/stepper';
 import { PlanarityScene } from '../../scenes/planarity-scene/planarity-scene';
 import { PlanarityPageInputMode } from './planarity-page-input-mode';
 import { validateMatrix } from './input-handling/planarity-page-input-validator';
@@ -8,6 +7,7 @@ import { PlanarityPageInputConverter } from './input-handling/planarity-page-inp
 import { PlanarityPageInputParser } from './input-handling/planarity-page-input-parser';
 import { PlanarityPageInputMatrix } from './input-handling/planarity-page-input-matrix';
 import { GraphEmbeddingPythonResult } from '../../graph/types/graph-embedding-python-result';
+import { Stepper } from '../../ui/setup-stepper';
 
 export class PlanarityPage {
   private stepper: Stepper;
