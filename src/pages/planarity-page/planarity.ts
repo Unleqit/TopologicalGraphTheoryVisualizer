@@ -23,6 +23,7 @@ export class PlanarityPage {
   private inputParser: PlanarityPageInputParser;
   private currentGraph: Graph | undefined;
   private currentEmbeddingResult: GraphEmbeddingPythonResult | undefined;
+  private graphInputCard: HTMLElement;
 
   constructor() {
     this.stepper = new Stepper();
@@ -33,6 +34,7 @@ export class PlanarityPage {
     this.clearBtn = document.getElementById('clearBtn')! as HTMLButtonElement;
     this.loadGraphBtn = document.getElementById('loadGraphBtn')! as HTMLButtonElement;
     this.statusEl = document.getElementById('graphStatus')!;
+    this.graphInputCard = document.getElementById('graphInputCard') as HTMLElement;
 
     this.graphMatrixInput.addEventListener('input', this.checkPlanarityOfUserInputGraph.bind(this));
     this.graphListInput.addEventListener('input', this.checkPlanarityOfUserInputGraph.bind(this));
@@ -104,8 +106,25 @@ export class PlanarityPage {
     this.planarityScene.resize(area.clientWidth, area.clientHeight);
   }
 
+  private lastStep: number = -1;
+
   private tick(): void {
-    this.planarityScene.update();
+    const cur = this.stepper.getStep();
+    //last panel needs to be always updated due to its interactive nature instead of just on step changes
+    if (cur !== this.lastStep || cur === 4) {
+      switch (cur) {
+        case 4:
+          this.graphInputCard.style.display = 'flex';
+          this.canvas.style.display = 'flex';
+          this.planarityScene.update();
+          break;
+        default:
+          this.graphInputCard.style.display = 'none';
+          this.canvas.style.display = 'none';
+          break;
+      }
+      this.lastStep = cur;
+    }
     requestAnimationFrame(this.tick.bind(this));
   }
 
