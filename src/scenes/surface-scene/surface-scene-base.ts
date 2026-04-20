@@ -1,5 +1,4 @@
-import { Material, Mesh, Scene, Vector3 } from 'three';
-import { EmbeddingInstance } from './visualization/embedding-instance';
+import { Scene, Vector3 } from 'three';
 import { _3DGraphVertex } from '../../graph/types/graph-3d-vertex';
 import { GraphEdge } from '../../graph/types/graph-edge';
 import { VisualizationStep } from './visualization/types/visualization-step';
@@ -7,15 +6,24 @@ import { ParametricGeometry } from 'three/examples/jsm/geometries/ParametricGeom
 import { VisualizationContext } from './visualization/visualization-context';
 import { ISurfaceScene } from './isurface-scene';
 import { UpdateUIFunction } from './visualization/types/update-ui-function';
+import { clamp } from 'three/src/math/MathUtils.js';
+import { redrawEdgeRecords } from './visualization/helpers/edge-records/redraw-edge-records';
+import { redrawVertexRecords } from './visualization/helpers/vertex-records/redraw-vertex-records';
+import { ensureNotVisibleBeforeRedo } from './visualization/helpers/visibility/ensure-not-visible-before-redo';
+import { ensureVisibleBeforeUndo } from './visualization/helpers/visibility/ensure-visible-before-undo';
+import { VisualizationContextUIDisplayResult } from './visualization/types/visualization-context-ui-display-result';
 
 export abstract class SurfaceSceneBase implements ISurfaceScene {
-  private embedding: EmbeddingInstance;
-  private initialXScale: number;
-  private initialYScale: number;
+  public context: VisualizationContext;
+  private test: boolean = false;
+  private prev: number = -1;
+  private graphEmbeddingReorderingSteps;
+  private reorderingAnimationDuration: number;
+  private pauseDuration: number;
+  private morphingAnimationDuration: number;
+  private startTime: number = -1;
 
   constructor(
-    scene: Scene,
-    mat: Material,
     vertices: _3DGraphVertex[],
     edges: GraphEdge[],
     edgeSegmentCount: number,
@@ -29,43 +37,86 @@ export abstract class SurfaceSceneBase implements ISurfaceScene {
     initialXScale: number = 1.5,
     initialYSCale: number = 1.5
   ) {
-    this.initialXScale = initialXScale;
-    this.initialYScale = initialYSCale;
-
-    const patchedCoordinateTransformationFunction = this.patchCoordinateTransformationFunction(coordinateTransformFunction);
-    const patchedMorphFunction = this.patchMorphFunction(morphFunction);
-    const geo = new ParametricGeometry(patchedMorphFunction, 80, 60);
-    const mesh = new Mesh(geo, mat);
-    const context = new VisualizationContext(scene, mesh, patchedCoordinateTransformationFunction, patchedMorphFunction, updateUIFunction, this.initialXScale, this.initialYScale);
-
-    this.embedding = new EmbeddingInstance(context, vertices, edges, edgeSegmentCount, steps, reorderingAnimationDuration, pauseDuration, morphingAnimationDuration);
+    this.context = new VisualizationContext(vertices, edges, edgeSegmentCount, coordinateTransformFunction, morphFunction, updateUIFunction, initialXScale, initialYSCale);
+    this.graphEmbeddingReorderingSteps = steps.sort((a, b) => a.stepNumber - b.stepNumber);
+    this.reorderingAnimationDuration = Math.max(reorderingAnimationDuration, 1);
+    this.pauseDuration = pauseDuration;
+    this.morphingAnimationDuration = Math.max(morphingAnimationDuration, 1);
   }
 
   public setVisible(visible: boolean): void {
-    this.embedding.setVisible(visible);
+    this.context.mesh.visible = visible;
+    this.context.vertices.forEach((vertex) => (vertex.visible = visible));
+    this.context.edges.forEach((edge) => (edge.visible = visible));
   }
 
-  public autoUpdate(t: number): void {
-    this.embedding.autoUpdate(t);
+  public autoUpdate(time: number): void {
+    if (this.startTime < 0) {
+      this.startTime = time;
+      return;
+    }
+
+    const tmp = (time - this.startTime) * 0.001;
+    const divisor = this.reorderingAnimationDuration;
+    const tmp2 = (time - (this.startTime + (1 / 0.001) * divisor + (1 / 0.001) * this.pauseDuration)) * 0.001;
+    const divisor2 = this.morphingAnimationDuration;
+    const normed = tmp / divisor;
+    const normed2 = tmp2 / divisor2;
+
+    if (normed <= 1) {
+      this.updateGraphEmbedding(normed);
+    } else if (normed2 >= 0 && normed2 <= 1) {
+      this.updateShape(normed2);
+    }
   }
 
-  public updateGraphEmbedding(t: number, automatic: boolean = true): void {
-    this.embedding.updateGraphEmbedding(t, automatic);
+  public updateGraphEmbedding(normed: number, automatic: boolean = true): void {
+    if (this.test && automatic) {
+      return;
+    }
+    if (!automatic && !this.test) {
+      this.test = true;
+    }
+
+    if (this.prev === normed) {
+      return;
+    }
+
+    const totalStepCount = this.graphEmbeddingReorderingSteps.length;
+    const newStepIndex = clamp(Number.parseInt((normed * totalStepCount - 0.5).toFixed(0)), 0, totalStepCount - 1);
+    const newStep = this.graphEmbeddingReorderingSteps[newStepIndex];
+    const displayResult: VisualizationContextUIDisplayResult = { description: newStep.description, normedStepValue: normed, stepValue: newStep.stepNumber };
+
+    this.context.updateUIFunction(displayResult, 'reorder');
+
+    if (this.prev < normed) {
+      for (const step of this.graphEmbeddingReorderingSteps) {
+        if (normed >= step.stepNumber / totalStepCount && ensureNotVisibleBeforeRedo(this.context, step.stepNumber)) {
+          step.redo(this.context);
+        }
+      }
+    } else {
+      for (const step of this.graphEmbeddingReorderingSteps) {
+        if (normed < step.stepNumber / totalStepCount && ensureVisibleBeforeUndo(this.context, step.stepNumber)) {
+          step.undo(this.context);
+        }
+      }
+    }
+    this.prev = normed;
   }
 
-  public updateShape(t: number, automatic: boolean = true): void {
-    this.embedding.updateShape(t, automatic);
+  updateShape(normed: number, automatic: boolean = true): void {
+    if (this.test && automatic) {
+      return;
+    }
+    if (!automatic && !this.test) {
+      this.test = true;
+    }
+
+    this.context.updateShape(normed);
   }
 
-  private patchMorphFunction(fn: (u: number, v: number, p: Vector3, morph: number, xScale: number, yScale: number) => void): (u: number, v: number, p: Vector3) => void {
-    return (u: number, v: number, p: Vector3) => {
-      fn(u, v, p, this.embedding?.context.morph ?? 0, this.embedding?.context.meshXScale ?? this.initialXScale, this.embedding?.context.meshYScale ?? this.initialYScale);
-    };
-  }
-
-  private patchCoordinateTransformationFunction(fn: (u: number, v: number, p: Vector3, xScale: number, yScale: number) => void): (u: number, v: number, p: Vector3) => void {
-    return (u: number, v: number, p: Vector3) => {
-      fn(u, v, p, this.embedding?.context.meshXScale ?? this.initialXScale, this.embedding?.context.meshYScale ?? this.initialYScale);
-    };
+  public getScene(): Scene {
+    return this.context.scene;
   }
 }

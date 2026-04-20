@@ -1,0 +1,52 @@
+@startuml
+
+scale max 4096 width
+scale max 4096 height
+scale 2
+
+skinparam backgroundColor transparent
+skinparam shadowing false
+
+skinparam rectangle {
+}
+
+rectangle "Introduction to Topology" {
+rectangle "Definition Topology"
+rectangle "Orientable Surfaces"
+rectangle "Non-orientable Surfaces"
+rectangle "Homeomorphism & Genus"
+
+"Definition Topology" -down-> "Orientable Surfaces"
+"Orientable Surfaces" -down-> "Non-orientable Surfaces"
+"Non-orientable Surfaces" -down-> "Homeomorphism & Genus"
+
+}
+
+rectangle "Planarity testing and Embedding computation" {
+rectangle "tmp0"
+rectangle "tmp1"
+rectangle "tmp2"
+rectangle "tmp3"
+rectangle "Planarity testing editor"
+
+"tmp0" -down-> "tmp1"
+"tmp1" -down-> "tmp2"
+"tmp2" -down-> "tmp3"
+"tmp3" -down-> "Planarity testing editor"
+
+}
+
+rectangle "Embeddings on other surfaces" {
+rectangle "Sphere"
+rectangle "Torus"
+rectangle "Möbius strip"
+
+"Sphere" -down-> "Torus"
+"Torus" -down-> "Möbius strip"
+}
+
+"Introduction to Topology" -[hidden]right-> "Planarity testing and Embedding computation"
+"Planarity testing and Embedding computation" -[hidden]right-> "Embeddings on other surfaces"
+
+
+@enduml
