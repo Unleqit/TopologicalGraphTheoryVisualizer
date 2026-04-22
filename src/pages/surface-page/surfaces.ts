@@ -1,29 +1,22 @@
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { createCamera, createRenderer } from '../utils';
-import { VisualizationContextUpdateUISource } from '../../scenes/surface-scene/visualization/types/visualization-context-ui-update-source';
-import { VisualizationContextUIDisplayResult } from '../../scenes/surface-scene/visualization/types/visualization-context-ui-display-result';
+import { SurfaceSceneBaseUpdateUISource } from '../../scenes/surface-scene/visualization/types/visualization-context-ui-update-source';
+import { SurfaceSceneBaseUIDisplayResult } from '../../scenes/surface-scene/visualization/types/visualization-context-ui-display-result';
 import { Stepper } from '../../ui/setup-stepper';
 import { SurfaceSceneBase } from '../../scenes/surface-scene/surface-scene-base';
 import { SurfaceSceneMöbius } from '../../scenes/surface-scene/surface-scene-möbius';
 import { SurfaceSceneSphere } from '../../scenes/surface-scene/surface-scene-sphere';
 import { SurfaceSceneTorus } from '../../scenes/surface-scene/surface-scene-torus';
-import { PerspectiveCamera, Vector3, WebGLRenderer } from 'three';
+import { Vector3 } from 'three';
 
 //--- sphere ---
 export class SurfacePage {
   private controlMap: Map<number, HTMLInputElement[]>;
   private stepper = new Stepper();
   private lastStep = -1;
-  private renderer: WebGLRenderer;
   private canvas: HTMLCanvasElement;
-  private camera: PerspectiveCamera;
   private surfaceScenes: SurfaceSceneBase[];
-  private startPositions: Vector3[];
-  private controls: OrbitControls;
+  private startPositions: (Vector3 | undefined)[];
 
   constructor() {
-    this.lastStep = this.stepper.getStep();
-
     const slider_1 = document.getElementById('slider-1') as HTMLInputElement;
     const slider0 = document.getElementById('slider0') as HTMLInputElement;
     const readout_1 = document.getElementById('readout-1') as HTMLInputElement;
@@ -48,13 +41,22 @@ export class SurfacePage {
     ]);
 
     this.canvas = document.getElementById('viz') as HTMLCanvasElement;
-    this.renderer = createRenderer(this.canvas);
-    this.camera = createCamera();
-    this.camera.position.set(0, 3, -7);
-    this.surfaceScenes = [new SurfaceSceneSphere(this.updateUI.bind(this)), new SurfaceSceneTorus(this.updateUI.bind(this)), new SurfaceSceneMöbius(this.updateUI.bind(this))];
+    this.surfaceScenes = [
+      new SurfaceSceneSphere(this.canvas, this.updateUI.bind(this)),
+      new SurfaceSceneTorus(this.canvas, this.updateUI.bind(this)),
+      new SurfaceSceneMöbius(this.canvas, this.updateUI.bind(this)),
+    ];
     this.startPositions = [new Vector3(0, 3, -7), new Vector3(2, 7, 8), new Vector3(2, 3, 6)];
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-    this.controls.enableDamping = true;
+
+    this.lastStep = this.stepper.getStep();
+    this.stepper.addEventListener('stepchange', (e) => {
+      const step = (e as CustomEvent<number>).detail;
+      this.startPositions[this.lastStep] = this.surfaceScenes[this.lastStep].stopAnimation();
+      this.surfaceScenes[step].startAnimation(this.startPositions[step]);
+      this.lastStep = step;
+    });
+    this.surfaceScenes[this.lastStep].startAnimation(this.startPositions[this.lastStep]);
+    this.startPositions[this.lastStep] = undefined;
 
     window.addEventListener('resize', this.resize);
     this.resize();
@@ -94,11 +96,9 @@ export class SurfacePage {
       this.surfaceScenes[this.stepper.getStep()].updateShape(t, false);
       readout4.textContent = `Morph: ${(t * 100 + 0.4).toFixed(0)}`;
     });
-
-    requestAnimationFrame(this.tick.bind(this));
   }
 
-  private updateUI(result: VisualizationContextUIDisplayResult, source: VisualizationContextUpdateUISource): void {
+  private updateUI(result: SurfaceSceneBaseUIDisplayResult, source: SurfaceSceneBaseUpdateUISource): void {
     const controls = this.controlMap.get(this.lastStep);
     if (!controls) {
       return;
@@ -123,27 +123,7 @@ export class SurfacePage {
 
     const w = area.clientWidth;
     const h = area.clientHeight;
-
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    this.renderer.setSize(w, h, false);
-
-    this.camera.aspect = w / h;
-    this.camera.updateProjectionMatrix();
-  }
-
-  private tick(t: number): void {
-    const cur = this.stepper.getStep();
-    if (cur !== this.lastStep) {
-      this.lastStep = cur;
-      this.controls.target.set(0, 0, 0);
-      this.controls.object.position.copy(this.startPositions[cur]);
-      this.surfaceScenes.forEach((scene, i) => scene.setVisible(cur === i));
-    }
-
-    this.controls.update();
-    this.surfaceScenes[cur].autoUpdate(t);
-    this.renderer.render(this.surfaceScenes[cur].getScene(), this.camera);
-    requestAnimationFrame(this.tick.bind(this));
+    this.surfaceScenes.forEach((scene) => scene.resize(w, h));
   }
 }
 new SurfacePage();

@@ -1,4 +1,4 @@
-import { BufferGeometry, Mesh, SphereGeometry, MeshStandardMaterial } from 'three';
+import { BufferGeometry, Mesh, SphereGeometry, MeshStandardMaterial, MeshBasicMaterial } from 'three';
 import { IntroSceneBase } from './intro-scene-base';
 
 export class IntroMorphSphereScene extends IntroSceneBase {
@@ -6,20 +6,24 @@ export class IntroMorphSphereScene extends IntroSceneBase {
   private basePositions: Float32Array;
   private baseNormals: Float32Array;
   private sphere: Mesh;
-  private sphereStepStartTime;
 
-  constructor() {
-    super(true);
+  constructor(canvasElement: HTMLCanvasElement) {
+    super(canvasElement, true);
     const baseGeometry = new SphereGeometry(1.4, 48, 24);
     this.geometry = baseGeometry.clone();
     this.basePositions = (this.geometry.attributes.position.array as Float32Array).slice();
     this.baseNormals = (this.geometry.attributes.normal.array as Float32Array).slice();
     this.sphere = new Mesh(this.geometry, new MeshStandardMaterial({ color: 0xffffff, wireframe: true }));
-    this.sphereStepStartTime = performance.now();
-    super.add(this.sphere);
+    super.getScene().add(this.sphere);
+
+    //dont ask
+    const cameraDot = new Mesh(new SphereGeometry(0.02, 8, 8), new MeshBasicMaterial({ color: 0xff0000 }));
+    this.camera.add(cameraDot);
+    cameraDot.position.set(0, 0, -100);
+    this.scene.add(cameraDot);
   }
 
-  private updateSurface(time: number): void {
+  public override update(time: number): void {
     const pos = this.geometry.attributes.position.array as Float32Array;
     const [wSphere, wCube, wWave] = this.modeWeights(time);
 
@@ -52,6 +56,8 @@ export class IntroMorphSphereScene extends IntroSceneBase {
 
     this.geometry.attributes.position.needsUpdate = true;
     this.geometry.computeVertexNormals();
+
+    super.update(time);
   }
 
   private smoothPulse(t: number): number {
@@ -64,17 +70,5 @@ export class IntroMorphSphereScene extends IntroSceneBase {
     const c = this.smoothPulse(t * 0.7 + (Math.PI * 4) / 3);
     const sum = a + b + c;
     return [a / sum, b / sum, c / sum];
-  }
-
-  public override update(): void {
-    const elapsed = (performance.now() - this.sphereStepStartTime) * 0.001;
-    this.updateSurface(elapsed);
-  }
-
-  public setVisible(visible: boolean): void {
-    if (visible) {
-      this.sphereStepStartTime = performance.now();
-    }
-    super.setVisible(visible);
   }
 }

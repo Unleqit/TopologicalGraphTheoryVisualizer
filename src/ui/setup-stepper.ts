@@ -2,12 +2,13 @@ import { qs } from './dom';
 import { getModuleIndex, gotoModule, MODULE_ORDER } from './navigation';
 import { clamp } from './utils';
 
-export class Stepper {
+export class Stepper extends EventTarget {
   private step: number;
   private totalSteps: number;
   private dialogSteps: HTMLElement[];
 
   constructor() {
+    super();
     this.dialogSteps = Array.from(document.querySelectorAll<HTMLElement>('[data-step]')).sort((a, b) => Number(a.dataset.step) - Number(b.dataset.step));
 
     this.totalSteps = Math.max(1, this.dialogSteps.length);
@@ -74,11 +75,11 @@ export class Stepper {
     if (nextBtn) {
       const isLastStep = this.step === this.totalSteps - 1;
       const isLastModule = getModuleIndex() === MODULE_ORDER.length - 1;
-
       nextBtn.disabled = isLastStep && isLastModule;
     }
 
     sessionStorage.setItem(this.getStorageKey(), String(this.step));
+    this.dispatchEvent(new CustomEvent<number>('stepchange', { detail: this.step }));
   }
 
   getStep(): number {
@@ -86,7 +87,12 @@ export class Stepper {
   }
 
   setStep(s: number): void {
-    this.step = clamp(s, 0, this.totalSteps - 1);
+    const newStep = clamp(s, 0, this.totalSteps - 1);
+    if (newStep === this.step) {
+      return;
+    }
+
+    this.step = newStep;
     this.render();
   }
 

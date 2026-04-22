@@ -1,3 +1,3 @@
-import { VisualizationContext } from '../visualization-context';
+import { SurfaceSceneBase } from '../../surface-scene-base';
 
-export type VisualizationStep = { description: string; stepNumber: number; redo: (context: VisualizationContext) => void; undo: (context: VisualizationContext) => void };
+export type VisualizationStep = { description: string; stepNumber: number; redo: (context: SurfaceSceneBase) => void; undo: (context: SurfaceSceneBase) => void };

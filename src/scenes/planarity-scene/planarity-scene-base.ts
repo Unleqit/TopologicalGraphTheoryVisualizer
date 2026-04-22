@@ -1,42 +1,10 @@
-import {
-  Scene,
-  PerspectiveCamera,
-  WebGLRenderer,
-  Raycaster,
-  AmbientLight,
-  DirectionalLight,
-  Vector3,
-  Vector2,
-  Group,
-  Intersection,
-  Object3D,
-  Object3DEventMap,
-  Plane,
-} from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { createCamera, createRenderer } from '../../pages/utils';
+import { PerspectiveCamera, WebGLRenderer, Vector3, Vector2, Group, Intersection, Object3D, Object3DEventMap, Plane } from 'three';
+import { SceneBase } from '../scene-base';
 
-export class PlanaritySceneBase {
-  private scene: Scene;
-  private camera: PerspectiveCamera;
-  private controls: OrbitControls;
-  private webglRenderer: WebGLRenderer;
-  private raycaster: Raycaster;
-
+export class PlanaritySceneBase extends SceneBase {
   constructor(canvasElement: HTMLCanvasElement) {
-    this.scene = new Scene();
-    this.camera = createCamera();
-    this.controls = new OrbitControls(this.camera, canvasElement);
-    this.controls.enableZoom = true;
+    super(canvasElement);
     this.controls.enableRotate = false;
-    this.webglRenderer = createRenderer(canvasElement);
-    this.raycaster = new Raycaster();
-    this.raycaster.params.Line.threshold = 0.3;
-
-    this.scene.add(new AmbientLight(0xffffff, 0.6));
-    const dir = new DirectionalLight(0xffffff, 0.9);
-    dir.position.set(3, 4, 5);
-    this.scene.add(dir);
   }
 
   public addToScene(...objects: Object3D[]): void {

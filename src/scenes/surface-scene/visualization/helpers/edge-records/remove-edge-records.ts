@@ -1,6 +1,6 @@
-import { VisualizationContext } from '../../visualization-context';
+import { SurfaceSceneBase } from '../../../surface-scene-base';
 
-export function removeEdgeRecordsByIDs(context: VisualizationContext, edgeIDs: string[]): void {
+export function removeEdgeRecordsByIDs(context: SurfaceSceneBase, edgeIDs: string[]): void {
   edgeIDs.forEach((edgeId) => {
     const edge = context.edges.get(edgeId);
     if (edge) {

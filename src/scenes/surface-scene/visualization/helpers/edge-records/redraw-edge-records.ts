@@ -1,9 +1,9 @@
 import { Vector3 } from 'three';
 import { lerp } from 'three/src/math/MathUtils.js';
-import { VisualizationContext } from '../../visualization-context';
+import { SurfaceSceneBase } from '../../../surface-scene-base';
 
 export function redrawEdgeRecords(
-  context: VisualizationContext,
+  context: SurfaceSceneBase,
   coordinateTransformFunction: (u: number, v: number, p: Vector3) => void,
   setVisibility: boolean = false,
   visibility: boolean = true

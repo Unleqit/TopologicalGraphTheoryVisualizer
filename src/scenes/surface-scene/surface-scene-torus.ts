@@ -24,7 +24,7 @@ import { SurfaceSceneBase } from './surface-scene-base';
 import { UpdateUIFunction } from './visualization/types/update-ui-function';
 
 export class SurfaceSceneTorus extends SurfaceSceneBase {
-  constructor(updateUIFunction: UpdateUIFunction) {
+  constructor(canvasElement: HTMLCanvasElement, updateUIFunction: UpdateUIFunction) {
     const xScale = 1.5;
     const yScale = 1.5;
 
@@ -52,6 +52,6 @@ export class SurfaceSceneTorus extends SurfaceSceneBase {
       { description: descriptions[8], stepNumber: 8, redo: k33RerouteEdge16_RedrawAffectedEdge, undo: _undoK33RerouteEdge16_RedrawAffectedEdge },
     ];
 
-    super(k33Vertices, k33Edges, K33_EDGE_SEGMENTS, reorderingSteps, square, squareCylinderTorus, updateUIFunction, 7, 1, 3, xScale, yScale);
+    super(canvasElement, k33Vertices, k33Edges, K33_EDGE_SEGMENTS, reorderingSteps, square, squareCylinderTorus, updateUIFunction, 7, 1, 3, xScale, yScale);
   }
 }

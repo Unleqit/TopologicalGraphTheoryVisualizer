@@ -1,1 +1,1 @@
-export type VisualizationContextUpdateUISource = 'reorder' | 'transform';
+export type SurfaceSceneBaseUpdateUISource = 'reorder' | 'transform';
