@@ -6,7 +6,7 @@ export function createVertexRecords(vertices: _3DGraphVertex[]): VertexRecord[] 
 
   for (let i = 0; i < vertices.length; i++) {
     const gv = vertices[i];
-    const record: VertexRecord = { id: gv.vertex.id, data: gv, mesh: gv.mesh, isShadow: false, visible: true };
+    const record: VertexRecord = { id: gv.vertex.id, data: gv, mesh: gv.mesh.clone(), isShadow: false, visible: true };
     records.push(record);
   }
   return records;

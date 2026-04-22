@@ -1,8 +1,8 @@
 import { Vector3 } from 'three';
-import { VisualizationContext } from '../../visualization-context';
+import { SurfaceSceneBase } from '../../../surface-scene-base';
 
 export function redrawVertexRecords(
-  context: VisualizationContext,
+  context: SurfaceSceneBase,
   coordinateTransformFunction: (u: number, v: number, p: Vector3) => void,
   setVisibility: boolean = false,
   visibility: boolean = true

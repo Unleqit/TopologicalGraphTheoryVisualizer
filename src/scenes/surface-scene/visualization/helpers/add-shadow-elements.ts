@@ -4,10 +4,10 @@ import { GraphEdge } from '../../../../graph/types/graph-edge';
 import { createVertexMesh, createEdgeLine } from '../../../utils';
 import { EdgeRecord } from '../types/edge-record';
 import { VertexRecord } from '../types/vertex-record';
-import { VisualizationContext } from '../visualization-context';
+import { SurfaceSceneBase } from '../../surface-scene-base';
 
 export function addShadowElements(
-  context: VisualizationContext,
+  context: SurfaceSceneBase,
   shadowVertices: _3DGraphVertex[],
   shadowEdges: GraphEdge[],
   mat: Material = new MeshBasicMaterial({ visible: false }),

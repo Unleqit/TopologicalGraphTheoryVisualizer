@@ -1,28 +1,18 @@
-import { Object3D, Scene } from 'three';
-import { addDefaultLights } from '../../pages/utils';
+import { SceneBase } from '../scene-base';
 
-export abstract class IntroSceneBase {
-  protected readonly scene = new Scene();
-
-  constructor(protected automaticAnimation: boolean) {
-    addDefaultLights(this.scene);
-  }
-
-  public add(obj: Object3D): void {
-    this.scene.add(obj);
-  }
-
-  public getScene(): Scene {
-    return this.scene;
-  }
-
-  public setVisible(visible: boolean): void {
-    this.scene.visible = visible;
+export abstract class IntroSceneBase extends SceneBase {
+  constructor(
+    canvasElement: HTMLCanvasElement,
+    protected automaticAnimation: boolean
+  ) {
+    super(canvasElement);
   }
 
   public hasAutomaticAnimation(): boolean {
     return this.automaticAnimation;
   }
 
-  public abstract update(t?: number): void;
+  public override update(t: number, source?: 'manual' | 'automatic'): void {
+    super.update(t);
+  }
 }

@@ -1,7 +1,7 @@
+import { SurfaceSceneBase } from '../../../../surface-scene-base';
 import { redrawEdgeRecords } from '../../../helpers/edge-records/redraw-edge-records';
-import { VisualizationContext } from '../../../visualization-context';
 
-export function showEdgesAtStart(context: VisualizationContext): void {
+export function showEdgesAtStart(context: SurfaceSceneBase): void {
   [...context.edges.values()].forEach((edge) => {
     context.scene.add(edge.line);
   });

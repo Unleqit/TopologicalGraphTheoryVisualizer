@@ -26,8 +26,8 @@ export class IntroMöbiusArrowScene extends IntroSceneBase {
   private mobiusMarker: Mesh;
   private mobiusInitialFrame: Frame;
 
-  constructor() {
-    super(false);
+  constructor(canvasElement: HTMLCanvasElement) {
+    super(canvasElement, false);
     this.mobiusGroup = new Group();
     const mobiusGeometry = this.buildMobiusGeometry();
     const mobiusMaterial = new MeshStandardMaterial({ vertexColors: true, side: DoubleSide, roughness: 0.45, metalness: 0.04 });
@@ -58,7 +58,7 @@ export class IntroMöbiusArrowScene extends IntroSceneBase {
     this.mobiusArrow.quaternion.copy(this.mobiusStartArrow.quaternion);
     this.mobiusMarker.position.copy(this.mobiusInitialFrame.p);
     this.mobiusGroup.visible = true;
-    super.add(this.mobiusGroup);
+    super.getScene().add(this.mobiusGroup);
   }
 
   private mobiusPoint(u: number, v: number, radius = 1.3): Vector3 {
@@ -142,13 +142,12 @@ export class IntroMöbiusArrowScene extends IntroSceneBase {
     return g;
   }
 
-  public override update(t: number): void {
-    const u = t * Math.PI * 2;
-    const frame = this.frameOnMobius(u, 0);
-    ArrowFactory.placeInFrame(this.mobiusArrow, frame);
-  }
-
-  public setVisible(visible: boolean): void {
-    super.setVisible(visible);
+  public override update(t: number, source: 'manual' | 'automatic'): void {
+    if (source === 'manual') {
+      const u = t * Math.PI * 2;
+      const frame = this.frameOnMobius(u, 0);
+      ArrowFactory.placeInFrame(this.mobiusArrow, frame);
+      super.update(t);
+    }
   }
 }

@@ -1,6 +1,6 @@
-import { VisualizationContext } from '../../../visualization-context';
+import { SurfaceSceneBase } from '../../../../surface-scene-base';
 
-export function k33FlipVertex2And5_FlipVertices(context: VisualizationContext): void {
+export function k33FlipVertex2And5_FlipVertices(context: SurfaceSceneBase): void {
   const v2 = context.vertices.get(2);
   const v5 = context.vertices.get(5);
 

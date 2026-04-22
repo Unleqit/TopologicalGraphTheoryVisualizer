@@ -33,8 +33,8 @@ export class IntroSphereHandleScene extends IntroSceneBase {
 
   //sphere morphing
 
-  constructor() {
-    super(false);
+  constructor(canvasElement: HTMLCanvasElement) {
+    super(canvasElement, false);
     this.sphereGraphGroup = new Group();
     this.sphereGraphGroup.visible = true;
 
@@ -61,7 +61,7 @@ export class IntroSphereHandleScene extends IntroSceneBase {
     this.sphereGraphGroup.add(this.crossMarker);
 
     Object.values(this.V).forEach((v) => this.addVertex(v));
-    super.add(this.sphereGraphGroup);
+    super.getScene().add(this.sphereGraphGroup);
   }
 
   private latLon(lat: number, lon: number, radius: number): Vector3 {
@@ -169,9 +169,11 @@ export class IntroSphereHandleScene extends IntroSceneBase {
     this.sphereGraphGroup.add(this.acLine);
   }
 
-  public override update(): void {
-    if (this.morphingHandle) {
-      this.updateHandleMorph();
+  public override update(t: number, source: 'manual' | 'automatic'): void {
+    if (source === 'manual') {
+      if (this.morphingHandle) {
+        this.updateHandleMorph();
+      }
     }
   }
 

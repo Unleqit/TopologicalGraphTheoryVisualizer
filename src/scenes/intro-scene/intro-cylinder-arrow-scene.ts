@@ -28,8 +28,8 @@ export class IntroCylinderArrowScene extends IntroSceneBase {
   private r: number = 0.7;
   private segmentsU: number = 80;
 
-  constructor() {
-    super(false);
+  constructor(canvasElement: HTMLCanvasElement) {
+    super(canvasElement, false);
 
     this.cylinderGroup = new Group();
     const cylinderGeometry = this.buildCylinderGeometry();
@@ -50,8 +50,8 @@ export class IntroCylinderArrowScene extends IntroSceneBase {
     this.startMarker.position.copy(this.initialFrame.p);
 
     this.cylinderGroup.visible = true;
-    this.update(0);
-    super.add(this.cylinderGroup);
+    this.update(0, 'manual');
+    super.getScene().add(this.cylinderGroup);
   }
 
   private cylinderPoint(u: number, v: number): Vector3 {
@@ -135,9 +135,12 @@ export class IntroCylinderArrowScene extends IntroSceneBase {
     return geometry;
   }
 
-  public override update(t: number): void {
-    const u = -t * Math.PI * 2;
-    const frame = this.frameOnCylinder(u, 0);
-    ArrowFactory.placeUpwards(this.movingArrow, frame, this.R);
+  public override update(t: number, source: 'manual' | 'automatic'): void {
+    if (source === 'manual') {
+      const u = -t * Math.PI * 2;
+      const frame = this.frameOnCylinder(u, 0);
+      ArrowFactory.placeUpwards(this.movingArrow, frame, this.R);
+      super.update(t, source);
+    }
   }
 }

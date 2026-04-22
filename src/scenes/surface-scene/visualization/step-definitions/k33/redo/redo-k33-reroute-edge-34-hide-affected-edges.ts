@@ -1,6 +1,6 @@
 import { removeEdgeRecordsByIDs } from '../../../helpers/edge-records/remove-edge-records';
-import { VisualizationContext } from '../../../visualization-context';
+import { SurfaceSceneBase } from '../../../../surface-scene-base';
 
-export function k33RerouteEdge34_HideAffectedEdge(context: VisualizationContext): void {
+export function k33RerouteEdge34_HideAffectedEdge(context: SurfaceSceneBase): void {
   removeEdgeRecordsByIDs(context, ['3,4']);
 }

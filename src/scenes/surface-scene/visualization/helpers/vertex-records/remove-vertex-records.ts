@@ -1,6 +1,6 @@
-import { VisualizationContext } from '../../visualization-context';
+import { SurfaceSceneBase } from '../../../surface-scene-base';
 
-export function removeVertexRecordsByIDs(context: VisualizationContext, vertexIDs: number[]): void {
+export function removeVertexRecordsByIDs(context: SurfaceSceneBase, vertexIDs: number[]): void {
   vertexIDs.forEach((vertexID) => {
     const vertex = context.vertices.get(vertexID);
     if (vertex) {

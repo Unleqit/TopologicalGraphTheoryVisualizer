@@ -1,1 +1,1 @@
-export type VisualizationContextUIDisplayResult = { stepValue: number; normedStepValue: number; description: string };
+export type SurfaceSceneBaseUIDisplayResult = { stepValue: number; normedStepValue: number; description: string };

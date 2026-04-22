@@ -1,7 +1,7 @@
+import { SurfaceSceneBase } from '../../../../surface-scene-base';
 import { redrawVertexRecords } from '../../../helpers/vertex-records/redraw-vertex-records';
-import { VisualizationContext } from '../../../visualization-context';
 
-export function showVerticesAtStart(context: VisualizationContext): void {
+export function showVerticesAtStart(context: SurfaceSceneBase): void {
   [...context.vertices.values()].forEach((vertex) => {
     context.scene.add(vertex.mesh);
   });

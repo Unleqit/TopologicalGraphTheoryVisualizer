@@ -1,6 +1,6 @@
-import { VisualizationContext } from '../../visualization-context';
+import { SurfaceSceneBase } from '../../../surface-scene-base';
 
-export function ensureNotVisibleBeforeRedo(context: VisualizationContext, stepNumber: number): boolean {
+export function ensureNotVisibleBeforeRedo(context: SurfaceSceneBase, stepNumber: number): boolean {
   if (context.once[stepNumber]) {
     return false;
   }
