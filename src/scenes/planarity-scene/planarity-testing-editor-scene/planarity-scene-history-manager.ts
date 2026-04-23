@@ -1,4 +1,4 @@
-import { Graph } from '../../graph/types/graph';
+import { Graph } from '../../../graph/types/graph';
 
 export class PlanaritySceneHistoryManager {
   private history: Graph[] = [];

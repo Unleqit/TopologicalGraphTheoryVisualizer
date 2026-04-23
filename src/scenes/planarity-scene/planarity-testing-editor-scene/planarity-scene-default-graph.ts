@@ -1,4 +1,4 @@
-import { Graph } from '../../graph/types/graph';
+import { Graph } from '../../../graph/types/graph';
 
 export const PLANARITY_SCENE_DEFAULT_GRAPH_INPUT: number[][] = [
   [0, 1, 1, 1, 0],

@@ -58,7 +58,7 @@ export class SurfacePage {
     this.surfaceScenes[this.lastStep].startAnimation(this.startPositions[this.lastStep]);
     this.startPositions[this.lastStep] = undefined;
 
-    window.addEventListener('resize', this.resize);
+    window.addEventListener('resize', this.resize.bind(this));
     this.resize();
 
     slider_1.addEventListener('input', () => {

@@ -1,7 +1,7 @@
 // planarity-scene-ui-controller.ts
 
-import { Graph } from '../../graph/types/graph';
-import { PlanarityPageStatusMode } from '../../pages/planarity-page/planarity-page-status-mode';
+import { Graph } from '../../../graph/types/graph';
+import { PlanarityPageStatusMode } from '../../../pages/planarity-page/planarity-page-status-mode';
 
 export class PlanaritySceneUIController {
   constructor(

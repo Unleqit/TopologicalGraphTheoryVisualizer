@@ -1,7 +1,7 @@
 import { Vector3 } from 'three';
-import { Graph } from '../../graph/types/graph';
-import { GraphEdge } from '../../graph/types/graph-edge';
-import { GraphNode } from '../../graph/types/graph.node';
+import { Graph } from '../../../graph/types/graph';
+import { GraphEdge } from '../../../graph/types/graph-edge';
+import { GraphNode } from '../../../graph/types/graph.node';
 
 export class PlanaritySceneGraphBuilder {
   public addVertices(graph: Graph, ...vertices: Vector3[]): Graph {
@@ -17,8 +17,8 @@ export class PlanaritySceneGraphBuilder {
     return this.add(graph, [], newEdges);
   }
 
-  public add(graph: Graph, nodes: GraphNode[], edges: GraphEdge[]): Graph {
-    const clone = this.cloneGraph(graph);
+  public add(graph: Graph | undefined, nodes: GraphNode[], edges: GraphEdge[]): Graph {
+    const clone = graph ? this.cloneGraph(graph) : { nodes: [], edges: [] };
     return { nodes: [...clone.nodes, ...nodes], edges: [...clone.edges, ...edges] };
   }
 

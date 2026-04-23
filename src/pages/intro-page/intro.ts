@@ -71,7 +71,7 @@ export class IntroPage {
     });
     this.introScenes[this.lastStep].startAnimation(this.startPositions[this.lastStep]);
 
-    window.addEventListener('resize', this.resize);
+    window.addEventListener('resize', this.resize.bind(this));
     this.resize();
   }
 

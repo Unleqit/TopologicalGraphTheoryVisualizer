@@ -23,16 +23,16 @@ rectangle "Homeomorphism & Genus"
 }
 
 rectangle "Planarity testing and Embedding computation" {
-rectangle "tmp0"
-rectangle "tmp1"
-rectangle "tmp2"
-rectangle "tmp3"
-rectangle "Planarity testing editor"
+rectangle "Planarity condition"
+rectangle "Euler's formula"
+rectangle "Planarity testing"
+rectangle "Planarity embedding"
+rectangle "Planarity testing & embedding editor"
 
-"tmp0" -down-> "tmp1"
-"tmp1" -down-> "tmp2"
-"tmp2" -down-> "tmp3"
-"tmp3" -down-> "Planarity testing editor"
+"Planarity condition" -down-> "Euler's formula"
+"Euler's formula" -down-> "Planarity testing"
+"Planarity testing" -down-> "Planarity embedding"
+"Planarity embedding" -down-> "Planarity testing & embedding editor"
 
 }
 
@@ -45,8 +45,12 @@ rectangle "Möbius strip"
 "Torus" -down-> "Möbius strip"
 }
 
-"Introduction to Topology" -[hidden]right-> "Planarity testing and Embedding computation"
-"Planarity testing and Embedding computation" -[hidden]right-> "Embeddings on other surfaces"
+"Definition Topology" -[hidden]right-> "Planarity condition"
+"Homeomorphism & Genus" -[hidden]right-> "Planarity testing & embedding editor"
+"Planarity condition" -[hidden]right-> "Sphere"
+"Planarity condition" -[hidden]right-> "Sphere"
+"Planarity testing & embedding editor" -[hidden]up-> "Möbius strip"
 
-
+"Homeomorphism & Genus" .up.> "Planarity condition"
+"Planarity testing & embedding editor" ..up..> Sphere
 @enduml

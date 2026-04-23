@@ -5,7 +5,7 @@ import { PlanaritySceneSelectionManager } from './planarity-scene-selection-mana
 import { PlanaritySceneGraphEdge } from './types/planarity-scene-graph-edge';
 import { PlanaritySceneGraphNode } from './types/planarity-scene-graph-node';
 import { PlanaritySceneAnimationService } from './planarity-scene-animation-service';
-import { Graph } from '../../graph/types/graph';
+import { Graph } from '../../../graph/types/graph';
 import { PlanaritySceneGraphRenderer } from './graph-renderer/planarity-scene-graph-renderer';
 
 export class PlanaritySceneRenderController {

@@ -1,7 +1,7 @@
 import { Vector3, MeshBasicMaterial, SpriteMaterial, Box3, Group, Sphere } from 'three';
 import { PlanaritySceneGraphNode } from './types/planarity-scene-graph-node';
 import { PlanarityPageGraphRenderingResult } from './graph-renderer/planarity-scene-graph-rendering-result';
-import { GraphNode } from '../../graph/types/graph.node';
+import { GraphNode } from '../../../graph/types/graph.node';
 import { PlanaritySceneBase } from './planarity-scene-base';
 import { PlanaritySceneRenderController } from './planarity-scene-render-controller';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';

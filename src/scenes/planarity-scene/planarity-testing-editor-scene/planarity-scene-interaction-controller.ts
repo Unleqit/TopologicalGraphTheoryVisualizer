@@ -5,25 +5,26 @@ import { PlanaritySceneGraphNode } from './types/planarity-scene-graph-node';
 import { PlanaritySceneBase } from './planarity-scene-base';
 import { PlanaritySceneSelectionManager } from './planarity-scene-selection-manager';
 import { PlanaritySceneMouseHandler } from './planarity-scene-mouse-handler';
-import { Graph } from '../../graph/types/graph';
+import { Graph } from '../../../graph/types/graph';
 import { PlanaritySceneGraphBuilder } from './planarity-scene-graph-builder';
 import { PlanaritySceneHistoryManager } from './planarity-scene-history-manager';
 import { PlanaritySceneGeometryUpdater } from './planarity-scene-geometry-updater';
 import { PlanaritySceneUIController } from './planarity-scene-ui-controller';
-import { graphLayoutService } from './layout/index';
+import { GraphLayoutService } from './layout/graph-layout-service';
 
 export class PlanaritySceneInteractionController {
-  private mouseHandler: PlanaritySceneMouseHandler;
-  private graphBuilder: PlanaritySceneGraphBuilder;
-  private clone: Graph | undefined;
-  private geometryUpdater: PlanaritySceneGeometryUpdater;
+  protected mouseHandler: PlanaritySceneMouseHandler;
+  protected graphBuilder: PlanaritySceneGraphBuilder;
+  protected clone: Graph | undefined;
+  protected geometryUpdater: PlanaritySceneGeometryUpdater;
+  protected graphLayoutService: GraphLayoutService;
 
   constructor(
-    private readonly sceneBase: PlanaritySceneBase,
-    private readonly selectionManager: PlanaritySceneSelectionManager,
-    private readonly renderController: PlanaritySceneRenderController,
-    private readonly historyManager: PlanaritySceneHistoryManager,
-    private readonly uiController: PlanaritySceneUIController
+    protected readonly sceneBase: PlanaritySceneBase,
+    protected readonly selectionManager: PlanaritySceneSelectionManager,
+    protected readonly renderController: PlanaritySceneRenderController,
+    protected readonly historyManager: PlanaritySceneHistoryManager,
+    protected readonly uiController: PlanaritySceneUIController
   ) {
     this.mouseHandler = new PlanaritySceneMouseHandler(
       this.sceneBase,
@@ -35,9 +36,10 @@ export class PlanaritySceneInteractionController {
     );
     this.graphBuilder = new PlanaritySceneGraphBuilder();
     this.geometryUpdater = new PlanaritySceneGeometryUpdater(this.sceneBase);
+    this.graphLayoutService = new GraphLayoutService();
   }
 
-  private handleCtrlClick(mouseX: number, mouseY: number): void {
+  protected handleCtrlClick(mouseX: number, mouseY: number): void {
     const vertexSelection = this.selectionManager.getVertexSelection();
     const [newVertexSelection, newEdgeSelection] = [this.checkIfAnyVertexSelected(mouseX, mouseY), this.checkIfAnyEdgeSelected(mouseX, mouseY)];
 
@@ -53,7 +55,7 @@ export class PlanaritySceneInteractionController {
     }
   }
 
-  private handleSelection(x: number, y: number): boolean {
+  protected handleSelection(x: number, y: number): boolean {
     this.clone = this.graphBuilder.cloneGraph(this.renderController.getCurrentRendering().graph);
     const newVertexSelection = this.checkIfAnyVertexSelected(x, y);
     const newEdgeSelection = this.checkIfAnyEdgeSelected(x, y);
@@ -69,14 +71,14 @@ export class PlanaritySceneInteractionController {
     return newVertexSelection !== undefined || newEdgeSelection !== undefined;
   }
 
-  private createNewEdge(vertexPair: [PlanaritySceneGraphNode, PlanaritySceneGraphNode]): void {
+  protected createNewEdge(vertexPair: [PlanaritySceneGraphNode, PlanaritySceneGraphNode]): void {
     const [v0, v1] = [vertexPair[0].id, vertexPair[1].id];
     const newGraph = this.graphBuilder.addEdges(this.renderController.getCurrentRendering().graph, [v0, v1]);
     this.renderGraphToUI([newGraph], false, 0, false, false, 0, true);
     return;
   }
 
-  private releaseVertex(): void {
+  protected releaseVertex(): void {
     if (this.clone) {
       this.historyManager.commitToHistory(this.clone);
       const renderingResult = this.renderController.render(this.clone);
@@ -84,7 +86,7 @@ export class PlanaritySceneInteractionController {
     }
   }
 
-  private dragVertex(mouseX: number, mouseY: number): void {
+  protected dragVertex(mouseX: number, mouseY: number): void {
     const vertex = this.selectionManager.getVertexSelection();
     const newPosWorld = this.sceneBase.getIntersectionPointInPlane(new Vector2(mouseX, mouseY), this.renderController.getCurrentRendering().graphGroup);
 
@@ -96,7 +98,7 @@ export class PlanaritySceneInteractionController {
     this.geometryUpdater.updateVertexPosition(vertex, newPosLocal, this.clone, this.renderController.getCurrentRendering());
   }
 
-  private createNewVertexInGraph(x: number, y: number): void {
+  protected createNewVertexInGraph(x: number, y: number): void {
     const vertex = this.sceneBase.getIntersectionPointInPlane(new Vector2(x, y), this.renderController.getCurrentRendering().graphGroup);
     if (!vertex) {
       return;
@@ -107,7 +109,7 @@ export class PlanaritySceneInteractionController {
     this.renderGraphToUI([newGraph], false, 0, false, true, 300, true);
   }
 
-  private handleDelete(): void {
+  protected handleDelete(): void {
     const last = this.historyManager.getLast();
     let newGraph: Graph;
     const [vertexSelection, edgeSelection] = this.selectionManager.getSelection();
@@ -143,7 +145,7 @@ export class PlanaritySceneInteractionController {
     this.uiController.updateGraphRepresentation(lastGraph);
 
     if (lastGraph.nodes.length > 0) {
-      const embeddingResult = await graphLayoutService.compute(
+      const embeddingResult = await this.graphLayoutService.compute(
         lastGraph.edges.map((edge): [number, number] => edge.value),
         lastGraph.nodes.length
       );

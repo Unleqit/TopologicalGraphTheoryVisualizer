@@ -1,9 +1,9 @@
 import { Vector3, Mesh, CircleGeometry, MeshBasicMaterial, Line, BufferGeometry, BufferAttribute, LineBasicMaterial, Box3, Sphere, Group, Sprite } from 'three';
-import { GraphEdge } from '../../../graph/types/graph-edge';
-import { GraphNode } from '../../../graph/types/graph.node';
+import { GraphEdge } from '../../../../graph/types/graph-edge';
+import { GraphNode } from '../../../../graph/types/graph.node';
 import { PlanarityPageGraphRenderingResult } from './planarity-scene-graph-rendering-result';
-import { createLabelSprite } from '../../utils';
-import { Graph } from '../../../graph/types/graph';
+import { createLabelSprite } from '../../../utils';
+import { Graph } from '../../../../graph/types/graph';
 import { PlanaritySceneGraphNode } from '../types/planarity-scene-graph-node';
 import { PlanaritySceneGraphEdge } from '../types/planarity-scene-graph-edge';
 

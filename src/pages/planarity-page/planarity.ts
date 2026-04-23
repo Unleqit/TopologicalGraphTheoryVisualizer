@@ -1,4 +1,4 @@
-import { PlanarityScene } from '../../scenes/planarity-scene/planarity-scene';
+import { PlanarityScene } from '../../scenes/planarity-scene/planarity-testing-editor-scene/planarity-scene';
 import { PlanarityPageInputMode } from './planarity-page-input-mode';
 import { validateMatrix } from './input-handling/planarity-page-input-validator';
 import { PlanarityPageStatusMode } from './planarity-page-status-mode';
@@ -8,11 +8,16 @@ import { PlanarityPageInputParser } from './input-handling/planarity-page-input-
 import { PlanarityPageInputMatrix } from './input-handling/planarity-page-input-matrix';
 import { GraphEmbeddingPythonResult } from '../../graph/types/graph-embedding-python-result';
 import { Stepper } from '../../ui/setup-stepper';
+import { PlanaritySceneBase } from '../../scenes/planarity-scene/planarity-testing-editor-scene/planarity-scene-base';
+import { Vector3 } from 'three';
+import { PlanarityConditionScene } from '../../scenes/planarity-scene/planarity-condition-scene';
+import { PlanarityTestingScene } from '../../scenes/planarity-scene/planarity-testing-scene';
+import { PlanarityEulersFormulaScene } from '../../scenes/planarity-scene/planarity-eulers-formula-scene';
+import { PlanarityEmbeddingScene } from '../../scenes/planarity-scene/planarity-embedding-scene';
 
 export class PlanarityPage {
   private stepper: Stepper;
   private canvas: HTMLCanvasElement;
-  private planarityScene: PlanarityScene;
   private currentMode: PlanarityPageInputMode;
   private graphMatrixInput: HTMLTextAreaElement;
   private graphListInput: HTMLTextAreaElement;
@@ -24,6 +29,11 @@ export class PlanarityPage {
   private currentGraph: Graph | undefined;
   private currentEmbeddingResult: GraphEmbeddingPythonResult | undefined;
   private graphInputCard: HTMLElement;
+  private graphActions: HTMLElement;
+
+  private lastStep: number = -1;
+  private planarityScenes: PlanaritySceneBase[];
+  private lastScene: PlanarityScene;
 
   constructor() {
     this.stepper = new Stepper();
@@ -35,37 +45,82 @@ export class PlanarityPage {
     this.loadGraphBtn = document.getElementById('loadGraphBtn')! as HTMLButtonElement;
     this.statusEl = document.getElementById('graphStatus')!;
     this.graphInputCard = document.getElementById('graphInputCard') as HTMLElement;
+    this.graphActions = document.getElementById('graphActions') as HTMLElement;
 
     this.graphMatrixInput.addEventListener('input', this.checkPlanarityOfUserInputGraph.bind(this));
     this.graphListInput.addEventListener('input', this.checkPlanarityOfUserInputGraph.bind(this));
     this.loadGraphBtn.addEventListener('click', this.computePlanarDrawingForInputGraph.bind(this));
 
+    this.planarityScenes = [
+      new PlanarityConditionScene(this.canvas),
+      new PlanarityEulersFormulaScene(this.canvas),
+      new PlanarityTestingScene(this.canvas),
+      new PlanarityEmbeddingScene(this.canvas),
+      new PlanarityScene(this.canvas, this.showStatus.bind(this), this.updateGraphRepresentation.bind(this)),
+    ];
+    this.lastScene = this.planarityScenes[this.planarityScenes.length - 1] as PlanarityScene;
+
     this.inputConverter = new PlanarityPageInputConverter();
     this.inputParser = new PlanarityPageInputParser();
-    this.planarityScene = new PlanarityScene(this.canvas, this.showStatus.bind(this), this.updateGraphRepresentation.bind(this));
-    this.clearBtn.addEventListener('click', this.planarityScene.clear.bind(this.planarityScene));
+    this.clearBtn.addEventListener('click', this.lastScene.clear.bind(this.lastScene));
 
     const tabs = document.querySelectorAll<HTMLButtonElement>('.tabBtn');
     const modes = document.querySelectorAll<HTMLElement>('.graphMode');
     this.setupTabs(tabs, modes);
 
-    addEventListener('resize', this.resize.bind(this));
-    this.resize();
+    this.lastStep = this.stepper.getStep();
+    this.stepper.addEventListener('stepchange', (e) => {
+      this.handleStep((e as CustomEvent<number>).detail);
+    });
+    this.handleStep(0);
 
-    requestAnimationFrame(this.tick.bind(this));
+    window.addEventListener('resize', this.resize.bind(this));
+    this.resize();
 
     window.addEventListener('keydown', (e) => {
       const isCmdOrCtrl = e.ctrlKey || e.metaKey;
       if (isCmdOrCtrl && e.key === 'z') {
-        this.planarityScene.undo();
+        this.lastScene.undo();
       }
       if ((isCmdOrCtrl && e.key === 'y') || (isCmdOrCtrl && e.key === 'z' && e.shiftKey)) {
-        this.planarityScene.redo();
+        this.lastScene.redo();
       }
     });
 
     //change this if default graph is not planar
     this.showStatus('Checking planarity... ✓', 'okay');
+
+    const infoBtn = document.getElementById('infoBtn')!;
+    infoBtn.addEventListener('click', (e: MouseEvent) => {
+      const modal = document.getElementById('infoModalEditor')!;
+      const modal2 = document.getElementById('infoModalCondition')!;
+      if (this.lastStep === 4) {
+        modal.classList.toggle('active');
+      } else if (this.lastStep === 0) {
+        modal2.classList.toggle('active');
+      }
+    });
+  }
+
+  private handleStep(step: number): void {
+    this.planarityScenes[this.lastStep].stopAnimation();
+    this.graphInputCard.style.display = step === 4 ? 'flex' : 'none';
+    this.planarityScenes[step].startAnimation();
+    this.lastStep = step;
+
+    switch (step) {
+      case 4:
+        this.graphActions.style.display = 'flex';
+        this.graphInputCard.style.display = 'flex';
+        break;
+      case 0:
+        this.graphActions.style.display = 'flex';
+        break;
+      default:
+        this.graphInputCard.style.display = 'none';
+        this.graphActions.style.display = 'none';
+        break;
+    }
   }
 
   public async checkPlanarityOfUserInputGraph(): Promise<void> {
@@ -89,7 +144,7 @@ export class PlanarityPage {
 
       const graph = this.inputConverter.inputMatrixToGraph(inputMatrix);
       this.currentGraph = graph;
-      this.currentEmbeddingResult = await this.planarityScene.checkPlanarityOfGraph(graph);
+      this.currentEmbeddingResult = await this.lastScene.checkPlanarityOfGraph(graph);
     } catch (error: any) {
       this.showStatus(error.message, 'error');
     }
@@ -97,35 +152,13 @@ export class PlanarityPage {
 
   public async computePlanarDrawingForInputGraph(): Promise<void> {
     if (this.currentGraph && this.currentEmbeddingResult && this.currentEmbeddingResult.planar) {
-      this.planarityScene.loadGraph(this.currentEmbeddingResult, this.currentGraph, true, 500);
+      this.lastScene.loadGraph(this.currentEmbeddingResult, this.currentGraph, true, 500);
     }
   }
 
   private resize(): void {
     const area = document.querySelector('.canvasArea')!;
-    this.planarityScene.resize(area.clientWidth, area.clientHeight);
-  }
-
-  private lastStep: number = -1;
-
-  private tick(): void {
-    const cur = this.stepper.getStep();
-    //last panel needs to be always updated due to its interactive nature instead of just on step changes
-    if (cur !== this.lastStep || cur === 4) {
-      switch (cur) {
-        case 4:
-          this.graphInputCard.style.display = 'flex';
-          this.canvas.style.display = 'flex';
-          this.planarityScene.update();
-          break;
-        default:
-          this.graphInputCard.style.display = 'none';
-          this.canvas.style.display = 'none';
-          break;
-      }
-      this.lastStep = cur;
-    }
-    requestAnimationFrame(this.tick.bind(this));
+    this.lastScene.resize(area.clientWidth, area.clientHeight);
   }
 
   private showStatus(message: string, type: PlanarityPageStatusMode): void {

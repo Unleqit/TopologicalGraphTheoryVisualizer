@@ -22,6 +22,7 @@ export abstract class SceneBase implements IScene {
     this.raycaster = new Raycaster();
     this.raycaster.params.Line.threshold = 0.3;
     addDefaultLights(this.scene);
+    this.scene.visible = false;
   }
   getScene(): Scene {
     return this.scene;

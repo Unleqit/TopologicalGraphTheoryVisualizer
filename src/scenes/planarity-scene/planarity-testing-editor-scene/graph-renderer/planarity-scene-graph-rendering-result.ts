@@ -1,5 +1,5 @@
 import { Group } from 'three/src/Three.js';
-import { Graph } from '../../../graph/types/graph';
+import { Graph } from '../../../../graph/types/graph';
 import { PlanaritySceneGraphEdge } from '../types/planarity-scene-graph-edge';
 import { PlanaritySceneGraphNode } from '../types/planarity-scene-graph-node';
 

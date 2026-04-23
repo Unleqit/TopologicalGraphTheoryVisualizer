@@ -197,7 +197,7 @@
                     highlight2.scrollLeft = textarea2.scrollLeft;
                   });
                 </script>
-                <div class="graphActions">
+                <div id="graphActions" class="graphActions">
                   <button id="loadGraphBtn" class="btn primary" type="button">▶ Draw planar</button>
                   <span id="graphStatus" class="statusText"></span>
                 </div>
@@ -222,7 +222,7 @@
               <p></p>
             </div>
             <div data-step="4" style="display: none">
-              <h3>Planarity testing & embedding generation editor</h3>
+              <h3>Planarity testing & embedding editor</h3>
               <p>Enter graphs in matrix- or adjacency list form, or directly manipulate the graph in the right panel. See the info panel for key combinations.</p>
             </div>
           </div>
@@ -239,35 +239,35 @@
                 <circle cx="12" cy="7" r="1.2" fill="currentColor" />
               </svg>
             </button>
-            <div id="infoModal" class="canvasInfoModal">
+            <div id="infoModalEditor" class="canvasInfoModal">
               <div class="canvasInfoContent">
                 <h3>Interacting with this visual</h3>
                 <table class="controlsTable">
-                  <tr>
+                  <tr id="controlsTableUndo"">
                     <td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td>
                     <td>Undo last action</td>
                   </tr>
-                  <tr>
+                  <tr id="controlsTableRedo">
                     <td><kbd>Ctrl</kbd> + <kbd>Y</kbd></td>
                     <td>Redo last action</td>
                   </tr>
-                  <tr>
+                  <tr id="controlsTableSelect">
                     <td><kbd>Left Click</kbd></td>
                     <td>Select vertices/edges</td>
                   </tr>
-                  <tr>
+                  <tr id="controlsTableCreate">
                     <td><kbd>Ctrl</kbd> + <kbd>Left Click</kbd></td>
                     <td>Create new vertex/new edge between two vertices</td>
                   </tr>
-                  <tr>
+                  <tr id="controlsTableDelete">
                     <td><kbd>Right Click</kbd></td>
                     <td>Delete vertices/edges</td>
                   </tr>
-                  <tr>
+                  <tr id="controlsTableMove">
                     <td><kbd>Mouse Move</kbd></td>
                     <td>Drags currently selected vertex around</td>
                   </tr>
-                  <tr>
+                  <tr id="controlsTableScroll">
                     <td><kbd>Scroll</kbd></td>
                     <td>Zoom in / out</td>
                   </tr>
@@ -275,14 +275,26 @@
               </div>
             </div>
 
-            <script>
-              const infoBtn = document.getElementById('infoBtn');
-              const modal = document.getElementById('infoModal');
+            <div id="infoModalCondition" class="canvasInfoModal">
+              <div class="canvasInfoContent">
+                <h3>Interacting with this visual</h3>
+                <table class="controlsTable">
+                  <tr id="controlsTableSelect">
+                    <td><kbd>Left Click</kbd></td>
+                    <td>Select vertices/edges</td>
+                  </tr>
+                  <tr id="controlsTableMove">
+                    <td><kbd>Mouse Move</kbd></td>
+                    <td>Drags currently selected vertex around</td>
+                  </tr>
+                  <tr id="controlsTableScroll">
+                    <td><kbd>Scroll</kbd></td>
+                    <td>Zoom in / out</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
 
-              infoBtn.onclick = () => {
-                modal.classList.toggle('active');
-              };
-            </script>
           </div>
           <div class="canvasArea">
             <canvas id="viz"></canvas>

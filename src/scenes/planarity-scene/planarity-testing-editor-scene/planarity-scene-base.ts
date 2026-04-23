@@ -1,5 +1,5 @@
 import { PerspectiveCamera, WebGLRenderer, Vector3, Vector2, Group, Intersection, Object3D, Object3DEventMap, Plane } from 'three';
-import { SceneBase } from '../scene-base';
+import { SceneBase } from '../../scene-base';
 
 export class PlanaritySceneBase extends SceneBase {
   constructor(canvasElement: HTMLCanvasElement) {
@@ -33,7 +33,7 @@ export class PlanaritySceneBase extends SceneBase {
     this.camera.updateProjectionMatrix();
   }
 
-  public updateScene(): void {
+  public override update(): void {
     this.controls.update();
     this.webglRenderer.render(this.scene, this.camera);
   }

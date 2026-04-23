@@ -1,7 +1,7 @@
-import { combinatorialEmbeddingToPosStepWise } from '../../algorithms/chrobak-payne/chrobak-payne-step-wise';
-import { PlanarityPageStatusMode } from '../../pages/planarity-page/planarity-page-status-mode';
+import { combinatorialEmbeddingToPosStepWise } from '../../../algorithms/chrobak-payne/chrobak-payne-step-wise';
+import { PlanarityPageStatusMode } from '../../../pages/planarity-page/planarity-page-status-mode';
 import { graphLayoutService } from './layout/index';
-import { Graph } from '../../graph/types/graph';
+import { Graph } from '../../../graph/types/graph';
 import { PLANARITY_SCENE_DEFAULT_GRAPH_RESULT } from './planarity-scene-default-graph';
 import { PlanaritySceneHistoryManager } from './planarity-scene-history-manager';
 import { PlanaritySceneSelectionManager } from './planarity-scene-selection-manager';
@@ -9,10 +9,9 @@ import { PlanaritySceneBase } from './planarity-scene-base';
 import { PlanaritySceneRenderController } from './planarity-scene-render-controller';
 import { PlanaritySceneInteractionController } from './planarity-scene-interaction-controller';
 import { PlanaritySceneUIController } from './planarity-scene-ui-controller';
-import { GraphEmbeddingPythonResult } from '../../graph/types/graph-embedding-python-result';
+import { GraphEmbeddingPythonResult } from '../../../graph/types/graph-embedding-python-result';
 
-export class PlanarityScene {
-  private sceneBase: PlanaritySceneBase;
+export class PlanarityScene extends PlanaritySceneBase {
   private selectionManager: PlanaritySceneSelectionManager;
   private renderController: PlanaritySceneRenderController;
   private interactionController: PlanaritySceneInteractionController;
@@ -20,12 +19,12 @@ export class PlanarityScene {
   private uiController: PlanaritySceneUIController;
 
   constructor(canvasElement: HTMLCanvasElement, updateUIStatus: (text: string, mode: PlanarityPageStatusMode) => void, updateUIGraphRepresentation: (graph: Graph) => void) {
-    this.sceneBase = new PlanaritySceneBase(canvasElement);
+    super(canvasElement);
     this.selectionManager = new PlanaritySceneSelectionManager();
-    this.renderController = new PlanaritySceneRenderController(this.sceneBase, this.selectionManager);
+    this.renderController = new PlanaritySceneRenderController(this, this.selectionManager);
     this.historyManager = new PlanaritySceneHistoryManager(this._undoAction.bind(this), this._redoAction.bind(this));
     this.uiController = new PlanaritySceneUIController(updateUIStatus, updateUIGraphRepresentation);
-    this.interactionController = new PlanaritySceneInteractionController(this.sceneBase, this.selectionManager, this.renderController, this.historyManager, this.uiController);
+    this.interactionController = new PlanaritySceneInteractionController(this, this.selectionManager, this.renderController, this.historyManager, this.uiController);
 
     this.interactionController.renderGraphToUI([PLANARITY_SCENE_DEFAULT_GRAPH_RESULT], false, 250, true, false, 0, true);
   }
@@ -53,14 +52,6 @@ export class PlanarityScene {
 
   public redo(): void {
     this.historyManager.redo();
-  }
-
-  public resize(w: number, h: number): void {
-    return this.sceneBase.resize(w, h);
-  }
-
-  public update(): void {
-    this.sceneBase.updateScene();
   }
 
   public getUIController(): PlanaritySceneUIController {

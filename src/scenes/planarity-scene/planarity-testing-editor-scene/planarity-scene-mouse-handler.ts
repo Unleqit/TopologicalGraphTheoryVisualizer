@@ -32,7 +32,7 @@ export class PlanaritySceneMouseHandler {
   private event!: MouseEvent;
 
   private handleClick(event: MouseEvent): void {
-    if (event.button !== 0) {
+    if (event.button !== 0 || !this.sceneBase.getScene().visible) {
       return;
     }
 
@@ -47,6 +47,10 @@ export class PlanaritySceneMouseHandler {
   }
 
   private handleRightClick(event: MouseEvent): void {
+    if (!this.sceneBase.getScene().visible) {
+      return;
+    }
+
     event.preventDefault();
     const rect = this.canvas.getBoundingClientRect();
     this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -56,7 +60,7 @@ export class PlanaritySceneMouseHandler {
   }
 
   private handleMouseMove(event: MouseEvent): void {
-    if (!this.isSelected) {
+    if (!this.isSelected || !this.sceneBase.getScene().visible) {
       return;
     }
 
@@ -68,6 +72,9 @@ export class PlanaritySceneMouseHandler {
   }
 
   private handleMouseUp(event: MouseEvent): void {
+    if (!this.sceneBase.getScene().visible) {
+      return;
+    }
     if (this.isDragging) {
       const rect = this.canvas.getBoundingClientRect();
       this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -81,7 +88,7 @@ export class PlanaritySceneMouseHandler {
   private handleMouseDown(event: MouseEvent): void {
     this.event = event;
 
-    if (event.button !== 0 || event.ctrlKey) {
+    if (event.button !== 0 || event.ctrlKey || !this.sceneBase.getScene().visible) {
       return;
     }
 

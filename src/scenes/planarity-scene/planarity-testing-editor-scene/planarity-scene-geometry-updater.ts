@@ -1,5 +1,5 @@
 import { Vector3 } from 'three';
-import { Graph } from '../../graph/types/graph';
+import { Graph } from '../../../graph/types/graph';
 import { PlanarityPageGraphRenderingResult } from './graph-renderer/planarity-scene-graph-rendering-result';
 import { PlanaritySceneBase } from './planarity-scene-base';
 import { PlanaritySceneGraphNode } from './types/planarity-scene-graph-node';
