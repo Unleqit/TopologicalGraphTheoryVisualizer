@@ -1,0 +1,86 @@
+@startuml
+
+scale max 4096 width
+scale max 4096 height
+scale 2
+
+
+skinparam backgroundColor transparent
+skinparam shadowing false
+
+skinparam rectangle {
+}
+
+rectangle "Common" #line.dashed {
+  abstract class SceneBase
+}
+
+
+
+
+
+rectangle "Planarity testing & embedding" {
+abstract class PlanaritySceneBase
+class PlanarityEditorScene
+class PlanarityConditionScene
+class PlanarityEmbeddingScene
+class PlanarityEulersFormulaScene
+class PlanarityTestingScene
+
+PlanarityConditionScene -[hidden]down-> PlanarityEulersFormulaScene
+PlanarityEulersFormulaScene -[hidden]down-> PlanarityTestingScene
+PlanarityTestingScene -[hidden]down-> PlanarityEmbeddingScene
+PlanarityEmbeddingScene -[hidden]down-> PlanarityEditorScene
+
+PlanaritySceneBase -down->  PlanarityConditionScene
+PlanaritySceneBase -->  PlanarityEditorScene
+PlanaritySceneBase -->  PlanarityEmbeddingScene
+PlanaritySceneBase -->  PlanarityEulersFormulaScene
+PlanaritySceneBase ->  PlanarityTestingScene
+}
+
+rectangle "Introduction to topology" {
+abstract class IntroSceneBase
+class IntroCylinderArrowScene
+class IntroMöbiusArrowScene
+class IntroMorphSphereScene
+class IntroSphereHandleScene
+
+IntroSceneBase --> IntroCylinderArrowScene
+IntroSceneBase --> IntroMöbiusArrowScene
+IntroSceneBase --> IntroMorphSphereScene
+IntroSceneBase -> IntroSphereHandleScene
+
+IntroMorphSphereScene -[hidden]down-> IntroCylinderArrowScene
+IntroCylinderArrowScene -[hidden]down-> IntroMöbiusArrowScene
+IntroMöbiusArrowScene -[hidden]down-> IntroSphereHandleScene
+
+SceneBase -left-> IntroSceneBase
+}
+
+rectangle "Embeddings on other surfaces" {
+abstract class SurfaceSceneBase
+class SurfaceSceneSphere
+class SurfaceSceneTorus
+class SurfaceSceneMöbius
+
+SurfaceSceneBase --> SurfaceSceneSphere
+SurfaceSceneBase --> SurfaceSceneTorus
+SurfaceSceneBase --> SurfaceSceneMöbius
+
+SurfaceSceneSphere -[hidden]down-> SurfaceSceneTorus
+SurfaceSceneTorus -[hidden]down-> SurfaceSceneMöbius
+
+SceneBase -> SurfaceSceneBase
+}
+
+IntroSceneBase -[hidden]down-> PlanaritySceneBase
+PlanaritySceneBase -[hidden]up-> SurfaceSceneBase
+SceneBase -down-> PlanaritySceneBase
+
+PlanaritySceneBase -[hidden]up-> SurfaceSceneBase
+PlanaritySceneBase -[hidden]up-> SurfaceSceneBase
+PlanaritySceneBase -[hidden]up-> SurfaceSceneBase
+
+
+@enduml

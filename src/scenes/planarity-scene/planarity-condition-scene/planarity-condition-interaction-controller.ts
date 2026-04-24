@@ -1,13 +1,14 @@
 import { Color, MeshBasicMaterial } from 'three';
 import { Graph } from '../../../graph/types/graph';
-import { PlanarityPageGraphRenderingResult } from './graph-renderer/planarity-scene-graph-rendering-result';
-import { PlanaritySceneBase } from './planarity-scene-base';
-import { PlanaritySceneHistoryManager } from './planarity-scene-history-manager';
-import { PlanaritySceneInteractionController } from './planarity-scene-interaction-controller';
-import { PlanaritySceneRenderController } from './planarity-scene-render-controller';
-import { PlanaritySceneSelectionManager } from './planarity-scene-selection-manager';
-import { PlanaritySceneUIController } from './planarity-scene-ui-controller';
-import { PlanaritySceneMouseHandler } from './planarity-scene-mouse-handler';
+import { PlanarityPageGraphRenderingResult } from '../planarity-testing-editor-scene/graph-renderer/planarity-scene-graph-rendering-result';
+import { PlanaritySceneBase } from '../planarity-testing-editor-scene/planarity-scene-base';
+import { PlanaritySceneHistoryManager } from '../planarity-testing-editor-scene/planarity-scene-history-manager';
+import { PlanaritySceneInteractionController } from '../planarity-testing-editor-scene/planarity-scene-interaction-controller';
+import { PlanaritySceneRenderController } from '../planarity-testing-editor-scene/planarity-scene-render-controller';
+import { PlanaritySceneSelectionManager } from '../planarity-testing-editor-scene/planarity-scene-selection-manager';
+import { PlanaritySceneUIController } from '../planarity-testing-editor-scene/planarity-scene-ui-controller';
+import { PlanaritySceneMouseHandler } from '../planarity-testing-editor-scene/planarity-scene-mouse-handler';
+import { PLANARITY_CONDITION_K5_VERTEX_INDICES } from './planarity-condition-k5-vertex-indices';
 
 export class PlanarityConditionInteractionController extends PlanaritySceneInteractionController {
   constructor(
@@ -56,10 +57,9 @@ export class PlanarityConditionInteractionController extends PlanaritySceneInter
   }
 
   protected changeColor(renderingResults: PlanarityPageGraphRenderingResult[]): void {
-    const ids: string[] = ['0,1', '0,2', '0,3', '0,4', '1,2', '1,3', '1,4', '2,3', '2,4', '3,4'];
     renderingResults.forEach((renderingResult) =>
       renderingResult.edgeLines.forEach((edgeLine) => {
-        if (ids.includes(edgeLine.id)) {
+        if (PLANARITY_CONDITION_K5_VERTEX_INDICES.includes(edgeLine.id)) {
           (edgeLine.line.material as MeshBasicMaterial).color = new Color(255, 0, 0);
         }
       })

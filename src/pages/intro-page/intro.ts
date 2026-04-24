@@ -86,31 +86,3 @@ export class IntroPage {
   }
 }
 new IntroPage();
-/*
-
-function tick(): void {
-  const cur = stepper.getStep();
-  if (cur !== lastStep) {
-    lastStep = cur;
-
-    introScenes.forEach((introScene, i) => {
-      introScene.setVisible(cur === i);
-    });
-
-    controls.object.position.copy(startCameraPositions[cur]);
-  }
-
-  controls.update();
-
-  introScenes.forEach((introScene, i) => {
-    if (cur === i && introScene.hasAutomaticAnimation()) {
-      introScene.update();
-    }
-  });
-  renderer.render(introScenes[cur].getScene(), camera);
-
-  requestAnimationFrame(tick);
-}
-
-requestAnimationFrame(tick);
-*/

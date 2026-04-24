@@ -10,7 +10,7 @@ import { GraphEmbeddingPythonResult } from '../../graph/types/graph-embedding-py
 import { Stepper } from '../../ui/setup-stepper';
 import { PlanaritySceneBase } from '../../scenes/planarity-scene/planarity-testing-editor-scene/planarity-scene-base';
 import { Vector3 } from 'three';
-import { PlanarityConditionScene } from '../../scenes/planarity-scene/planarity-condition-scene';
+import { PlanarityConditionScene } from '../../scenes/planarity-scene/planarity-condition-scene/planarity-condition-scene';
 import { PlanarityTestingScene } from '../../scenes/planarity-scene/planarity-testing-scene';
 import { PlanarityEulersFormulaScene } from '../../scenes/planarity-scene/planarity-eulers-formula-scene';
 import { PlanarityEmbeddingScene } from '../../scenes/planarity-scene/planarity-embedding-scene';
