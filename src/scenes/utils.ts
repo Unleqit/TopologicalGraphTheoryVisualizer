@@ -6,7 +6,7 @@ import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { Sprite, CanvasTexture, SpriteMaterial, Material, Mesh, SphereGeometry, Line, Vector3, MathUtils } from 'three';
 
-export function createLabelSprite(text: string): Sprite {
+export function createLabelSprite(text: string, colorString: string = 'rgba(0,0,0,0.6)'): Sprite {
   const canvas = document.createElement('canvas');
   canvas.width = 128;
   canvas.height = 128;
@@ -14,7 +14,7 @@ export function createLabelSprite(text: string): Sprite {
   const ctx = canvas.getContext('2d')!;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = 'rgba(0,0,0,0.6)';
+  ctx.fillStyle = colorString;
   ctx.beginPath();
   ctx.arc(64, 64, 60, 0, Math.PI * 2);
   ctx.fill();
