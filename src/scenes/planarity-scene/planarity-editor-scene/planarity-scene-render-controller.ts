@@ -92,9 +92,6 @@ export class PlanaritySceneRenderController {
       return;
     }
 
-    //todo: idk what to do about this, disable it for now?
-    stepwise = false;
-
     for (let i = stepwise ? 0 : renderingResults.length - 1; i < renderingResults.length; ++i) {
       const rendering = renderingResults[i];
 
@@ -102,7 +99,7 @@ export class PlanaritySceneRenderController {
       this.edgeLineMap = new Map(rendering.edgeLines.map((n) => [n.line, n]));
 
       if (animate) {
-        this.animationService.animateTransition(this.currentRendering, rendering, animationDurationMs, recenter);
+        await this.animationService.animateTransition(this.currentRendering, rendering, animationDurationMs, recenter);
       } else {
         this.replaceRendering(rendering, recenter);
       }

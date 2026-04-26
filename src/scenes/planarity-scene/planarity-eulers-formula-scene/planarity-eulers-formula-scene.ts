@@ -1,8 +1,8 @@
 import { CanvasTexture, Color, MeshBasicMaterial, Sprite, SpriteMaterial, Vector3 } from 'three';
 import { Graph } from '../../../graph/types/graph';
-import { PlanaritySceneBase } from '../planarity-testing-editor-scene/planarity-scene-base';
-import { PlanaritySceneRenderController } from '../planarity-testing-editor-scene/planarity-scene-render-controller';
-import { PlanaritySceneSelectionManager } from '../planarity-testing-editor-scene/planarity-scene-selection-manager';
+import { PlanaritySceneBase } from '../planarity-editor-scene/planarity-scene-base';
+import { PlanaritySceneRenderController } from '../planarity-editor-scene/planarity-scene-render-controller';
+import { PlanaritySceneSelectionManager } from '../planarity-editor-scene/planarity-scene-selection-manager';
 import { createLabelSprite } from '../../utils';
 
 export class PlanarityEulersFormulaScene extends PlanaritySceneBase {

@@ -1,11 +1,11 @@
 import { Color, MeshBasicMaterial } from 'three';
 import { Graph } from '../../../graph/types/graph';
-import { PlanaritySceneBase } from '../planarity-testing-editor-scene/planarity-scene-base';
-import { PlanaritySceneHistoryManager } from '../planarity-testing-editor-scene/planarity-scene-history-manager';
-import { PlanaritySceneRenderController } from '../planarity-testing-editor-scene/planarity-scene-render-controller';
-import { PlanaritySceneSelectionManager } from '../planarity-testing-editor-scene/planarity-scene-selection-manager';
-import { PlanaritySceneUIController } from '../planarity-testing-editor-scene/planarity-scene-ui-controller';
-import { GraphLayoutService } from '../planarity-testing-editor-scene/layout/graph-layout-service';
+import { PlanaritySceneBase } from '../planarity-editor-scene/planarity-scene-base';
+import { PlanaritySceneHistoryManager } from '../planarity-editor-scene/planarity-scene-history-manager';
+import { PlanaritySceneRenderController } from '../planarity-editor-scene/planarity-scene-render-controller';
+import { PlanaritySceneSelectionManager } from '../planarity-editor-scene/planarity-scene-selection-manager';
+import { PlanaritySceneUIController } from '../planarity-editor-scene/planarity-scene-ui-controller';
+import { GraphLayoutService } from '../planarity-editor-scene/layout/graph-layout-service';
 import { PlanarityConditionInteractionController } from './planarity-condition-interaction-controller';
 import { PLANARITY_CONDITION_K5_VERTEX_INDICES } from './planarity-condition-k5-vertex-indices';
 
@@ -15,7 +15,6 @@ export class PlanarityConditionScene extends PlanaritySceneBase {
   private interactionController: PlanarityConditionInteractionController;
   private historyManager: PlanaritySceneHistoryManager;
   private uiController: PlanaritySceneUIController;
-  private graphLayoutService: GraphLayoutService;
 
   constructor(canvasElement: HTMLCanvasElement) {
     super(canvasElement);
@@ -29,7 +28,6 @@ export class PlanarityConditionScene extends PlanaritySceneBase {
       () => {},
       () => {}
     );
-    this.graphLayoutService = new GraphLayoutService();
     this.interactionController = new PlanarityConditionInteractionController(this, this.selectionManager, this.renderController, this.historyManager, this.uiController);
 
     const graph = PLANARITY_CONDITION_SCENE_GRAPH;
@@ -41,25 +39,8 @@ export class PlanarityConditionScene extends PlanaritySceneBase {
     });
 
     this.renderController.applyRenderingResult(renderingResult, false, 250, true, false);
-    this.check(graph);
+    this.uiController.updateStatus('Checking planarity... ✗', 'error');
     this.historyManager.commitToHistory(graph);
-  }
-
-  private async check(graph: Graph): Promise<void> {
-    if (graph.nodes.length > 0) {
-      const embeddingResult = await this.graphLayoutService.compute(
-        graph.edges.map((edge): [number, number] => edge.value),
-        graph.nodes.length
-      );
-
-      if (!embeddingResult.planar) {
-        this.uiController.updateStatus('Checking planarity... ✗', 'error');
-      } else {
-        this.uiController.updateStatus('Checking planarity... ✓', 'okay');
-      }
-    } else {
-      this.uiController.updateStatus('', 'info');
-    }
   }
 }
 

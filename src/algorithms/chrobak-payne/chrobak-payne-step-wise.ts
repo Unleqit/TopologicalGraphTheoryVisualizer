@@ -6,24 +6,6 @@ import { GraphNode } from '../../graph/types/graph.node';
 
 export function combinatorialEmbeddingToPosStepWise(edges: GraphEdge[], nodeLists: GraphCanonicalOrdering): GraphEmbeddingStepResult {
   const steps: Record<number, [number, number]>[] = [];
-
-  if (nodeLists.length < 4) {
-    const defaultPositions: [number, number][] = [
-      [0, 0],
-      [2, 0],
-      [1, 1],
-    ];
-
-    const pos: Record<number, [number, number]> = {};
-    nodeLists.forEach(([node], i) => {
-      pos[node] = defaultPositions[i];
-    });
-
-    steps.push({ ...pos });
-    const result = steps2GraphEmbeddingStepResult(edges, steps);
-    return result;
-  }
-
   const nodeList = nodeLists;
 
   // ---- Initialization ----
@@ -34,7 +16,23 @@ export function combinatorialEmbeddingToPosStepWise(edges: GraphEdge[], nodeList
   const deltaX: Record<number, number> = { [v1]: 0, [v2]: 1, [v3]: 1 };
   const yCoordinate: Record<number, number> = { [v1]: 0, [v2]: 0, [v3]: 1 };
 
-  steps.push(computeAbsoluteSnapshot(v1, leftTChild, rightTChild, deltaX, yCoordinate));
+  const graphs: Graph[] = [];
+  const upper = nodeList.length < 3 ? nodeList.length : 3;
+
+  for (let k = 0; k < upper; k++) {
+    const defaultPositions: [number, number][] = [
+      [0, 0],
+      [2, 0],
+      [1, 1],
+    ];
+
+    const pos: Record<number, [number, number]> = {};
+    nodeLists.slice(0, k + 1).forEach(([node], i) => {
+      pos[node] = defaultPositions[i];
+    });
+
+    steps.push({ ...pos });
+  }
 
   // ---- Phase 1 ----
   for (let k = 3; k < nodeList.length; k++) {
@@ -72,8 +70,8 @@ export function combinatorialEmbeddingToPosStepWise(edges: GraphEdge[], nodeList
     steps.push(computeAbsoluteSnapshot(v1, leftTChild, rightTChild, deltaX, yCoordinate));
   }
 
-  const result = steps2GraphEmbeddingStepResult(edges, steps);
-  return result;
+  graphs.push(...steps2GraphEmbeddingStepResult(edges, steps).graphs);
+  return { planar: true, graphs: graphs };
 }
 
 function steps2GraphEmbeddingStepResult(edges: GraphEdge[], steps: Record<number, [number, number]>[]): GraphEmbeddingStepResult {

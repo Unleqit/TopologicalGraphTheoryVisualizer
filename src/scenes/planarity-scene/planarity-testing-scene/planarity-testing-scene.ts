@@ -1,10 +1,10 @@
-import { Graph } from '../../graph/types/graph';
-import { PlanaritySceneBase } from './planarity-testing-editor-scene/planarity-scene-base';
-import { PlanaritySceneHistoryManager } from './planarity-testing-editor-scene/planarity-scene-history-manager';
-import { PlanaritySceneInteractionController } from './planarity-testing-editor-scene/planarity-scene-interaction-controller';
-import { PlanaritySceneRenderController } from './planarity-testing-editor-scene/planarity-scene-render-controller';
-import { PlanaritySceneSelectionManager } from './planarity-testing-editor-scene/planarity-scene-selection-manager';
-import { PlanaritySceneUIController } from './planarity-testing-editor-scene/planarity-scene-ui-controller';
+import { Graph } from '../../../graph/types/graph';
+import { PlanaritySceneBase } from '../planarity-editor-scene/planarity-scene-base';
+import { PlanaritySceneHistoryManager } from '../planarity-editor-scene/planarity-scene-history-manager';
+import { PlanaritySceneInteractionController } from '../planarity-editor-scene/planarity-scene-interaction-controller';
+import { PlanaritySceneRenderController } from '../planarity-editor-scene/planarity-scene-render-controller';
+import { PlanaritySceneSelectionManager } from '../planarity-editor-scene/planarity-scene-selection-manager';
+import { PlanaritySceneUIController } from '../planarity-editor-scene/planarity-scene-ui-controller';
 
 export class PlanarityTestingScene extends PlanaritySceneBase {
   private selectionManager: PlanaritySceneSelectionManager;

@@ -12,63 +12,75 @@ export class PlanaritySceneAnimationService {
     private readonly renderController: PlanaritySceneRenderController
   ) {}
 
-  public animateTransition(old: PlanarityPageGraphRenderingResult | undefined, _new: PlanarityPageGraphRenderingResult, msTotal: number, recenter: boolean = false): void {
-    const newMap = new Map(_new.graph.nodes.map((node) => [node.id, node]));
-    if (!old) {
-      old = _new;
-    }
-    let renderingReplaced = false;
-
-    const oldMap = old.graph.nodes.length > 0 ? new Map(old.graph.nodes.map((node) => [node.id, node])) : newMap;
-    const startTime = performance.now();
-    const oldMeshMap = new Map(old.nodeMeshes.map((nodeMesh) => [nodeMesh.id, nodeMesh]));
-    const newMeshMap = new Map(_new.nodeMeshes.map((nodeMesh) => [nodeMesh.id, nodeMesh]));
-
-    const animate = () => {
-      const now = performance.now();
-      const elapsedTime = now - startTime;
-      const progress = Math.min(elapsedTime / msTotal, 1);
-      const allNodeIds = new Set([...old.graph.nodes.map((node) => node.id), ..._new.graph.nodes.map((node) => node.id)]);
-
-      allNodeIds.forEach((id) => {
-        const nodeInOldRendering = oldMap.get(id);
-        const nodeInNewRendering = newMap.get(id);
-        const nodeMeshInOldRendering = oldMeshMap.get(id)!;
-        const nodeMeshInNewRendering = newMeshMap.get(id)!;
-
-        if (nodeInOldRendering && nodeInNewRendering) {
-          this.animateTransitionBetweenExistingVertices(
-            old,
-            oldMap,
-            oldMeshMap,
-            nodeMeshInOldRendering,
-            [nodeInOldRendering.x - nodeInNewRendering.x, nodeInOldRendering.y - nodeInNewRendering.y],
-            progress
-          );
-        } else if (nodeInOldRendering) {
-          this.animateTransitionRemoveOldVertex(old, oldMeshMap, nodeMeshInOldRendering, progress);
-        } else if (nodeInNewRendering) {
-          renderingReplaced = true;
-          this.animateTransitionCreateNewVertex(_new, recenter, newMeshMap, nodeMeshInNewRendering, progress);
-        }
-      });
-
-      if (recenter) {
-        const { position, target } = this.centerGroup(_new.graphGroup);
-        this.sceneBase.setCameraPosition(position);
-        this.sceneBase.getCamera().lookAt(0, 0, 0);
+  public async animateTransition(
+    old: PlanarityPageGraphRenderingResult | undefined,
+    _new: PlanarityPageGraphRenderingResult,
+    msTotal: number,
+    recenter: boolean = false
+  ): Promise<void> {
+    return new Promise((resolve) => {
+      const newMap = new Map(_new.graph.nodes.map((node) => [node.id, node]));
+      if (!old) {
+        old = _new;
       }
 
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        if (!renderingReplaced) {
-          this.renderController.replaceRendering(_new, recenter);
-        }
-      }
-    };
+      let renderingReplaced = false;
 
-    animate();
+      const oldMap = old.graph.nodes.length > 0 ? new Map(old.graph.nodes.map((node) => [node.id, node])) : newMap;
+
+      const startTime = performance.now();
+      const oldMeshMap = new Map(old.nodeMeshes.map((nodeMesh) => [nodeMesh.id, nodeMesh]));
+      const newMeshMap = new Map(_new.nodeMeshes.map((nodeMesh) => [nodeMesh.id, nodeMesh]));
+
+      const animate = () => {
+        const now = performance.now();
+        const elapsedTime = now - startTime;
+        const progress = Math.min(elapsedTime / msTotal, 1);
+
+        const allNodeIds = new Set([...old!.graph.nodes.map((node) => node.id), ..._new.graph.nodes.map((node) => node.id)]);
+
+        allNodeIds.forEach((id) => {
+          const nodeInOldRendering = oldMap.get(id);
+          const nodeInNewRendering = newMap.get(id);
+          const nodeMeshInOldRendering = oldMeshMap.get(id)!;
+          const nodeMeshInNewRendering = newMeshMap.get(id)!;
+
+          if (nodeInOldRendering && nodeInNewRendering) {
+            this.animateTransitionBetweenExistingVertices(
+              old!,
+              oldMap,
+              oldMeshMap,
+              nodeMeshInOldRendering,
+              [nodeInOldRendering.x - nodeInNewRendering.x, nodeInOldRendering.y - nodeInNewRendering.y],
+              progress
+            );
+          } else if (nodeInOldRendering) {
+            this.animateTransitionRemoveOldVertex(old!, oldMeshMap, nodeMeshInOldRendering, progress);
+          } else if (nodeInNewRendering) {
+            renderingReplaced = true;
+            this.animateTransitionCreateNewVertex(_new, recenter, newMeshMap, nodeMeshInNewRendering, progress);
+          }
+        });
+
+        if (recenter) {
+          const activeGroup = renderingReplaced ? _new.graphGroup : old!.graphGroup;
+          const { position, target } = this.centerGroup(activeGroup);
+          this.sceneBase.setCameraPosition(position);
+          this.sceneBase.getCamera().lookAt(target);
+        }
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          if (!renderingReplaced) {
+            this.renderController.replaceRendering(_new, recenter);
+          }
+          resolve();
+        }
+      };
+
+      animate();
+    });
   }
 
   private animateTransitionBetweenExistingVertices(
@@ -172,10 +184,14 @@ export class PlanaritySceneAnimationService {
 
   private centerGroup(group: Group): { position: Vector3; target: Vector3 } {
     const box = new Box3().setFromObject(group);
+
+    const center = new Vector3();
+    box.getCenter(center);
+
     const sphere = box.getBoundingSphere(new Sphere());
-    group.position.set(0, 0, 0);
-    const target = new Vector3(0, 0, 0);
-    const position = new Vector3(0, 0, sphere.radius * 3);
-    return { position, target };
+
+    const position = new Vector3(center.x, center.y, center.z + sphere.radius * 3);
+
+    return { position, target: center };
   }
 }

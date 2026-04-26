@@ -1,4 +1,4 @@
-import { PlanarityScene } from '../../scenes/planarity-scene/planarity-testing-editor-scene/planarity-scene';
+import { PlanarityScene } from '../../scenes/planarity-scene/planarity-editor-scene/planarity-scene';
 import { PlanarityPageInputMode } from './planarity-page-input-mode';
 import { validateMatrix } from './input-handling/planarity-page-input-validator';
 import { PlanarityPageStatusMode } from './planarity-page-status-mode';
@@ -8,10 +8,10 @@ import { PlanarityPageInputParser } from './input-handling/planarity-page-input-
 import { PlanarityPageInputMatrix } from './input-handling/planarity-page-input-matrix';
 import { GraphEmbeddingPythonResult } from '../../graph/types/graph-embedding-python-result';
 import { Stepper } from '../../ui/setup-stepper';
-import { PlanaritySceneBase } from '../../scenes/planarity-scene/planarity-testing-editor-scene/planarity-scene-base';
+import { PlanaritySceneBase } from '../../scenes/planarity-scene/planarity-editor-scene/planarity-scene-base';
 import { PlanarityConditionScene } from '../../scenes/planarity-scene/planarity-condition-scene/planarity-condition-scene';
-import { PlanarityTestingScene } from '../../scenes/planarity-scene/planarity-testing-scene';
-import { PlanarityEmbeddingScene } from '../../scenes/planarity-scene/planarity-embedding-scene';
+import { PlanarityTestingScene } from '../../scenes/planarity-scene/planarity-testing-scene/planarity-testing-scene';
+import { PlanarityEmbeddingScene } from '../../scenes/planarity-scene/planarity-embedding-scene/planarity-embedding-scene';
 import { PlanarityEulersFormulaScene } from '../../scenes/planarity-scene/planarity-eulers-formula-scene/planarity-eulers-formula-scene';
 
 export class PlanarityPage {
