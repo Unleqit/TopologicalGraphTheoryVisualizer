@@ -10,17 +10,20 @@ import { combinatorialEmbeddingToPosStepWise } from '../../../algorithms/chrobak
 import { Vector3 } from 'three';
 import { GraphNode } from '../../../graph/types/graph.node';
 import { GraphEdge } from '../../../graph/types/graph-edge';
+import { PlanarityEmbeddingInteractionController } from './planarity-embedding-interaction-controller';
 
 export class PlanarityEmbeddingScene extends PlanaritySceneBase {
   private selectionManager: PlanaritySceneSelectionManager;
   private renderController: PlanaritySceneRenderController;
-  private interactionController: PlanarityConditionInteractionController;
+  private interactionController: PlanarityEmbeddingInteractionController;
   private historyManager: PlanaritySceneHistoryManager;
   private uiController: PlanaritySceneUIController;
   private steps: Graph[] = [];
 
   constructor(canvasElement: HTMLCanvasElement) {
     super(canvasElement);
+    this.controls.enabled = false;
+
     this.selectionManager = new PlanaritySceneSelectionManager();
     this.renderController = new PlanaritySceneRenderController(this, this.selectionManager);
     this.historyManager = new PlanaritySceneHistoryManager(this._undoAction.bind(this), this._redoAction.bind(this));
@@ -28,7 +31,7 @@ export class PlanarityEmbeddingScene extends PlanaritySceneBase {
       () => {},
       () => {}
     );
-    this.interactionController = new PlanarityConditionInteractionController(this, this.selectionManager, this.renderController, this.historyManager, this.uiController);
+    this.interactionController = new PlanarityEmbeddingInteractionController(this, this.selectionManager, this.renderController, this.historyManager, this.uiController);
 
     const graph = PLANARITY_EMBEDDING_SCENE_GRAPH;
     const renderingResult = this.renderController.render(graph);
@@ -42,7 +45,7 @@ export class PlanarityEmbeddingScene extends PlanaritySceneBase {
 
     //patch graph steps
     const currentGraph = this.cloneGraph(graph);
-    for (const step of straightLineDrawingSteps.graphs) {
+    for (const step of [straightLineDrawingSteps.graphs.at(-1)!]) {
       const stepMap = new Map(step.nodes.map((n) => [n.id, n]));
       const changedNodes = currentGraph.nodes.filter((node) => {
         const target = stepMap.get(node.id);
@@ -68,7 +71,7 @@ export class PlanarityEmbeddingScene extends PlanaritySceneBase {
 
   public override startAnimation(startPos?: Vector3): void {
     super.startAnimation(startPos);
-    this.interactionController.renderGraphToUI([...this.steps], true, 0, true, true, 2000, true);
+    this.interactionController.renderGraphToUI([...this.steps], true, 200, true, true, 2000, true);
   }
   private _undoAction(): void {
     this.selectionManager.deselectSelection();
