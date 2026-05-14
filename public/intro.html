@@ -9,7 +9,7 @@
     <div class="shell">
       <div class="topbar">
         <a href="index.html" class="brand" aria-label="Go to homepage">Topological Graph Theory</a>
-        <div class="crumb">/ [WIP] A Visual Introduction to Topology</div>
+        <div class="crumb">/ A Visual Introduction to Topology</div>
       </div>
 
       <div class="main">
@@ -24,18 +24,27 @@
 
           <div class="dialog-body">
             <div data-step="0">
-              <h3>Step 1 — What is “topology”?</h3>
-              <p>Topology studies properties that stay the same under continuous deformation (stretching/bending, but no cutting or gluing).</p>
-              <p>You’ll later connect this to graphs drawn on surfaces.</p>
+              <h3>Step 1 — What is topology?</h3>
+              <p>
+                <i>Topology</i> is a branch of mathematics that studies properties of shapes that stay the same under continuous deformation. Distances and angles do not matter.
+              </p>
+              <p>
+                <b>Allowed: </b>stretching, twisting, bending, crumpling<br />
+                <b>Not allowed: </b>tearing, gluing, creating holes, closing holes, passing through itself
+              </p>
+              <p><b>Example: </b>Shapes in the right panel are topologically the same. A sphere and a cube are hence equivalent.</p>
+              <p>Those "shapes" will be the surfaces we study the embedding of graphs on.</p>
             </div>
 
             <div data-step="1" style="display: none">
               <h3>Step 2 — Orientable Surfaces</h3>
-              <p>Orientable examples: Sphere, Torus.</p>
+              <p>Surfaces can be classified into <i>orientable</i> and <i>nonorientable</i> surfaces.</p>
+
+              <p>Orientable surfaces admit a globally consistent orientation. This means you can move along the surface without suddenly finding that "top" has become "bottom".</p>
 
               <div class="cylinder-controls" id="cylinderControls">
-                <h3>Cylinder – Orientability Demo</h3>
-                <p>Move the yellow arrow along the cylinder’s center circle.</p>
+                <h3><b>Example: </b>A cylinder is orientable</h3>
+                <p>Move an arrow pointing "top" around the cylinder once, and it still points "top" when it returns. The orientation remains consistent.</p>
 
                 <label for="uSlider">Position along center circle (0 to 1 loops)</label>
                 <input id="uSlider" type="range" min="0" max="1000" value="0" step="1" />
@@ -49,10 +58,9 @@
 
             <div data-step="2" style="display: none">
               <h3>Step 3 — Non-Orientable Surfaces</h3>
-              <p>Non-Orientable examples: Möbius strip, Klein bottle.</p>
               <div class="cylinder-controls" id="mobiusControls">
-                <h3>Möbius strip – Non-Orientability Demo</h3>
-                <p>Move the yellow arrow along the möbius strip.</p>
+                <h3>A Möbius strip is non-orientable.</h3>
+                <p>Move the arrow around the strip once, and when it returns, it points in the opposite direction. The orientation has flipped!</p>
 
                 <label for="mobiusSlider">Position along center circle (0 to 1 loops)</label>
                 <input id="mobiusSlider" type="range" min="0" max="1000" value="0" step="1" />
@@ -66,8 +74,15 @@
 
             <div data-step="3" style="display: none">
               <h3>Step 4 — Homeomorphism + genus</h3>
-              <p>Two shapes are “the same topologically” if there is a homeomorphism between them. Genus counts “handles” (roughly) for orientable surfaces.</p>
-              <p>Later you’ll use genus ideas to understand embeddings of graphs beyond the plane.</p>
+              <p>
+                The shown graph has an intersection when embedded on the sphere. Add a <i>handle</i> to the sphere and route one of the intersecting edges through it. Now the graph
+                can be embedded without intersections!
+              </p>
+              <p>The number of handles a surface has is called its <i>genus</i>.</p>
+              <p>
+                Two surfaces are <i>homeomorphic</i> if one can be continuously deformed into the other without tearing, gluing, or creating/removing holes. Therefore, surfaces
+                with the same genus are homeomorphic.
+              </p>
 
               <div class="cylinder-controls">
                 <div class="buttons" id="step3Controls">
@@ -76,6 +91,11 @@
                   <button id="handleBtn">Show Handle</button>
                 </div>
               </div>
+
+              <p>
+                <b>Remark: </b>For non-orientable surfaces, <i>crosscaps</i> are used instead of handles (a Möbius-strip-like attachment). In that case, homeomorphism is classified
+                by the number of crosscaps instead.
+              </p>
             </div>
           </div>
         </section>

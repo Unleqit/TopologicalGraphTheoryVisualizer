@@ -207,8 +207,9 @@
             <!-- Step-controlled content -->
             <div data-step="0" style="display: none">
               <h3>Planarity condition</h3>
-              <p>todo: insert condition (kuratowski)</p>
-              <p>The graph in the right pane illustrates this condition, as there exists no arrangement in which the Kuratwoski subgraph K<sub>5</sub> marked in red admits a planar embedding, thus making the entire graph non-planar.</p>
+              <p>A graph is called <i>planar</i> if it can be embedded in the plane without edge intersections.</p>
+              <p>A graph is <i>non-planar</i> if it contains a hidden version (subdivision) of the <i>Kuratowski subgraphs</i> K<sub>5</sub> or K<sub>3,3</sub>.</p>
+              <p>Example: The graph on the right is non-planar. The highlighted red subgraph is the K<sub>5</sub> graph. Yo may rearrange the vertices and edges however you like — you will never obtain an embedding without a crossing</p>
             </div>
             <div data-step="1" style="display: none">
               <h3>Euler's formula</h3>
@@ -216,19 +217,23 @@
               <p>You can verify the relation between these components described by the formula by examining the two exemplaric graphs presented in the right pane of this step.</p>
             </div>
             <div data-step="2" style="display: none">
-              <h3>Planarity testing</h3>
-              <p>Left-Right Planarity testing algorithm</p>
-              <p>Visualization derived form: <it>Ulrik Brandes. The Left-Right Planarity Test. Department of Computer Information Science, University
-of Konstanz. Fig. 1 p. 5. 2012</it></p>
+              <h3>LR Planarity Test</h3>
+              <p>In practice, graph planarity is usually determined by using efficient algorithms.</p>
+              <p>One such method—used in the interactive section—is the <i>LR planarity test</i>. It performs a depth-first search (DFS) and classifies edges into left and right branches in a way that checks whether a planar embedding is possible.</p>
+              <p>We won't go into the algorithmic details here — this is simply to show which method is used later on to test planarity.</p>
+              <p><b>Remark: </b>Visualization derived form: <i>Ulrik Brandes. The Left-Right Planarity Test. Department of Computer Information Science, University of Konstanz. Fig. 1 p. 5. 2012</i></p>
             </div>
             <div data-step="3" style="display: none">
               <h3>Planarity embedding</h3>
-
-              <p></p>
+              <p>Now we know how to check whether a graph is planar — but how do we actually draw it without edge crossings?</p>
+              <p>Graph theory tells us that every planar graph can be drawn as a straight-line planar embedding, making it ideal for computational visualization.</p>
+              <p>For this task, we use the <i>Chrobak-Payne</i> algorithm, which constructs a straight-line planar drawing for any planar graph without requiring additional assumptions.</p>
+              <p><b>Example: </b>Watch the right panel to see how a graph is transformed into a straight-line planar drawing</p>
             </div>
             <div data-step="4" style="display: none">
               <h3>Planarity testing & embedding editor</h3>
-              <p>Enter graphs in matrix- or adjacency list form, or directly manipulate the graph in the right panel. See the info panel for key combinations.</p>
+              <p>Enter graphs in matrix- or adjacency list form, or directly manipulate the graph in the right panel.</p>
+              <p><b>Remark: </b>See the info panel by pressing on the top right info icon to show a list of available key combinations.</p>
             </div>
           </div>
         </section>
