@@ -3,12 +3,10 @@ import { clamp } from './utils';
 export const MODULE_ORDER: string[] = ['intro.html', 'planarity.html', 'surfaces.html'];
 
 // Navigate to a module by index
-export function gotoModule(index: number, resetStep: boolean): void {
+export function gotoModule(index: number, stepMode: 'first' | 'last' = 'first'): void {
   const safe = clamp(index, 0, MODULE_ORDER.length - 1);
 
-  if (resetStep) {
-    sessionStorage.setItem('nav-reset-step', '1');
-  }
+  sessionStorage.setItem('nav-step-mode', stepMode);
 
   window.location.href = MODULE_ORDER[safe];
 }
