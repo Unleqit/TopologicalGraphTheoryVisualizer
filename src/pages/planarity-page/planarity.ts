@@ -99,6 +99,10 @@ export class PlanarityPage {
         modal2.classList.toggle('active');
       }
     });
+
+    const inputMatrix = this.inputParser.rawMatrixToInputMatrix(this.graphMatrixInput.value);
+    this.currentGraph = this.inputConverter.inputMatrixToGraph(inputMatrix);
+    this.currentEmbeddingResult = JSON.parse(`{"planar":true,"canonical_ordering":[[0,[]],[1,[]],[2,[0,1]],[3,[0,2]],[4,[3,2]]]}`);
   }
 
   private handleStep(step: number): void {
