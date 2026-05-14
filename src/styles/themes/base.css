@@ -703,11 +703,17 @@ body {
   cursor: pointer;
 }
 
-/* Chrome / Edge / Safari */
+/* Update the Chrome/Edge/Safari track to use the variable */
 .cylinder-controls input[type='range']::-webkit-slider-runnable-track {
   height: var(--track-height);
   border-radius: 999px;
-  background: linear-gradient(to right, #00c3ff 0%, #00ffcc var(--progress, 50%), rgba(255, 255, 255, 0.12) var(--progress, 50%), rgba(255, 255, 255, 0.12) 100%);
+  /* We use the variable --progress here */
+  background: linear-gradient(to right, #00c3ff 0%, #00ffcc var(--progress, 0%), var(--track-color) var(--progress, 0%), var(--track-color) 100%);
+}
+
+/* Do the same for the Light Mode block in your CSS */
+[theme='light'] .cylinder-controls input[type='range']::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, #00c3ff 0%, #00ffcc var(--progress, 0%), rgba(34, 34, 34, 0.14) var(--progress, 0%), rgba(34, 34, 34, 0.14) 100%);
 }
 
 .cylinder-controls input[type='range']::-webkit-slider-thumb {

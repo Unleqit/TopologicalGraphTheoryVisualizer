@@ -50,6 +50,27 @@
                 <input id="uSlider" type="range" min="0" max="1000" value="0" step="1" />
                 <div class="readout" id="readout">turns = 0.000</div>
 
+                <script>
+                  const sliders = document.querySelectorAll('.cylinder-controls input[type="range"]');
+
+                  sliders.forEach((slider) => {
+                    function updateSliderFill() {
+                      const val = slider.value;
+                      const min = slider.min || 0;
+                      const max = slider.max || 100;
+
+                      const percent = ((val - min) / (max - min)) * 100;
+
+                      slider.style.setProperty('--progress', `${percent}%`);
+                    }
+
+                    slider.addEventListener('input', updateSliderFill);
+
+                    // initialize on load
+                    updateSliderFill();
+                  });
+                </script>
+
                 <div class="buttons">
                   <button id="resetBtn">Reset</button>
                 </div>
@@ -65,6 +86,27 @@
                 <label for="mobiusSlider">Position along center circle (0 to 1 loops)</label>
                 <input id="mobiusSlider" type="range" min="0" max="1000" value="0" step="1" />
                 <div class="readout" id="mobiusReadout">turns = 0.000</div>
+
+                <script>
+                  const sliders2 = document.querySelectorAll('.cylinder-controls input[type="range"]');
+
+                  sliders2.forEach((slider) => {
+                    function updateSliderFill() {
+                      const val = slider.value;
+                      const min = slider.min || 0;
+                      const max = slider.max || 100;
+
+                      const percent = ((val - min) / (max - min)) * 100;
+
+                      slider.style.setProperty('--progress', `${percent}%`);
+                    }
+
+                    slider.addEventListener('input', updateSliderFill);
+
+                    // initialize on load
+                    updateSliderFill();
+                  });
+                </script>
 
                 <div class="buttons">
                   <button id="resetBtn2">Reset</button>

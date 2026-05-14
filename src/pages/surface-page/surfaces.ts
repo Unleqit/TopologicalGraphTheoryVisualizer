@@ -106,10 +106,12 @@ export class SurfacePage {
     if (source === 'reorder' && result.normedStepValue <= 1) {
       controls[0].value = result.normedStepValue.toFixed(3);
       controls[2].textContent = `Step ${result.stepValue}: ${result.description}`;
+      controls[0].style.setProperty('--progress', `${result.normedStepValue * 100}%`);
     }
     if (source === 'transform' && result.normedStepValue >= 0 && result.normedStepValue <= 1) {
       controls[1].value = result.normedStepValue.toFixed(3);
       controls[3].textContent = `Morph: ${(result.normedStepValue * 100 + 0.4).toFixed(0)}%`;
+      controls[1].style.setProperty('--progress', `${result.normedStepValue * 100}%`);
     }
   }
 
