@@ -71,7 +71,7 @@ export class PlanarityPage {
     this.stepper.addEventListener('stepchange', (e) => {
       this.handleStep((e as CustomEvent<number>).detail);
     });
-    this.handleStep(0);
+    this.handleStep(this.stepper.getStep());
 
     window.addEventListener('resize', this.resize.bind(this));
     this.resize();
