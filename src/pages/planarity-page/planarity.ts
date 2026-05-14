@@ -151,7 +151,7 @@ export class PlanarityPage {
 
   public async computePlanarDrawingForInputGraph(): Promise<void> {
     if (this.currentGraph && this.currentEmbeddingResult && this.currentEmbeddingResult.planar) {
-      this.lastScene.loadGraph(this.currentEmbeddingResult, this.currentGraph, true, 500);
+      this.lastScene.loadGraph(this.currentEmbeddingResult, this.currentGraph, false, 1000);
     }
   }
 
